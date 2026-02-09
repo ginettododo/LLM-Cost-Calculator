@@ -23,10 +23,10 @@ describe("counters", () => {
   it("counts characters and graphemes with emoji and accents", () => {
     const text = "a💙 café";
     expect(countCharacters(text)).toBe(8);
-    const expectedGraphemes =
-      typeof Intl !== "undefined" && typeof Intl.Segmenter !== "undefined"
-        ? 7
-        : Array.from(text).length;
+    const hasSegmenter =
+      typeof Intl !== "undefined" &&
+      typeof (Intl as { Segmenter?: unknown }).Segmenter !== "undefined";
+    const expectedGraphemes = hasSegmenter ? 7 : Array.from(text).length;
     expect(countGraphemes(text)).toBe(expectedGraphemes);
   });
 

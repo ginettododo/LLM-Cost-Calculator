@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { PricingRow } from "../types/pricing";
 
-export const PricingRowSchema = z
+export const PricingRowSchema: z.ZodType<PricingRow> = z
   .object({
     provider: z.string().min(1),
     model: z.string().min(1),
@@ -14,8 +14,7 @@ export const PricingRowSchema = z
     retrieved_at: z.string().min(1),
     pricing_confidence: z.string().min(1).optional(),
   })
-  .strict()
-  satisfies z.ZodType<PricingRow>;
+  .strict();
 
 export const PricesFileSchema = z
   .object({
