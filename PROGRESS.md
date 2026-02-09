@@ -1,6 +1,7 @@
 # Progress & Milestones
 
 ## MVP Milestone
+- [x] Scaffold repo
 - [ ] Initialize Vite + React + TypeScript project
 - [ ] Establish repo structure per `REPO_STRUCTURE.md`
 - [ ] Implement core types and pure functions
