@@ -1,126 +1,97 @@
 # Token & LLM Cost Calculator
 
-A fully static, privacy-first calculator for estimating token usage and cost across LLM providers. The app runs entirely in the browser with local pricing data—no backend, no databases, no paid APIs, and no LLM calls.
+A fully static, privacy-first calculator for estimating token usage and cost across LLM providers. The app runs entirely in the browser with local pricing data.
 
-## Constraints
-- Fully static site deployable on Vercel.
-- No backend, no serverless functions, no database.
-- No paid APIs or LLM calls.
-- All computation happens in the browser.
+## Runtime Constraints
+- Static frontend only (Vite + React)
+- No backend or serverless runtime
+- No databases
+- No paid APIs
+- No token-count API calls
 
-## Getting Started
+## Local Development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Build
-
-```bash
-npm run build
-npm run preview
-```
-
-## Test & Lint
+## Quality Commands
 
 ```bash
 npm run test
+npm run test:smoke
 npm run lint
+npm run build
 ```
 
-## Deployment (Vercel Static)
-1. Build the project:
-   ```bash
-   npm run build
-   ```
-2. Deploy the `dist/` folder as a static site on Vercel.
-   - Framework preset: **Vite**
-   - Output directory: `dist`
-   - No serverless functions required.
+## Pricing Data Workflow
+Pricing data is stored in `src/data/prices.json` and bundled at build time.
 
-## Full Auto Commit + Push + Deploy (macOS + GitHub)
+Local maintenance commands:
 
-This repository includes a complete local auto-sync setup for macOS and automatic deploy on GitHub Pages.
-
-### 1) One-time local setup (your Mac)
 ```bash
-chmod +x scripts/*.sh
-./scripts/install-auto-sync-macos.sh
+npm run prices:update
+npm run prices:validate
 ```
 
-What it does:
-- Every 60 seconds, checks for git changes.
-- Runs only when the current checked out branch is `main` (or `AUTO_SYNC_BRANCH`).
-- If changes exist, runs:
-  - `npm run test`
-  - `npm run build`
-- Creates an automatic commit.
-- Rebases from `origin/main`.
-- Pushes to `origin/main`.
+- `prices:update`: conservative canonicalization pass (sort/normalize + staleness warning)
+- `prices:validate`: strict schema validation (fails non-zero on any schema issue)
 
-Logs are written to:
-- `.auto-sync.log`
+Scheduled GitHub Action:
+- Workflow: `.github/workflows/pricing-update.yml`
+- Trigger: weekly (Monday 06:00 UTC) + manual dispatch
+- Behavior:
+  1. run `prices:update`
+  2. run `prices:validate`
+  3. commit `src/data/prices.json` if it changed
 
-Stop/remove automation:
-```bash
-./scripts/uninstall-auto-sync-macos.sh
-```
+No secrets are required beyond the default `GITHUB_TOKEN`.
 
-### 2) Automatic deploy on every push
-- The workflow file `.github/workflows/deploy-pages.yml` deploys on each push to `main`.
-- In GitHub repo settings, set Pages source to **GitHub Actions**.
+## Vercel Static Deployment
+This project deploys to Vercel as a static site with no server runtime.
 
-### Optional environment variables
-- `AUTO_SYNC_BRANCH` (default: `main`)
-- `AUTO_SYNC_REMOTE` (default: `origin`)
-- `AUTO_SYNC_RUN_CHECKS`:
-  - `1` = run test+build before commit (default)
-  - `0` = skip checks for faster commits
+1. Import the repository in Vercel.
+2. Configure project settings:
+   - Framework Preset: `Vite`
+   - Install Command: `npm install`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+3. Deploy.
 
-## Data
-Pricing data lives in `src/data/prices.json` and is bundled at build time. Update the JSON file to refresh the pricing table.
+Notes:
+- `vite.config.ts` explicitly uses SPA app type and `dist` output.
+- `vercel.json` is not required for the current single-route app.
 
-## Utility Features
-- `Export` menu:
-  - Export current visible/computed results to CSV.
-  - Export current visible/computed results to JSON.
-- `Copy summary` button:
-  - Copies a compact multiline summary with counters, primary model snapshot, and top 3 cheapest models by current input cost.
-- `Presets` dropdown:
-  - Short paragraph
-  - Long article (~5k chars)
-  - Code sample (JSON)
-  - Mixed unicode (emoji + accents)
-  - Selecting a preset replaces textarea content and shows an `Undo` toast action.
-- Light/Dark mode toggle:
-  - Pure CSS class toggle, no persistence.
+## UX Features
+- Live counters: characters, words, lines, UTF-8 bytes
+- OpenAI exact tokenization (local tokenizer) with fallback estimation for other providers
+- Large-input guardrail: warning for inputs over 50k chars
+- Compute mode toggle: `Primary model only` to keep large-input updates responsive
+- Export current table to CSV/JSON
+- Copy summary to clipboard
+- Presets for quick testing
+- Light/Dark mode toggle
 
-## Export Format
+## Data Export Format
 
-### CSV
-- One spreadsheet-friendly row per currently visible model (after filters/search/exact-only).
-- Columns:
-  - `timestamp`
-  - `characters`
-  - `words`
-  - `lines`
-  - `bytes`
-  - `last_updated`
-  - `provider`
-  - `model`
-  - `exactness`
-  - `tokens`
-  - `input_cost_usd`
-  - `output_cost_usd` (blank when unavailable)
-  - `total_cost_usd`
-  - `price_input_per_mtok`
-  - `price_output_per_mtok` (blank when unavailable)
+### CSV columns
+- `timestamp`
+- `characters`
+- `words`
+- `lines`
+- `bytes`
+- `last_updated`
+- `provider`
+- `model`
+- `exactness`
+- `tokens`
+- `input_cost_usd`
+- `output_cost_usd`
+- `total_cost_usd`
+- `price_input_per_mtok`
+- `price_output_per_mtok`
 
-### JSON
-- Shape:
-  - `metadata`: `timestamp`, `characters`, `words`, `lines`, `bytes`, `last_updated`
-  - `rows`: array of visible rows with:
-    - `provider`, `model`, `exactness`, `tokens`
-    - `input_cost_usd`, `output_cost_usd`, `total_cost_usd`
-    - `price_input_per_mtok`, `price_output_per_mtok`
+### JSON shape
+- `metadata`: `timestamp`, counters, `last_updated`
+- `rows`: visible computed rows with pricing + token fields

@@ -1,65 +1,41 @@
-# Update Runbook
+# Pricing Update Runbook
 
-This runbook covers local updates, debugging failures, and manual overrides for `prices.json`.
+This runbook covers manual updates to `src/data/prices.json` and CI verification.
 
-## Local Update (Developer Machine)
+## Manual Update Procedure
+1. Edit `src/data/prices.json` with new values from official provider pricing pages.
+2. Canonicalize and validate:
+   ```bash
+   npm run prices:update
+   npm run prices:validate
+   ```
+3. Run quality gates:
+   ```bash
+   npm run test
+   npm run build
+   ```
+4. Add a changelog note in `CHANGELOG.md`.
+5. Commit and open a PR.
 
-1. **Install dependencies** (if scripts exist):
-   - `npm install`
-2. **Run fetch + normalize**:
-   - `node scripts/fetch-pricing.mjs`
-3. **Validate output**:
-   - `node scripts/validate-prices.mjs`
-4. **Update changelog**:
-   - `node scripts/update-changelog.mjs`
-5. **Review `prices.json`** and commit.
+## Scheduled Automation
+Workflow: `.github/workflows/pricing-update.yml`
 
-> If scripts do not exist yet, implement them according to `PRICING_PIPELINE.md` before running locally.
+Behavior:
+- Runs weekly and on manual dispatch.
+- Validates/canonicalizes `src/data/prices.json`.
+- Commits only if canonicalization changes the file.
 
-## Debugging Failures
+## Failure Recovery
+- If validation fails:
+  - Fix schema/date issues in `src/data/prices.json`.
+  - Re-run `npm run prices:validate` locally.
+- If a bad pricing update merged:
+  - Revert the offending commit.
+  - Re-apply corrected data with the standard procedure.
 
-Common failure modes and what to check:
-
-- **Parsing error**
-  - Check raw HTML/JSON artifacts.
-  - Confirm the selector/regex is still valid.
-  - Verify the expected currency and units.
-
-- **Validation error**
-  - Compare output to `PRICES_JSON_SPEC.md`.
-  - Ensure all models have `input_per_1m` and `output_per_1m` numeric values.
-
-- **No changes**
-  - If pricing is unchanged, no commit is expected.
-
-## Manual Override Workflow (GitHub Actions)
-
-Create a separate workflow, for example:
-
-- `.github/workflows/manual-prices-override.yml`
-- Trigger: `workflow_dispatch` with inputs:
-  - `prices_json` (string, JSON payload)
-  - or `upload` (file upload) for `prices.json`
-
-**Behavior**:
-
-1. Validate the provided JSON against the schema.
-2. Update `prices.json` and `CHANGELOG.md`.
-3. Commit with message: `chore(pricing): manual override`.
-
-## Manual Override (Local)
-
-1. Edit `prices.json` manually.
-2. Validate using `node scripts/validate-prices.mjs`.
-3. Update `CHANGELOG.md` with `- pricing updated on YYYY-MM-DD`.
-4. Commit changes.
-
-## Rollback Strategy
-
-- Revert the commit that updated `prices.json`.
-- Re-run the workflow once the parser is fixed.
-
-## Freshness in the App
-
-- The UI should read `last_updated` from `prices.json` and display it as “Last updated: YYYY-MM-DD”.
-- If desired, add a badge or tooltip to indicate `pricing_confidence` per provider.
+## UI Verification Checklist
+After any pricing update:
+- App loads with no console/runtime errors.
+- Pricing table renders at least one provider/model row.
+- Costs update after text input or paste.
+- `Pricing data last updated` shows expected value from the JSON.

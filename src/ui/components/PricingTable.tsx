@@ -103,36 +103,36 @@ const PricingTable = ({
     [computeMode, sortedModels],
   );
 
-  const rowsForRender = useMemo<RenderRow[]>(
-    () =>
-      computedModels
-        .map((model) => {
-          const tokenCount = getTokenCountForPricingRow(text, model);
-          const exactness: "exact" | "estimated" = tokenCount.mode;
+  const rowsForRender = useMemo<RenderRow[]>(() => {
+    const rows: RenderRow[] = [];
 
-          if (exactOnly && exactness !== "exact") {
-            return null;
-          }
+    computedModels.forEach((model) => {
+      const tokenCount = getTokenCountForPricingRow(text, model);
+      const exactness: "exact" | "estimated" = tokenCount.mode;
 
-          const costs = computeCostUSD(tokenCount.tokens, tokenCount.tokens, model);
+      if (exactOnly && exactness !== "exact") {
+        return;
+      }
 
-          return {
-            provider: model.provider,
-            model: model.model,
-            release_date: model.release_date,
-            exactness,
-            tokens: tokenCount.tokens,
-            input_cost_usd: costs.inputCostUSD,
-            output_cost_usd:
-              model.output_per_mtok === undefined ? undefined : costs.outputCostUSD,
-            total_cost_usd: costs.totalUSD,
-            price_input_per_mtok: model.input_per_mtok,
-            price_output_per_mtok: model.output_per_mtok,
-          };
-        })
-        .filter((row): row is RenderRow => row !== null),
-    [computedModels, exactOnly, text],
-  );
+      const costs = computeCostUSD(tokenCount.tokens, tokenCount.tokens, model);
+
+      rows.push({
+        provider: model.provider,
+        model: model.model,
+        release_date: model.release_date,
+        exactness,
+        tokens: tokenCount.tokens,
+        input_cost_usd: costs.inputCostUSD,
+        output_cost_usd:
+          model.output_per_mtok === undefined ? undefined : costs.outputCostUSD,
+        total_cost_usd: costs.totalUSD,
+        price_input_per_mtok: model.input_per_mtok,
+        price_output_per_mtok: model.output_per_mtok,
+      });
+    });
+
+    return rows;
+  }, [computedModels, exactOnly, text]);
 
   useEffect(() => {
     onVisibleRowsChange?.(rowsForRender);

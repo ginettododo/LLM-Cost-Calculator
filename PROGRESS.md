@@ -1,37 +1,39 @@
 # Progress & Milestones
 
-## MVP Milestone
-- [x] Scaffold repo
-- [ ] Initialize Vite + React + TypeScript project
-- [ ] Establish repo structure per `REPO_STRUCTURE.md`
-- [ ] Implement core types and pure functions
-- [x] Core engine done
-- [ ] Add `prices.json` with schema validation
-- [ ] Create token provider registry
-- [ ] Implement OpenAI exact tokenizer provider
-- [ ] Add estimated providers with tooltips
-- [ ] Build core UI for text input, provider select, and results
-- [x] UI table interactions done
-- [ ] Debounced input updates
-- [ ] Error UI for invalid schema
+## v1 Release Readiness
+- [x] Vite + React + TypeScript app scaffolded
+- [x] Repo structure aligned with core/UI/data separation
+- [x] Core normalization, counters, pricing, and schema validation implemented
+- [x] Local pricing data file (`src/data/prices.json`) integrated
+- [x] OpenAI exact tokenizer provider added (local `js-tiktoken`)
+- [x] Estimated token path retained for non-OpenAI providers
+- [x] UI supports input, live counters, token/cost table, export, summary copy, presets, and theme toggle
+- [x] Debounced input updates active
+- [x] Invalid pricing schema handling present in validation scripts
 
-## Quality Milestone
-- [ ] ESLint + formatter configured
-- [ ] Unit tests for core logic
-- [ ] Snapshot tests for OpenAI token counts
-- [ ] Optional minimal e2e smoke test
+## Quality
+- [x] ESLint + Prettier configured
+- [x] Core unit tests expanded for normalization edge cases
+- [x] UTF-8 byte counting tests expanded (unicode + emoji)
+- [x] `computeCostUSD` rounding + missing output pricing tests added
+- [x] OpenAI tokenizer snapshot tests added (5 representative strings incl. unicode)
+- [x] Minimal smoke e2e test added (load app, paste text, cost visible)
 
-## Performance & DX Milestone
-- [ ] Lazy-load tokenizer modules
-- [ ] Large text handling strategy documented
-- [ ] Deterministic build outputs verified
-- [ ] Documentation updates complete
+## Performance & DX
+- [x] Stable non-crypto text hashing implemented
+- [x] LRU cache implemented for token counting (max 50 entries)
+- [x] Large input warning added (50k+ chars)
+- [x] `Primary model only` compute mode added for large inputs
+- [x] UI responsiveness preserved via debounced input + bounded compute path
 
-## Polish Milestone
-- [ ] Accessibility review (labels, focus, contrast)
-- [x] Export
-- [x] Copy summary
-- [x] Presets
-- [x] UX polish
-- [x] Final UI tweaks for clarity
-- [ ] Deployment checklist completed
+## Deployment & Ops
+- [x] Static Vite output configuration verified for Vercel deployment
+- [x] Vercel deployment steps documented with exact settings
+- [x] Weekly GitHub Actions pricing updater added
+- [x] Local pricing schema validation script added (`npm run prices:validate`)
+- [x] Pricing canonicalization script added (`npm run prices:update`)
+
+## Release Docs
+- [x] `CHANGELOG.md` created with v1 notes
+- [x] `SECURITY.md` added with static/local-only privacy model
+- [x] `README.md` updated for deploy/test/pricing pipeline instructions

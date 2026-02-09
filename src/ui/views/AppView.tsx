@@ -298,7 +298,7 @@ const AppView = () => {
           <div>
             <h1>Token &amp; LLM Cost Calculator</h1>
             <p className="app__subtitle">
-              All calculations run locally in your browser. Tokenization is coming soon.
+              All calculations run locally in your browser with no server calls.
             </p>
           </div>
           <button
