@@ -240,6 +240,10 @@ body {
   white-space: nowrap;
 }
 
+.app__toggle--mode {
+  margin-top: 8px;
+}
+
 .app__toggle input {
   accent-color: #1d4ed8;
 }
@@ -447,6 +451,32 @@ body {
   align-items: center;
   gap: 8px;
   z-index: 20;
+}
+
+.app__warning {
+  margin-top: 10px;
+  border: 1px solid #f59e0b;
+  background: #fffbeb;
+  color: #92400e;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+[data-theme="dark"] .app__warning {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.12);
+  color: #fcd34d;
+}
+
+.app__button--warning {
+  align-self: flex-start;
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #111827;
 }
 
 .app__button--toast {

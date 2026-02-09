@@ -1,15 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { computeCostUSD } from "../../core";
+import { computeCostUSD, getTokenCountForPricingRow } from "../../core";
 import type { PricingRow } from "../../core/types/pricing";
 
 type PricingTableProps = {
   models: PricingRow[];
-  tokenEstimate: number;
+  text: string;
+  computeMode: ComputeMode;
   onVisibleRowsChange?: (rows: VisiblePricingRow[]) => void;
 };
 
 type SortKey = "provider" | "model" | "release_date" | "input" | "output";
 type SortDirection = "asc" | "desc";
+export type ComputeMode = "all-models" | "primary-model";
+
+type RenderRow = VisiblePricingRow & {
+  release_date?: string;
+};
 
 export type VisiblePricingRow = {
   provider: string;
@@ -25,7 +31,8 @@ export type VisiblePricingRow = {
 
 const PricingTable = ({
   models,
-  tokenEstimate,
+  text,
+  computeMode,
   onVisibleRowsChange,
 }: PricingTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -45,15 +52,20 @@ const PricingTable = ({
     return models.filter((model) => {
       const matchesProvider =
         selectedProvider === "all" || model.provider === selectedProvider;
-      const countType =
-        model.pricing_confidence === "exact" ? "exact" : "estimated";
-      const matchesExact = !exactOnly || countType === "exact";
       const matchesSearch =
         normalizedSearch.length === 0 ||
         model.provider.toLowerCase().includes(normalizedSearch) ||
         model.model.toLowerCase().includes(normalizedSearch);
 
-      return matchesProvider && matchesExact && matchesSearch;
+      if (!matchesProvider || !matchesSearch) {
+        return false;
+      }
+
+      if (!exactOnly) {
+        return true;
+      }
+
+      return model.provider.trim().toLowerCase() === "openai";
     });
   }, [models, exactOnly, searchTerm, selectedProvider]);
 
@@ -85,6 +97,47 @@ const PricingTable = ({
     return sorted;
   }, [filteredModels, sortDirection, sortKey]);
 
+  const computedModels = useMemo(
+    () =>
+      computeMode === "primary-model" ? sortedModels.slice(0, 1) : sortedModels,
+    [computeMode, sortedModels],
+  );
+
+  const rowsForRender = useMemo<RenderRow[]>(
+    () =>
+      computedModels
+        .map((model) => {
+          const tokenCount = getTokenCountForPricingRow(text, model);
+          const exactness: "exact" | "estimated" = tokenCount.mode;
+
+          if (exactOnly && exactness !== "exact") {
+            return null;
+          }
+
+          const costs = computeCostUSD(tokenCount.tokens, tokenCount.tokens, model);
+
+          return {
+            provider: model.provider,
+            model: model.model,
+            release_date: model.release_date,
+            exactness,
+            tokens: tokenCount.tokens,
+            input_cost_usd: costs.inputCostUSD,
+            output_cost_usd:
+              model.output_per_mtok === undefined ? undefined : costs.outputCostUSD,
+            total_cost_usd: costs.totalUSD,
+            price_input_per_mtok: model.input_per_mtok,
+            price_output_per_mtok: model.output_per_mtok,
+          };
+        })
+        .filter((row): row is RenderRow => row !== null),
+    [computedModels, exactOnly, text],
+  );
+
+  useEffect(() => {
+    onVisibleRowsChange?.(rowsForRender);
+  }, [onVisibleRowsChange, rowsForRender]);
+
   const handleSort = (key: SortKey) => {
     if (sortKey === key) {
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
@@ -100,33 +153,6 @@ const PricingTable = ({
     }
     return sortDirection === "asc" ? "ascending" : "descending";
   };
-
-  const visibleRows = useMemo<VisiblePricingRow[]>(
-    () =>
-      sortedModels.map((model) => {
-        const costs = computeCostUSD(tokenEstimate, tokenEstimate, model);
-        const exactness: "exact" | "estimated" =
-          model.pricing_confidence === "exact" ? "exact" : "estimated";
-
-        return {
-          provider: model.provider,
-          model: model.model,
-          exactness,
-          tokens: tokenEstimate,
-          input_cost_usd: costs.inputCostUSD,
-          output_cost_usd:
-            model.output_per_mtok === undefined ? undefined : costs.outputCostUSD,
-          total_cost_usd: costs.totalUSD,
-          price_input_per_mtok: model.input_per_mtok,
-          price_output_per_mtok: model.output_per_mtok,
-        };
-      }),
-    [sortedModels, tokenEstimate],
-  );
-
-  useEffect(() => {
-    onVisibleRowsChange?.(visibleRows);
-  }, [onVisibleRowsChange, visibleRows]);
 
   return (
     <div className="app__table-section">
@@ -168,150 +194,143 @@ const PricingTable = ({
       <div className="app__table-wrapper">
         <table className="app__table">
           <thead>
-          <tr>
-            <th aria-sort={getAriaSort("provider")}>
-              <button
-                type="button"
-                className="app__table-sort"
-                onClick={() => handleSort("provider")}
-              >
-                Provider
-                <span aria-hidden="true" className="app__table-sort-icon">
-                  {sortKey === "provider"
-                    ? sortDirection === "asc"
-                      ? "↑"
-                      : "↓"
-                    : "↕"}
-                </span>
-              </button>
-            </th>
-            <th aria-sort={getAriaSort("model")}>
-              <button
-                type="button"
-                className="app__table-sort"
-                onClick={() => handleSort("model")}
-              >
-                Model
-                <span aria-hidden="true" className="app__table-sort-icon">
-                  {sortKey === "model"
-                    ? sortDirection === "asc"
-                      ? "↑"
-                      : "↓"
-                    : "↕"}
-                </span>
-              </button>
-            </th>
-            <th aria-sort={getAriaSort("release_date")}>
-              <button
-                type="button"
-                className="app__table-sort"
-                onClick={() => handleSort("release_date")}
-              >
-                Release date
-                <span aria-hidden="true" className="app__table-sort-icon">
-                  {sortKey === "release_date"
-                    ? sortDirection === "asc"
-                      ? "↑"
-                      : "↓"
-                    : "↕"}
-                </span>
-              </button>
-            </th>
-            <th aria-sort={getAriaSort("input")}>
-              <button
-                type="button"
-                className="app__table-sort"
-                onClick={() => handleSort("input")}
-              >
-                Input $/1M
-                <span aria-hidden="true" className="app__table-sort-icon">
-                  {sortKey === "input"
-                    ? sortDirection === "asc"
-                      ? "↑"
-                      : "↓"
-                    : "↕"}
-                </span>
-              </button>
-            </th>
-            <th aria-sort={getAriaSort("output")}>
-              <button
-                type="button"
-                className="app__table-sort"
-                onClick={() => handleSort("output")}
-              >
-                Output $/1M
-                <span aria-hidden="true" className="app__table-sort-icon">
-                  {sortKey === "output"
-                    ? sortDirection === "asc"
-                      ? "↑"
-                      : "↓"
-                    : "↕"}
-                </span>
-              </button>
-            </th>
-            <th>Count type</th>
-            <th>Tokens</th>
-            <th>Cost</th>
-          </tr>
+            <tr>
+              <th aria-sort={getAriaSort("provider")}>
+                <button
+                  type="button"
+                  className="app__table-sort"
+                  onClick={() => handleSort("provider")}
+                >
+                  Provider
+                  <span aria-hidden="true" className="app__table-sort-icon">
+                    {sortKey === "provider"
+                      ? sortDirection === "asc"
+                        ? "↑"
+                        : "↓"
+                      : "↕"}
+                  </span>
+                </button>
+              </th>
+              <th aria-sort={getAriaSort("model")}>
+                <button
+                  type="button"
+                  className="app__table-sort"
+                  onClick={() => handleSort("model")}
+                >
+                  Model
+                  <span aria-hidden="true" className="app__table-sort-icon">
+                    {sortKey === "model"
+                      ? sortDirection === "asc"
+                        ? "↑"
+                        : "↓"
+                      : "↕"}
+                  </span>
+                </button>
+              </th>
+              <th aria-sort={getAriaSort("release_date")}>
+                <button
+                  type="button"
+                  className="app__table-sort"
+                  onClick={() => handleSort("release_date")}
+                >
+                  Release date
+                  <span aria-hidden="true" className="app__table-sort-icon">
+                    {sortKey === "release_date"
+                      ? sortDirection === "asc"
+                        ? "↑"
+                        : "↓"
+                      : "↕"}
+                  </span>
+                </button>
+              </th>
+              <th aria-sort={getAriaSort("input")}>
+                <button
+                  type="button"
+                  className="app__table-sort"
+                  onClick={() => handleSort("input")}
+                >
+                  Input $/1M
+                  <span aria-hidden="true" className="app__table-sort-icon">
+                    {sortKey === "input"
+                      ? sortDirection === "asc"
+                        ? "↑"
+                        : "↓"
+                      : "↕"}
+                  </span>
+                </button>
+              </th>
+              <th aria-sort={getAriaSort("output")}>
+                <button
+                  type="button"
+                  className="app__table-sort"
+                  onClick={() => handleSort("output")}
+                >
+                  Output $/1M
+                  <span aria-hidden="true" className="app__table-sort-icon">
+                    {sortKey === "output"
+                      ? sortDirection === "asc"
+                        ? "↑"
+                        : "↓"
+                      : "↕"}
+                  </span>
+                </button>
+              </th>
+              <th>Count type</th>
+              <th>Tokens</th>
+              <th>Cost</th>
+            </tr>
           </thead>
           <tbody>
-            {sortedModels.length === 0 ? (
+            {rowsForRender.length === 0 ? (
               <tr>
                 <td colSpan={8} className="app__empty">
                   No models match the current filters.
                 </td>
               </tr>
             ) : (
-              sortedModels.map((model, index) => {
-                const countType: "estimated" | "exact" =
-                  model.pricing_confidence === "exact" ? "exact" : "estimated";
+              rowsForRender.map((row, index) => {
                 const tooltipId = `count-type-tooltip-${index}`;
-                const costs = computeCostUSD(tokenEstimate, tokenEstimate, model);
                 const tooltipText =
-                  countType === "exact"
+                  row.exactness === "exact"
                     ? "Exact means tokenizer-based token count is used."
                     : "Estimated means token count is approximated using characters/4.";
 
                 return (
-                  <tr key={`${model.provider}-${model.model}`}>
-                    <td>{model.provider}</td>
-                    <td>{model.model}</td>
-                    <td>{model.release_date ?? "—"}</td>
-                    <td>${model.input_per_mtok.toFixed(2)}</td>
+                  <tr key={`${row.provider}-${row.model}`}>
+                    <td>{row.provider}</td>
+                    <td>{row.model}</td>
+                    <td>{row.release_date ?? "—"}</td>
+                    <td>${row.price_input_per_mtok.toFixed(2)}</td>
                     <td>
-                      {model.output_per_mtok
-                        ? `$${model.output_per_mtok.toFixed(2)}`
-                        : "—"}
+                      {row.price_output_per_mtok === undefined
+                        ? "—"
+                        : `$${row.price_output_per_mtok.toFixed(2)}`}
                     </td>
                     <td>
                       <span className="app__tooltip-wrapper">
                         <span
                           className={`app__badge ${
-                            countType === "exact"
+                            row.exactness === "exact"
                               ? "app__badge--exact"
                               : "app__badge--estimated"
                           }`}
                           tabIndex={0}
                           aria-describedby={tooltipId}
                         >
-                          {countType === "exact" ? "Exact" : "Estimated"}
+                          {row.exactness === "exact" ? "Exact" : "Estimated"}
                         </span>
-                        <span
-                          role="tooltip"
-                          id={tooltipId}
-                          className="app__tooltip"
-                        >
+                        <span role="tooltip" id={tooltipId} className="app__tooltip">
                           {tooltipText}
                         </span>
                       </span>
                     </td>
-                    <td>{tokenEstimate.toLocaleString()}</td>
+                    <td>{row.tokens.toLocaleString()}</td>
                     <td>
                       <div className="app__cost">
-                        <span>${costs.totalUSD.toFixed(4)}</span>
+                        <span>${row.total_cost_usd.toFixed(4)}</span>
                         <span className="app__muted">
-                          In {costs.inputCostUSD.toFixed(4)} / Out{" "}
-                          {costs.outputCostUSD.toFixed(4)}
+                          In {row.input_cost_usd.toFixed(4)} / Out{" "}
+                          {row.output_cost_usd?.toFixed(4) ?? "0.0000"}
                         </span>
                       </div>
                     </td>
@@ -323,7 +342,9 @@ const PricingTable = ({
         </table>
       </div>
       <p className="app__note">
-        Token estimate uses char/4 until exact tokenizer is enabled.
+        {computeMode === "primary-model"
+          ? "Primary model mode is enabled: only the top filtered model is computed."
+          : "Exact tokenization is used for OpenAI models; other providers use char/4 estimation."}
       </p>
     </div>
   );

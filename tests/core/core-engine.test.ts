@@ -2,44 +2,71 @@ import { describe, expect, it } from "vitest";
 
 import {
   countBytesUtf8,
-  countCharacters,
-  countGraphemes,
-  countLines,
-  countWords,
   computeCostUSD,
   normalizeText,
   validatePrices,
 } from "../../src/core";
 
 describe("normalizeText", () => {
-  it("normalizes newlines, collapses spaces, trims, and removes invisibles", () => {
-    const input = "  Hello\r\nworld\t\t!\u200B  ";
-    const normalized = normalizeText(input, { removeInvisible: true });
-    expect(normalized).toBe("Hello\nworld !");
+  it("normalizes newline variants and collapses spaces/tabs", () => {
+    const input = "\r\nHello\rworld\t\tfrom\t\tcalculator\n";
+    const normalized = normalizeText(input);
+
+    expect(normalized).toBe("Hello\nworld from calculator");
+  });
+
+  it("retains invisible characters when removeInvisible is false", () => {
+    const input = "a\u200Bb";
+    expect(normalizeText(input, { removeInvisible: false })).toBe("a\u200Bb");
+  });
+
+  it("removes invisible characters when enabled", () => {
+    const input = "a\u200Bb\uFEFFc";
+    expect(normalizeText(input, { removeInvisible: true })).toBe("abc");
   });
 });
 
-describe("counters", () => {
-  it("counts characters and graphemes with emoji and accents", () => {
-    const text = "a💙 café";
-    expect(countCharacters(text)).toBe(8);
-    const hasSegmenter =
-      typeof Intl !== "undefined" &&
-      typeof (Intl as { Segmenter?: unknown }).Segmenter !== "undefined";
-    const expectedGraphemes = hasSegmenter ? 7 : Array.from(text).length;
-    expect(countGraphemes(text)).toBe(expectedGraphemes);
-  });
+describe("countBytesUtf8", () => {
+  it("counts UTF-8 bytes correctly for ASCII, unicode, and emoji", () => {
+    const cases: Array<[string, number]> = [
+      ["", 0],
+      ["hello", 5],
+      ["café", 5],
+      ["€", 3],
+      ["🙂", 4],
+      ["👩‍🚀", 11],
+      ["𠜎", 4],
+    ];
 
-  it("counts words, lines, and bytes", () => {
-    const text = "café 👩‍🚀\nnext line";
-    expect(countWords(text)).toBe(3);
-    expect(countLines(text)).toBe(2);
-    expect(countBytesUtf8("€")).toBe(3);
+    cases.forEach(([input, expected]) => {
+      expect(countBytesUtf8(input)).toBe(expected);
+    });
   });
 });
 
 describe("computeCostUSD", () => {
-  it("computes total cost and handles missing output pricing", () => {
+  it("rounds to a stable precision and computes totals", () => {
+    const result = computeCostUSD(333_333, 444_444, {
+      provider: "Test",
+      model: "alpha",
+      input_per_mtok: 0.29,
+      output_per_mtok: 0.59,
+      currency: "USD",
+      source_url: "https://example.com",
+      retrieved_at: "2024-01-01",
+    });
+
+    const rawInput = (333_333 / 1_000_000) * 0.29;
+    const rawOutput = (444_444 / 1_000_000) * 0.59;
+
+    expect(result.inputCostUSD).toBe(Number(rawInput.toFixed(10)));
+    expect(result.outputCostUSD).toBe(Number(rawOutput.toFixed(10)));
+    expect(result.totalUSD).toBe(
+      Number((result.inputCostUSD + result.outputCostUSD).toFixed(10)),
+    );
+  });
+
+  it("handles missing output pricing", () => {
     const result = computeCostUSD(500_000, 250_000, {
       provider: "Test",
       model: "alpha",

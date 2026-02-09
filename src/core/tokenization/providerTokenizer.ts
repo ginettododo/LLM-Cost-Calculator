@@ -1,0 +1,70 @@
+import type { PricingRow } from "../types/pricing";
+import { LruCache } from "../cache/lru";
+import { stableTextKey } from "../cache/hash";
+import { countOpenAITokensExact } from "./openaiTokenizer";
+
+export type TokenCountMode = "exact" | "estimated";
+
+export type TokenCountResult = {
+  tokens: number;
+  mode: TokenCountMode;
+};
+
+const TOKEN_CACHE_MAX_ENTRIES = 50;
+const tokenCountCache = new LruCache<string, TokenCountResult>(TOKEN_CACHE_MAX_ENTRIES);
+
+export const estimateTokens = (text: string): number => {
+  if (text.length === 0) {
+    return 0;
+  }
+
+  return Math.ceil(text.length / 4);
+};
+
+const buildTokenCacheKey = (text: string, pricingRow: Pick<PricingRow, "provider" | "model">) => {
+  const provider = pricingRow.provider.trim().toLowerCase();
+  return `${provider}|${pricingRow.model}|${stableTextKey(text)}`;
+};
+
+const isOpenAIProvider = (provider: string): boolean =>
+  provider.trim().toLowerCase() === "openai";
+
+export const getTokenCountForPricingRow = (
+  text: string,
+  pricingRow: Pick<PricingRow, "provider" | "model">,
+): TokenCountResult => {
+  const cacheKey = buildTokenCacheKey(text, pricingRow);
+  const cached = tokenCountCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  let result: TokenCountResult;
+  if (isOpenAIProvider(pricingRow.provider)) {
+    try {
+      result = {
+        tokens: countOpenAITokensExact(text, pricingRow.model),
+        mode: "exact",
+      };
+    } catch {
+      result = {
+        tokens: estimateTokens(text),
+        mode: "estimated",
+      };
+    }
+  } else {
+    result = {
+      tokens: estimateTokens(text),
+      mode: "estimated",
+    };
+  }
+
+  tokenCountCache.set(cacheKey, result);
+  return result;
+};
+
+export const clearTokenCountCache = (): void => {
+  tokenCountCache.clear();
+};
+
+export const getTokenCacheSize = (): number => tokenCountCache.size();

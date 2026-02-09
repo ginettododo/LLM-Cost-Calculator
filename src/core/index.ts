@@ -13,6 +13,25 @@ export { computeCostUSD } from "./pricing/cost";
 export type { CostBreakdown } from "./pricing/cost";
 
 export {
+  clearOpenAITokenizerCache,
+  countOpenAITokensExact,
+} from "./tokenization/openaiTokenizer";
+
+export {
+  clearTokenCountCache,
+  estimateTokens,
+  getTokenCacheSize,
+  getTokenCountForPricingRow,
+} from "./tokenization/providerTokenizer";
+export type {
+  TokenCountMode,
+  TokenCountResult,
+} from "./tokenization/providerTokenizer";
+
+export { hashText, stableTextKey } from "./cache/hash";
+export { LruCache } from "./cache/lru";
+
+export {
   PricingRowSchema,
   PricesFileSchema,
   validatePrices,

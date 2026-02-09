@@ -5,10 +5,11 @@ import {
   countLines,
   countWords,
 } from "../../core/counters";
+import { estimateTokens } from "../../core";
 import prices from "../../data/prices.json";
 import CountersPanel from "../components/CountersPanel";
 import PricingTable from "../components/PricingTable";
-import type { VisiblePricingRow } from "../components/PricingTable";
+import type { ComputeMode, VisiblePricingRow } from "../components/PricingTable";
 import TextareaPanel from "../components/TextareaPanel";
 import useDebouncedValue from "../state/useDebouncedValue";
 
@@ -65,6 +66,8 @@ const PRESETS: Array<{ id: string; label: string; value: string }> = [
   },
 ];
 
+const LARGE_INPUT_THRESHOLD = 50_000;
+
 const AppView = () => {
   const [text, setText] = useState("");
   const [normalizeOnPaste, setNormalizeOnPaste] = useState(true);
@@ -73,6 +76,7 @@ const AppView = () => {
   const [visibleRows, setVisibleRows] = useState<VisiblePricingRow[]>([]);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [computeMode, setComputeMode] = useState<ComputeMode>("all-models");
   const debouncedText = useDebouncedValue(text, 160);
 
   const counters = useMemo(() => {
@@ -85,11 +89,10 @@ const AppView = () => {
   }, [debouncedText]);
 
   const estimatedTokens = useMemo(() => {
-    if (!counters.characters) {
-      return 0;
-    }
-    return Math.ceil(counters.characters / 4);
-  }, [counters.characters]);
+    return estimateTokens(debouncedText);
+  }, [debouncedText]);
+
+  const isLargeInput = debouncedText.length > LARGE_INPUT_THRESHOLD;
 
   useEffect(() => {
     if (!toast) {
@@ -346,6 +349,23 @@ const AppView = () => {
             <p className="app__hint app__hint--tight">
               Token estimate uses char/4 until exact tokenizer is enabled.
             </p>
+            {isLargeInput ? (
+              <div className="app__warning" role="status" aria-live="polite">
+                <strong>Large input detected ({debouncedText.length.toLocaleString()} chars).</strong>
+                <span>
+                  Switch to primary model mode for faster updates on large payloads.
+                </span>
+                {computeMode !== "primary-model" ? (
+                  <button
+                    type="button"
+                    className="app__button app__button--warning"
+                    onClick={() => setComputeMode("primary-model")}
+                  >
+                    Enable primary model mode
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
           <CountersPanel counters={counters} />
         </section>
@@ -358,6 +378,18 @@ const AppView = () => {
                 <p className="app__muted">
                   Pricing data last updated: {prices.retrieved_at}
                 </p>
+                <label className="app__toggle app__toggle--mode">
+                  <input
+                    type="checkbox"
+                    checked={computeMode === "primary-model"}
+                    onChange={(event) =>
+                      setComputeMode(
+                        event.target.checked ? "primary-model" : "all-models",
+                      )
+                    }
+                  />
+                  <span>Primary model only</span>
+                </label>
               </div>
               <div className="app__menu">
                 <button
@@ -393,7 +425,8 @@ const AppView = () => {
             </div>
             <PricingTable
               models={prices.models}
-              tokenEstimate={estimatedTokens}
+              text={debouncedText}
+              computeMode={computeMode}
               onVisibleRowsChange={setVisibleRows}
             />
           </div>
