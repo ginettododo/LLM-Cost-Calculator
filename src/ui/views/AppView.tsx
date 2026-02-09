@@ -1,20 +1,37 @@
 import { useMemo, useState } from "react";
+import {
+  countBytesUtf8,
+  countCharacters,
+  countLines,
+  countWords,
+} from "../../core/counters";
 import prices from "../../data/prices.json";
 import CountersPanel from "../components/CountersPanel";
 import PricingTable from "../components/PricingTable";
 import TextareaPanel from "../components/TextareaPanel";
+import useDebouncedValue from "../state/useDebouncedValue";
 
 const AppView = () => {
   const [text, setText] = useState("");
+  const [normalizeOnPaste, setNormalizeOnPaste] = useState(true);
+  const [removeInvisible, setRemoveInvisible] = useState(false);
+  const debouncedText = useDebouncedValue(text, 160);
 
   const counters = useMemo(() => {
-    const characters = text.length;
-    const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-    const lines = text ? text.split(/\r?\n/).length : 0;
-    const bytes = new TextEncoder().encode(text).length;
+    const characters = countCharacters(debouncedText);
+    const words = countWords(debouncedText);
+    const lines = countLines(debouncedText);
+    const bytes = countBytesUtf8(debouncedText);
 
     return { characters, words, lines, bytes };
-  }, [text]);
+  }, [debouncedText]);
+
+  const estimatedTokens = useMemo(() => {
+    if (!counters.characters) {
+      return 0;
+    }
+    return Math.ceil(counters.characters / 4);
+  }, [counters.characters]);
 
   return (
     <div className="app">
@@ -27,16 +44,28 @@ const AppView = () => {
 
       <main className="app__main">
         <section className="app__panel">
-          <TextareaPanel value={text} onChange={setText} />
+          <TextareaPanel
+            value={text}
+            onChange={setText}
+            normalizeOnPaste={normalizeOnPaste}
+            removeInvisible={removeInvisible}
+            onNormalizeOnPasteChange={setNormalizeOnPaste}
+            onRemoveInvisibleChange={setRemoveInvisible}
+          />
         </section>
 
         <section className="app__panel app__panel--grid">
           <div className="app__card">
             <h2>Token Estimate</h2>
             <div className="app__token-placeholder">
-              <span className="app__token-value">Tokens: TBD</span>
+              <span className="app__token-value">
+                Tokens: {estimatedTokens.toLocaleString()}
+              </span>
               <span className="app__token-badge">Estimated</span>
             </div>
+            <p className="app__hint app__hint--tight">
+              Token estimate uses char/4 until exact tokenizer is enabled.
+            </p>
           </div>
           <CountersPanel counters={counters} />
         </section>
@@ -47,7 +76,7 @@ const AppView = () => {
             <p className="app__muted">
               Pricing data last updated: {prices.retrieved_at}
             </p>
-            <PricingTable models={prices.models} />
+            <PricingTable models={prices.models} tokenEstimate={estimatedTokens} />
           </div>
         </section>
       </main>

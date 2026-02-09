@@ -5,11 +5,13 @@
 - [ ] Initialize Vite + React + TypeScript project
 - [ ] Establish repo structure per `REPO_STRUCTURE.md`
 - [ ] Implement core types and pure functions
+- [x] Core engine done
 - [ ] Add `prices.json` with schema validation
 - [ ] Create token provider registry
 - [ ] Implement OpenAI exact tokenizer provider
 - [ ] Add estimated providers with tooltips
 - [ ] Build core UI for text input, provider select, and results
+- [x] UI table interactions done
 - [ ] Debounced input updates
 - [ ] Error UI for invalid schema
 
