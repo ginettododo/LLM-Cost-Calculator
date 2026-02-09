@@ -19,11 +19,16 @@ export type ComputeMode = "all-models" | "primary-model";
 
 type RenderRow = VisiblePricingRow & {
   release_date?: string;
+  pricing_tier?: string;
+  notes?: string;
 };
 
 export type VisiblePricingRow = {
   provider: string;
   model: string;
+  modality: PricingRow["modality"];
+  tokenization?: PricingRow["tokenization"];
+  is_tiered?: boolean;
   exactness: "exact" | "estimated";
   tokens: number;
   input_cost_usd: number;
@@ -42,6 +47,8 @@ const PricingTable = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("all");
   const [exactOnly, setExactOnly] = useState(false);
+  const [textOnly, setTextOnly] = useState(false);
+  const [tieredOnly, setTieredOnly] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("provider");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [isTokenizing, setIsTokenizing] = useState(false);
@@ -80,13 +87,21 @@ const PricingTable = ({
         return false;
       }
 
-      if (!exactOnly) {
-        return true;
+      if (textOnly && model.modality !== "text") {
+        return false;
       }
 
-      return model.provider.trim().toLowerCase() === "openai";
+      if (tieredOnly && !model.is_tiered) {
+        return false;
+      }
+
+      if (exactOnly) {
+        return model.tokenization === "exact";
+      }
+
+      return true;
     });
-  }, [models, exactOnly, searchTerm, selectedProvider]);
+  }, [models, exactOnly, searchTerm, selectedProvider, textOnly, tieredOnly]);
 
   const sortedModels = useMemo(() => {
     const sorted = [...filteredModels];
@@ -139,6 +154,11 @@ const PricingTable = ({
         provider: model.provider,
         model: model.model,
         release_date: model.release_date,
+        pricing_tier: model.pricing_tier,
+        notes: model.notes,
+        modality: model.modality,
+        tokenization: model.tokenization,
+        is_tiered: model.is_tiered,
         exactness,
         tokens: tokenCount.tokens,
         input_cost_usd: costs.inputCostUSD,
@@ -202,11 +222,25 @@ const PricingTable = ({
           />
         </label>
         <Toggle
+          id="text-only"
+          checked={textOnly}
+          onChange={(event) => setTextOnly(event.target.checked)}
+          label="Text only"
+          description="Hide audio/realtime entries"
+        />
+        <Toggle
+          id="tiered-only"
+          checked={tieredOnly}
+          onChange={(event) => setTieredOnly(event.target.checked)}
+          label="Tiered pricing"
+          description="Only show tiered entries"
+        />
+        <Toggle
           id="exact-only"
           checked={exactOnly}
           onChange={(event) => setExactOnly(event.target.checked)}
-          label="Exact only"
-          description="OpenAI tokenizer"
+          label="Exact tokenization"
+          description="Tokenizer-backed counts"
         />
       </div>
       <TableShell>
@@ -320,16 +354,46 @@ const PricingTable = ({
                 </td>
               </tr>
             ) : (
-              rowsForRender.map((row) => {
+              rowsForRender.flatMap((row, index) => {
                 const tooltipText =
                   row.exactness === "exact"
                     ? "Exact means tokenizer-based token count is used."
                     : "Estimated means token count is approximated using characters/4.";
 
-                return (
-                  <tr key={`${row.provider}-${row.model}`}>
+                const rows: JSX.Element[] = [];
+                const shouldGroup =
+                  sortKey === "provider" &&
+                  (index === 0 || row.provider !== rowsForRender[index - 1]?.provider);
+
+                if (shouldGroup) {
+                  rows.push(
+                    <tr key={`${row.provider}-group`} className="app__table-group">
+                      <td colSpan={8}>
+                        <strong>{row.provider}</strong>
+                      </td>
+                    </tr>,
+                  );
+                }
+
+                const modelLabel = (
+                  <div className="app__model-cell">
+                    <span>{row.model}</span>
+                    {row.pricing_tier ? (
+                      <Badge tone="neutral">{row.pricing_tier}</Badge>
+                    ) : null}
+                  </div>
+                );
+
+                rows.push(
+                  <tr key={`${row.provider}-${row.model}-${row.pricing_tier ?? "base"}`}>
                     <td>{row.provider}</td>
-                    <td>{row.model}</td>
+                    <td>
+                      {row.notes ? (
+                        <Tooltip content={row.notes}>{modelLabel}</Tooltip>
+                      ) : (
+                        modelLabel
+                      )}
+                    </td>
                     <td>{row.release_date ?? "—"}</td>
                     <td className="app__cell--numeric">
                       ${row.price_input_per_mtok.toFixed(2)}
@@ -360,8 +424,10 @@ const PricingTable = ({
                         </span>
                       </div>
                     </td>
-                  </tr>
+                  </tr>,
                 );
+
+                return rows;
               })
             )}
           </tbody>
@@ -370,7 +436,7 @@ const PricingTable = ({
       <p className="app__note">
         {computeMode === "primary-model"
           ? "Primary model mode is enabled: only the top filtered model is computed."
-          : "Exact tokenization is used for OpenAI models; other providers use char/4 estimation."}
+          : "Exact tokenization uses provider tokenizers when available; other rows use char/4 estimation."}
       </p>
     </div>
   );

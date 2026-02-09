@@ -5,14 +5,20 @@ export const PricingRowSchema: z.ZodType<PricingRow> = z
   .object({
     provider: z.string().min(1),
     model: z.string().min(1),
+    model_id: z.string().min(1),
     release_date: z.string().min(1).optional(),
+    modality: z.enum(["text", "audio", "realtime", "multimodal"]),
     input_per_mtok: z.number().nonnegative(),
     output_per_mtok: z.number().nonnegative().optional(),
     cached_input_per_mtok: z.number().nonnegative().optional(),
     currency: z.string().min(1),
     source_url: z.string().url(),
     retrieved_at: z.string().min(1),
-    pricing_confidence: z.string().min(1).optional(),
+    pricing_confidence: z.enum(["high", "medium", "low"]),
+    pricing_tier: z.string().min(1).optional(),
+    is_tiered: z.boolean().optional(),
+    tokenization: z.enum(["exact", "estimated"]).optional(),
+    notes: z.string().min(1).optional(),
   })
   .strict();
 

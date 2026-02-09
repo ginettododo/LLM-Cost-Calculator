@@ -578,6 +578,21 @@ p {
   background: rgba(148, 163, 184, 0.04);
 }
 
+.app__table-group td {
+  background: var(--surface-elevated);
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.app__model-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .app__table-sort {
   border: none;
   background: transparent;
