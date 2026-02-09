@@ -1,16 +1,35 @@
 const DEFAULT_WORD_REGEX =
   /[\p{L}\p{N}]+(?:[\p{M}]+)?(?:['’\-][\p{L}\p{N}\p{M}]+)*/gu;
 
-const getWordSegments = (
-  text: string,
-): Array<{ isWordLike: boolean }> | null => {
-  if (typeof Intl === "undefined" || typeof Intl.Segmenter === "undefined") {
+type SegmenterLike = {
+  segment: (text: string) => Iterable<{ isWordLike?: boolean }>;
+};
+
+type SegmenterConstructor = new (
+  locales?: string | string[],
+  options?: { granularity: "word" | "grapheme" },
+) => SegmenterLike;
+
+const getSegmenter = (granularity: "word" | "grapheme"): SegmenterLike | null => {
+  if (typeof Intl === "undefined") {
     return null;
   }
 
-  const segmenter = new Intl.Segmenter(undefined, {
-    granularity: "word",
-  });
+  const Segmenter = (Intl as { Segmenter?: SegmenterConstructor }).Segmenter;
+  if (!Segmenter) {
+    return null;
+  }
+
+  return new Segmenter(undefined, { granularity });
+};
+
+const getWordSegments = (
+  text: string,
+): Array<{ isWordLike?: boolean }> | null => {
+  const segmenter = getSegmenter("word");
+  if (!segmenter) {
+    return null;
+  }
 
   return Array.from(segmenter.segment(text));
 };
@@ -18,18 +37,16 @@ const getWordSegments = (
 export const countCharacters = (text: string): number => text.length;
 
 export const countGraphemes = (text: string): number => {
-  if (typeof Intl !== "undefined" && typeof Intl.Segmenter !== "undefined") {
-    const segmenter = new Intl.Segmenter(undefined, {
-      granularity: "grapheme",
-    });
-    let count = 0;
-    for (const _segment of segmenter.segment(text)) {
-      count += 1;
-    }
-    return count;
+  const segmenter = getSegmenter("grapheme");
+  if (!segmenter) {
+    return Array.from(text).length;
   }
 
-  return Array.from(text).length;
+  let count = 0;
+  for (const _segment of segmenter.segment(text)) {
+    count += 1;
+  }
+  return count;
 };
 
 export const countWords = (text: string): number => {
