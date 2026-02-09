@@ -1,6 +1,10 @@
 import { useId, useRef, useState } from "react";
 import type { ClipboardEvent } from "react";
 import { normalizeText } from "../../core/normalization/normalizeText";
+import Badge from "./ui/Badge";
+import Button from "./ui/Button";
+import Card from "./ui/Card";
+import Popover from "./ui/Popover";
 
 type TextareaPanelProps = {
   value: string;
@@ -11,6 +15,14 @@ type TextareaPanelProps = {
   onPresetSelect: (presetId: string) => void;
   onNormalizeOnPasteChange: (value: boolean) => void;
   onRemoveInvisibleChange: (value: boolean) => void;
+  onCopySummary: () => void;
+  copySummaryDisabled: boolean;
+  isExportOpen: boolean;
+  onExportToggle: () => void;
+  onExportCsv: () => void;
+  onExportJson: () => void;
+  characterCount: number;
+  estimatedTokens: number;
 };
 
 const TextareaPanel = ({
@@ -22,6 +34,14 @@ const TextareaPanel = ({
   onPresetSelect,
   onNormalizeOnPasteChange,
   onRemoveInvisibleChange,
+  onCopySummary,
+  copySummaryDisabled,
+  isExportOpen,
+  onExportToggle,
+  onExportCsv,
+  onExportJson,
+  characterCount,
+  estimatedTokens,
 }: TextareaPanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedPreset, setSelectedPreset] = useState("");
@@ -82,93 +102,127 @@ const TextareaPanel = ({
     typeof navigator !== "undefined" && Boolean(navigator.clipboard?.readText);
 
   return (
-    <div className="app__card">
-      <div className="app__card-header">
-        <h2>Input Text</h2>
-        <div className="app__button-group">
-          <button
-            type="button"
-            className="app__button app__button--primary"
-            onClick={handlePasteButton}
-            disabled={!canPaste}
-          >
-            Paste
-          </button>
-          <button
-            type="button"
-            className="app__button"
-            onClick={() => onChange("")}
-            disabled={!value}
-          >
-            Clear
-          </button>
-          <label className="app__preset-control">
-            <span className="app__sr-only">Presets</span>
-            <select
-              className="app__select"
-              aria-label="Presets"
-              value={selectedPreset}
-              onChange={(event) => {
-                const presetId = event.target.value;
-                setSelectedPreset("");
-                if (!presetId) {
-                  return;
-                }
-                onPresetSelect(presetId);
-              }}
+    <Card className="app__input-card">
+      <div className="app__card-header app__card-header--stack">
+        <div>
+          <h2>Input Text</h2>
+          <p className="app__muted">
+            Paste, type, or choose a preset. We keep counts live as you edit.
+          </p>
+        </div>
+        <div className="app__actions">
+          <div className="app__actions-group">
+            <Button
+              variant="primary"
+              onClick={handlePasteButton}
+              disabled={!canPaste}
             >
-              <option value="">Presets</option>
-              {presets.map((preset) => (
-                <option key={preset.id} value={preset.id}>
-                  {preset.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <div className="app__popover">
-            <button
-              type="button"
-              className="app__button app__button--icon"
-              aria-haspopup="dialog"
-              aria-expanded={isSettingsOpen}
-              aria-controls={settingsId}
-              onClick={() => setIsSettingsOpen((prev) => !prev)}
+              Paste
+            </Button>
+            <Button onClick={() => onChange("")} disabled={!value}>
+              Clear
+            </Button>
+          </div>
+          <div className="app__actions-group">
+            <Button onClick={onCopySummary} disabled={copySummaryDisabled}>
+              Copy summary
+            </Button>
+            <Popover
+              isOpen={isExportOpen}
+              panelLabel="Export options"
+              panelRole="menu"
+              align="end"
+              trigger={
+                <Button
+                  aria-haspopup="menu"
+                  aria-expanded={isExportOpen}
+                  onClick={onExportToggle}
+                >
+                  Export
+                </Button>
+              }
             >
-              Settings
-            </button>
-            {isSettingsOpen ? (
-              <div
-                className="app__popover-panel"
-                id={settingsId}
-                role="dialog"
-                aria-label="Paste settings"
+              <button
+                type="button"
+                className="app__menu-item"
+                role="menuitem"
+                onClick={onExportCsv}
               >
-                <label className="app__toggle">
-                  <input
-                    type="checkbox"
-                    checked={normalizeOnPaste}
-                    onChange={(event) =>
-                      onNormalizeOnPasteChange(event.target.checked)
-                    }
-                  />
-                  <span>Normalize on paste</span>
-                </label>
-                <label className="app__toggle">
-                  <input
-                    type="checkbox"
-                    checked={removeInvisible}
-                    disabled={!normalizeOnPaste}
-                    onChange={(event) =>
-                      onRemoveInvisibleChange(event.target.checked)
-                    }
-                  />
-                  <span>Remove invisible chars</span>
-                </label>
-                <p className="app__hint app__hint--tight">
-                  Normalization only applies to paste actions.
-                </p>
-              </div>
-            ) : null}
+                Export current results to CSV
+              </button>
+              <button
+                type="button"
+                className="app__menu-item"
+                role="menuitem"
+                onClick={onExportJson}
+              >
+                Export current results to JSON
+              </button>
+            </Popover>
+            <label className="app__preset-control">
+              <span className="app__sr-only">Presets</span>
+              <select
+                className="app__select"
+                aria-label="Presets"
+                value={selectedPreset}
+                onChange={(event) => {
+                  const presetId = event.target.value;
+                  setSelectedPreset("");
+                  if (!presetId) {
+                    return;
+                  }
+                  onPresetSelect(presetId);
+                }}
+              >
+                <option value="">Presets</option>
+                {presets.map((preset) => (
+                  <option key={preset.id} value={preset.id}>
+                    {preset.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <Popover
+              isOpen={isSettingsOpen}
+              panelLabel="Paste settings"
+              panelId={settingsId}
+              align="end"
+              trigger={
+                <Button
+                  aria-haspopup="dialog"
+                  aria-expanded={isSettingsOpen}
+                  aria-controls={settingsId}
+                  onClick={() => setIsSettingsOpen((prev) => !prev)}
+                >
+                  Settings
+                </Button>
+              }
+            >
+              <label className="app__toggle">
+                <input
+                  type="checkbox"
+                  checked={normalizeOnPaste}
+                  onChange={(event) =>
+                    onNormalizeOnPasteChange(event.target.checked)
+                  }
+                />
+                <span>Normalize on paste</span>
+              </label>
+              <label className="app__toggle">
+                <input
+                  type="checkbox"
+                  checked={removeInvisible}
+                  disabled={!normalizeOnPaste}
+                  onChange={(event) =>
+                    onRemoveInvisibleChange(event.target.checked)
+                  }
+                />
+                <span>Remove invisible chars</span>
+              </label>
+              <p className="app__hint app__hint--tight">
+                Normalization only applies to paste actions.
+              </p>
+            </Popover>
           </div>
         </div>
       </div>
@@ -190,8 +244,24 @@ const TextareaPanel = ({
           </div>
         </div>
       ) : null}
-      <div className="app__hint">Character limit: none (soft hint only).</div>
-    </div>
+      <div className="app__textarea-footer">
+        <div className="app__metric">
+          <span className="app__metric-label">Characters</span>
+          <span className="app__metric-value">
+            {characterCount.toLocaleString()}
+          </span>
+        </div>
+        <div className="app__metric">
+          <span className="app__metric-label">Estimated tokens</span>
+          <span className="app__metric-value">
+            {estimatedTokens.toLocaleString()}
+          </span>
+        </div>
+        <Badge tone={normalizeOnPaste ? "success" : "warning"}>
+          {normalizeOnPaste ? "Normalized paste" : "Raw paste"}
+        </Badge>
+      </div>
+    </Card>
   );
 };
 
