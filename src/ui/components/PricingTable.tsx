@@ -1,16 +1,33 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { computeCostUSD } from "../../core";
 import type { PricingRow } from "../../core/types/pricing";
 
 type PricingTableProps = {
   models: PricingRow[];
   tokenEstimate: number;
+  onVisibleRowsChange?: (rows: VisiblePricingRow[]) => void;
 };
 
 type SortKey = "provider" | "model" | "release_date" | "input" | "output";
 type SortDirection = "asc" | "desc";
 
-const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
+export type VisiblePricingRow = {
+  provider: string;
+  model: string;
+  exactness: "exact" | "estimated";
+  tokens: number;
+  input_cost_usd: number;
+  output_cost_usd?: number;
+  total_cost_usd: number;
+  price_input_per_mtok: number;
+  price_output_per_mtok?: number;
+};
+
+const PricingTable = ({
+  models,
+  tokenEstimate,
+  onVisibleRowsChange,
+}: PricingTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("all");
   const [exactOnly, setExactOnly] = useState(false);
@@ -83,6 +100,33 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
     }
     return sortDirection === "asc" ? "ascending" : "descending";
   };
+
+  const visibleRows = useMemo<VisiblePricingRow[]>(
+    () =>
+      sortedModels.map((model) => {
+        const costs = computeCostUSD(tokenEstimate, tokenEstimate, model);
+        const exactness: "exact" | "estimated" =
+          model.pricing_confidence === "exact" ? "exact" : "estimated";
+
+        return {
+          provider: model.provider,
+          model: model.model,
+          exactness,
+          tokens: tokenEstimate,
+          input_cost_usd: costs.inputCostUSD,
+          output_cost_usd:
+            model.output_per_mtok === undefined ? undefined : costs.outputCostUSD,
+          total_cost_usd: costs.totalUSD,
+          price_input_per_mtok: model.input_per_mtok,
+          price_output_per_mtok: model.output_per_mtok,
+        };
+      }),
+    [sortedModels, tokenEstimate],
+  );
+
+  useEffect(() => {
+    onVisibleRowsChange?.(visibleRows);
+  }, [onVisibleRowsChange, visibleRows]);
 
   return (
     <div className="app__table-section">
@@ -223,6 +267,10 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
                   model.pricing_confidence === "exact" ? "exact" : "estimated";
                 const tooltipId = `count-type-tooltip-${index}`;
                 const costs = computeCostUSD(tokenEstimate, tokenEstimate, model);
+                const tooltipText =
+                  countType === "exact"
+                    ? "Exact means tokenizer-based token count is used."
+                    : "Estimated means token count is approximated using characters/4.";
 
                 return (
                   <tr key={`${model.provider}-${model.model}`}>
@@ -244,21 +292,17 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
                               : "app__badge--estimated"
                           }`}
                           tabIndex={0}
-                          aria-describedby={
-                            countType === "estimated" ? tooltipId : undefined
-                          }
+                          aria-describedby={tooltipId}
                         >
                           {countType === "exact" ? "Exact" : "Estimated"}
                         </span>
-                        {countType === "estimated" ? (
-                          <span
-                            role="tooltip"
-                            id={tooltipId}
-                            className="app__tooltip"
-                          >
-                            Tokenizer not loaded yet; costs will be estimated.
-                          </span>
-                        ) : null}
+                        <span
+                          role="tooltip"
+                          id={tooltipId}
+                          className="app__tooltip"
+                        >
+                          {tooltipText}
+                        </span>
                       </span>
                     </td>
                     <td>{tokenEstimate.toLocaleString()}</td>

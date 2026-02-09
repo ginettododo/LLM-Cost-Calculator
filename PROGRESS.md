@@ -29,5 +29,9 @@
 
 ## Polish Milestone
 - [ ] Accessibility review (labels, focus, contrast)
-- [ ] Final UI tweaks for clarity
+- [x] Export
+- [x] Copy summary
+- [x] Presets
+- [x] UX polish
+- [x] Final UI tweaks for clarity
 - [ ] Deployment checklist completed

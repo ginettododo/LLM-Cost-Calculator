@@ -7,6 +7,8 @@ type TextareaPanelProps = {
   onChange: (value: string) => void;
   normalizeOnPaste: boolean;
   removeInvisible: boolean;
+  presets: Array<{ id: string; label: string }>;
+  onPresetSelect: (presetId: string) => void;
   onNormalizeOnPasteChange: (value: boolean) => void;
   onRemoveInvisibleChange: (value: boolean) => void;
 };
@@ -16,10 +18,13 @@ const TextareaPanel = ({
   onChange,
   normalizeOnPaste,
   removeInvisible,
+  presets,
+  onPresetSelect,
   onNormalizeOnPasteChange,
   onRemoveInvisibleChange,
 }: TextareaPanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [selectedPreset, setSelectedPreset] = useState("");
   const settingsId = useId();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -97,6 +102,29 @@ const TextareaPanel = ({
           >
             Clear
           </button>
+          <label className="app__preset-control">
+            <span className="app__sr-only">Presets</span>
+            <select
+              className="app__select"
+              aria-label="Presets"
+              value={selectedPreset}
+              onChange={(event) => {
+                const presetId = event.target.value;
+                setSelectedPreset("");
+                if (!presetId) {
+                  return;
+                }
+                onPresetSelect(presetId);
+              }}
+            >
+              <option value="">Presets</option>
+              {presets.map((preset) => (
+                <option key={preset.id} value={preset.id}>
+                  {preset.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <div className="app__popover">
             <button
               type="button"
@@ -154,6 +182,14 @@ const TextareaPanel = ({
         ref={textareaRef}
         rows={10}
       />
+      {value.trim().length === 0 ? (
+        <div className="app__empty-state" aria-live="polite">
+          <strong>Start by pasting text or picking a preset.</strong>
+          <div className="app__hint app__hint--tight">
+            Tip: use Presets to test short, long, code, and unicode inputs quickly.
+          </div>
+        </div>
+      ) : null}
       <div className="app__hint">Character limit: none (soft hint only).</div>
     </div>
   );
