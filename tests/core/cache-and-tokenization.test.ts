@@ -87,7 +87,7 @@ describe("OpenAI exact token snapshots", () => {
 
 describe("getTokenCountForPricingRow", () => {
   it("uses exact counting for OpenAI and caches results", () => {
-    const row = { provider: "OpenAI", model: "gpt-4o" };
+    const row = { provider: "OpenAI", model: "gpt-4o", model_id: "openai:gpt-4o" };
     const text = "Caching should reuse token counts.";
 
     const first = getTokenCountForPricingRow(text, row);
@@ -100,11 +100,27 @@ describe("getTokenCountForPricingRow", () => {
   });
 
   it("uses estimated counting for non-OpenAI providers", () => {
-    const row = { provider: "Anthropic", model: "claude-3.5-sonnet" };
+    const row = {
+      provider: "Anthropic",
+      model: "claude-3.5-sonnet",
+      model_id: "anthropic:claude-3.5-sonnet",
+    };
     const text = "12345678";
 
     const result = getTokenCountForPricingRow(text, row);
     expect(result.mode).toBe("estimated");
     expect(result.tokens).toBe(2);
+  });
+
+  it("separates cache entries by model_id", () => {
+    const text = "Cache key should include model id.";
+    const base = { provider: "OpenAI", model: "gpt-4o" } as const;
+    const rowA = { ...base, model_id: "openai:gpt-4o-a" };
+    const rowB = { ...base, model_id: "openai:gpt-4o-b" };
+
+    getTokenCountForPricingRow(text, rowA);
+    getTokenCountForPricingRow(text, rowB);
+
+    expect(getTokenCacheSize()).toBe(2);
   });
 });

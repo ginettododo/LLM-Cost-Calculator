@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   countBytesUtf8,
   computeCostUSD,
+  formatUSD,
   normalizeText,
   validatePrices,
 } from "../../src/core";
@@ -49,11 +50,14 @@ describe("computeCostUSD", () => {
     const result = computeCostUSD(333_333, 444_444, {
       provider: "Test",
       model: "alpha",
+      model_id: "test:alpha",
+      modality: "text",
       input_per_mtok: 0.29,
       output_per_mtok: 0.59,
       currency: "USD",
       source_url: "https://example.com",
       retrieved_at: "2024-01-01",
+      pricing_confidence: "high",
     });
 
     const rawInput = (333_333 / 1_000_000) * 0.29;
@@ -70,10 +74,13 @@ describe("computeCostUSD", () => {
     const result = computeCostUSD(500_000, 250_000, {
       provider: "Test",
       model: "alpha",
+      model_id: "test:alpha",
+      modality: "text",
       input_per_mtok: 4,
       currency: "USD",
       source_url: "https://example.com",
       retrieved_at: "2024-01-01",
+      pricing_confidence: "high",
     });
 
     expect(result.inputCostUSD).toBeCloseTo(2);
@@ -88,11 +95,14 @@ describe("validatePrices", () => {
       {
         provider: "OpenAI",
         model: "gpt-test",
+        model_id: "openai:gpt-test",
+        modality: "text",
         input_per_mtok: 1.5,
         output_per_mtok: 2.5,
         currency: "USD",
         source_url: "https://example.com",
         retrieved_at: "2024-01-01",
+        pricing_confidence: "high",
       },
     ]);
 
@@ -104,5 +114,12 @@ describe("validatePrices", () => {
     expect(() => validatePrices([{ model: "missing-provider" }])).toThrowError(
       /Invalid pricing data/,
     );
+  });
+});
+
+describe("formatUSD", () => {
+  it("handles non-finite values gracefully", () => {
+    expect(formatUSD(Number.NaN)).toBe("—");
+    expect(formatUSD(Number.POSITIVE_INFINITY)).toBe("—");
   });
 });
