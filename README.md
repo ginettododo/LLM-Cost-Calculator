@@ -39,6 +39,45 @@ npm run lint
    - Output directory: `dist`
    - No serverless functions required.
 
+## Full Auto Commit + Push + Deploy (macOS + GitHub)
+
+This repository includes a complete local auto-sync setup for macOS and automatic deploy on GitHub Pages.
+
+### 1) One-time local setup (your Mac)
+```bash
+chmod +x scripts/*.sh
+./scripts/install-auto-sync-macos.sh
+```
+
+What it does:
+- Every 60 seconds, checks for git changes.
+- Runs only when the current checked out branch is `main` (or `AUTO_SYNC_BRANCH`).
+- If changes exist, runs:
+  - `npm run test`
+  - `npm run build`
+- Creates an automatic commit.
+- Rebases from `origin/main`.
+- Pushes to `origin/main`.
+
+Logs are written to:
+- `.auto-sync.log`
+
+Stop/remove automation:
+```bash
+./scripts/uninstall-auto-sync-macos.sh
+```
+
+### 2) Automatic deploy on every push
+- The workflow file `.github/workflows/deploy-pages.yml` deploys on each push to `main`.
+- In GitHub repo settings, set Pages source to **GitHub Actions**.
+
+### Optional environment variables
+- `AUTO_SYNC_BRANCH` (default: `main`)
+- `AUTO_SYNC_REMOTE` (default: `origin`)
+- `AUTO_SYNC_RUN_CHECKS`:
+  - `1` = run test+build before commit (default)
+  - `0` = skip checks for faster commits
+
 ## Data
 Pricing data lives in `src/data/prices.json` and is bundled at build time. Update the JSON file to refresh the pricing table.
 
