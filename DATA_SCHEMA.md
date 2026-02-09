@@ -17,8 +17,8 @@
     },
     "retrieved_at": {
       "type": "string",
-      "description": "ISO 8601 date when pricing was retrieved",
-      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+      "description": "ISO 8601 date-time when pricing was retrieved",
+      "format": "date-time"
     },
     "source_url": {
       "type": "string",
@@ -28,7 +28,17 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["provider", "model", "input_per_mtok", "currency", "source_url", "retrieved_at"],
+        "required": [
+          "provider",
+          "model",
+          "model_id",
+          "modality",
+          "input_per_mtok",
+          "currency",
+          "source_url",
+          "retrieved_at",
+          "pricing_confidence"
+        ],
         "properties": {
           "provider": {
             "type": "string"
@@ -36,10 +46,18 @@
           "model": {
             "type": "string"
           },
+          "model_id": {
+            "type": "string",
+            "description": "Stable identifier like provider:model"
+          },
           "release_date": {
             "type": "string",
             "description": "Optional ISO 8601 date",
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "modality": {
+            "type": "string",
+            "enum": ["text", "audio", "realtime", "multimodal"]
           },
           "input_per_mtok": {
             "type": "number",
@@ -63,7 +81,24 @@
           },
           "retrieved_at": {
             "type": "string",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            "format": "date-time"
+          },
+          "pricing_confidence": {
+            "type": "string",
+            "enum": ["high", "medium", "low"]
+          },
+          "pricing_tier": {
+            "type": "string"
+          },
+          "is_tiered": {
+            "type": "boolean"
+          },
+          "tokenization": {
+            "type": "string",
+            "enum": ["exact", "estimated"]
+          },
+          "notes": {
+            "type": "string"
           }
         },
         "additionalProperties": false
@@ -78,30 +113,37 @@
 ```json
 {
   "currency": "USD",
-  "retrieved_at": "2024-11-01",
-  "source_url": "https://example.com/llm-pricing",
+  "retrieved_at": "2026-02-09T00:00:00Z",
+  "source_url": "https://openai.com/pricing",
   "models": [
     {
       "provider": "OpenAI",
       "model": "gpt-4o",
+      "model_id": "openai:gpt-4o",
       "release_date": "2024-05-13",
+      "modality": "text",
       "input_per_mtok": 5.0,
       "output_per_mtok": 15.0,
       "currency": "USD",
       "source_url": "https://openai.com/pricing",
-      "retrieved_at": "2024-11-01"
+      "retrieved_at": "2026-02-09T00:00:00Z",
+      "pricing_confidence": "high",
+      "tokenization": "exact"
     },
     {
       "provider": "Anthropic",
       "model": "claude-3.5-sonnet",
+      "model_id": "anthropic:claude-3.5-sonnet",
       "release_date": "2024-06-20",
+      "modality": "text",
       "input_per_mtok": 3.0,
       "output_per_mtok": 15.0,
       "currency": "USD",
       "source_url": "https://www.anthropic.com/pricing",
-      "retrieved_at": "2024-11-01"
+      "retrieved_at": "2026-02-09T00:00:00Z",
+      "pricing_confidence": "high",
+      "tokenization": "estimated"
     }
   ]
 }
 ```
-

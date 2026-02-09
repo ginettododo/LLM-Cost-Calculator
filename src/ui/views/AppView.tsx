@@ -99,6 +99,24 @@ const AppView = () => {
     return estimateTokens(debouncedText);
   }, [debouncedText]);
 
+  const lastUpdated = useMemo(() => {
+    const candidates = [prices.retrieved_at, ...prices.models.map((model) => model.retrieved_at)]
+      .filter(Boolean);
+    if (candidates.length === 0) {
+      return "";
+    }
+    let latest = candidates[0];
+    let latestTime = Date.parse(latest);
+    candidates.slice(1).forEach((candidate) => {
+      const candidateTime = Date.parse(candidate);
+      if (candidateTime > latestTime) {
+        latest = candidate;
+        latestTime = candidateTime;
+      }
+    });
+    return latest;
+  }, []);
+
   const isLargeInput = debouncedText.length > LARGE_INPUT_THRESHOLD;
 
   useEffect(() => {
@@ -203,14 +221,14 @@ const AppView = () => {
 
   const buildExportRows = () => {
     const timestamp = new Date().toISOString();
-    const common = {
-      timestamp,
-      characters: counters.characters,
-      words: counters.words,
-      lines: counters.lines,
-      bytes: counters.bytes,
-      last_updated: prices.retrieved_at,
-    };
+      const common = {
+        timestamp,
+        characters: counters.characters,
+        words: counters.words,
+        lines: counters.lines,
+        bytes: counters.bytes,
+        last_updated: lastUpdated,
+      };
 
     return visibleRows.map((row) => ({
       ...common,
@@ -288,7 +306,7 @@ const AppView = () => {
         words: counters.words,
         lines: counters.lines,
         bytes: counters.bytes,
-        last_updated: prices.retrieved_at,
+        last_updated: lastUpdated,
       },
       rows: buildExportRows().map(
         ({
@@ -464,7 +482,7 @@ const AppView = () => {
               <div>
                 <h2>Pricing Table</h2>
                 <p className="app__muted">
-                  Pricing data last updated: {prices.retrieved_at}
+                  Pricing data last updated: {lastUpdated}
                 </p>
               </div>
               <Badge tone={computeMode === "primary-model" ? "success" : "neutral"}>
