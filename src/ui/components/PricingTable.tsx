@@ -1,19 +1,21 @@
 import { useMemo, useState } from "react";
-import { computeCostUSD } from "../../core";
+import { computeCostUSD, getProviderExactness, toModelId } from "../../core";
 import type { PricingRow } from "../../core/types/pricing";
+import useTokenCounts from "../state/useTokenCounts";
 
 type PricingTableProps = {
   models: PricingRow[];
-  tokenEstimate: number;
+  text: string;
 };
 
 type SortKey = "provider" | "model" | "release_date" | "input" | "output";
 type SortDirection = "asc" | "desc";
 
-const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
+const PricingTable = ({ models, text }: PricingTableProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProvider, setSelectedProvider] = useState("all");
   const [exactOnly, setExactOnly] = useState(false);
+  const [visibleOnly, setVisibleOnly] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("provider");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
@@ -26,10 +28,10 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
 
     return models.filter((model) => {
+      const modelId = toModelId(model.provider, model.model);
       const matchesProvider =
         selectedProvider === "all" || model.provider === selectedProvider;
-      const countType =
-        model.pricing_confidence === "exact" ? "exact" : "estimated";
+      const countType = getProviderExactness(modelId);
       const matchesExact = !exactOnly || countType === "exact";
       const matchesSearch =
         normalizedSearch.length === 0 ||
@@ -84,6 +86,20 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
     return sortDirection === "asc" ? "ascending" : "descending";
   };
 
+  const visibleModelIds = useMemo(
+    () => sortedModels.map((model) => toModelId(model.provider, model.model)),
+    [sortedModels],
+  );
+  const allModelIds = useMemo(
+    () => models.map((model) => toModelId(model.provider, model.model)),
+    [models],
+  );
+
+  const { counts } = useTokenCounts({
+    text,
+    modelIds: visibleOnly ? visibleModelIds : allModelIds,
+  });
+
   return (
     <div className="app__table-section">
       <div className="app__table-controls">
@@ -119,6 +135,14 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
             onChange={(event) => setExactOnly(event.target.checked)}
           />
           <span>Exact only</span>
+        </label>
+        <label className="app__toggle app__toggle--inline">
+          <input
+            type="checkbox"
+            checked={visibleOnly}
+            onChange={(event) => setVisibleOnly(event.target.checked)}
+          />
+          <span>Compute for visible rows only</span>
         </label>
       </div>
       <div className="app__table-wrapper">
@@ -219,10 +243,16 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
               </tr>
             ) : (
               sortedModels.map((model, index) => {
-                const countType: "estimated" | "exact" =
-                  model.pricing_confidence === "exact" ? "exact" : "estimated";
+                const modelId = toModelId(model.provider, model.model);
+                const countState = counts[modelId];
+                const countType = countState?.result?.exactness;
                 const tooltipId = `count-type-tooltip-${index}`;
-                const costs = computeCostUSD(tokenEstimate, tokenEstimate, model);
+                const tokens = countState?.result?.tokens ?? 0;
+                const isLoading = countState?.status === "loading";
+                const costs =
+                  countState?.status === "ready"
+                    ? computeCostUSD(tokens, tokens, model)
+                    : null;
 
                 return (
                   <tr key={`${model.provider}-${model.model}`}>
@@ -241,14 +271,20 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
                           className={`app__badge ${
                             countType === "exact"
                               ? "app__badge--exact"
-                              : "app__badge--estimated"
+                              : countType === "estimated"
+                                ? "app__badge--estimated"
+                                : "app__badge--loading"
                           }`}
                           tabIndex={0}
                           aria-describedby={
                             countType === "estimated" ? tooltipId : undefined
                           }
                         >
-                          {countType === "exact" ? "Exact" : "Estimated"}
+                          {countType === "exact"
+                            ? "Exact"
+                            : countType === "estimated"
+                              ? "Estimated"
+                              : "Loading"}
                         </span>
                         {countType === "estimated" ? (
                           <span
@@ -256,20 +292,27 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
                             id={tooltipId}
                             className="app__tooltip"
                           >
-                            Tokenizer not loaded yet; costs will be estimated.
+                            {countState?.result?.notes ??
+                              "Estimated tokenizer; costs will be approximate."}
                           </span>
                         ) : null}
                       </span>
                     </td>
-                    <td>{tokenEstimate.toLocaleString()}</td>
+                    <td className="app__token-cell">
+                      {isLoading ? "…" : tokens.toLocaleString()}
+                    </td>
                     <td>
-                      <div className="app__cost">
-                        <span>${costs.totalUSD.toFixed(4)}</span>
-                        <span className="app__muted">
-                          In {costs.inputCostUSD.toFixed(4)} / Out{" "}
-                          {costs.outputCostUSD.toFixed(4)}
-                        </span>
-                      </div>
+                      {costs ? (
+                        <div className="app__cost">
+                          <span>${costs.totalUSD.toFixed(4)}</span>
+                          <span className="app__muted">
+                            In {costs.inputCostUSD.toFixed(4)} / Out{" "}
+                            {costs.outputCostUSD.toFixed(4)}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="app__muted">—</span>
+                      )}
                     </td>
                   </tr>
                 );
@@ -279,7 +322,8 @@ const PricingTable = ({ models, tokenEstimate }: PricingTableProps) => {
         </table>
       </div>
       <p className="app__note">
-        Token estimate uses char/4 until exact tokenizer is enabled.
+        OpenAI models use exact local tokenization; other providers use a char/4
+        estimate until their exact tokenizers land.
       </p>
     </div>
   );

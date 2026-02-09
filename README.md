@@ -41,3 +41,8 @@ npm run lint
 
 ## Data
 Pricing data lives in `src/data/prices.json` and is bundled at build time. Update the JSON file to refresh the pricing table.
+
+## Tokenization Exactness
+- **OpenAI models:** Exact token counts via a local, lazy-loaded tokenizer (tiktoken-compatible).
+- **All other providers:** Estimated tokens using a char/4 heuristic until exact tokenizers are added.
+- All tokenization runs offline in the browser; no API calls are made.

@@ -25,3 +25,22 @@ export type { PricingRow } from "./types/pricing";
 
 export { formatUSD, sortModels } from "./utils";
 export type { SortKey } from "./utils";
+
+export {
+  estimatedTokenProvider,
+  getAvailableProviders,
+  getProviderExactness,
+  getProviderForModel,
+  listSupportedModels,
+  openAiTokenProvider,
+  normalizeProviderId,
+  parseModelId,
+  toModelId,
+} from "./tokenizers";
+export type {
+  Exactness,
+  ProviderMeta,
+  SupportedModel,
+  TokenCountResult,
+  TokenProvider,
+} from "./tokenizers";
