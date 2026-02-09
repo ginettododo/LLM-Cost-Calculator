@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useId } from "react";
 import {
   countBytesUtf8,
   countCharacters,
@@ -12,6 +12,10 @@ import PricingTable from "../components/PricingTable";
 import type { ComputeMode, VisiblePricingRow } from "../components/PricingTable";
 import TextareaPanel from "../components/TextareaPanel";
 import useDebouncedValue from "../state/useDebouncedValue";
+import Badge from "../components/ui/Badge";
+import Card from "../components/ui/Card";
+import Toggle from "../components/ui/Toggle";
+import Button from "../components/ui/Button";
 
 type Theme = "light" | "dark";
 type ToastState = {
@@ -72,12 +76,15 @@ const AppView = () => {
   const [text, setText] = useState("");
   const [normalizeOnPaste, setNormalizeOnPaste] = useState(true);
   const [removeInvisible, setRemoveInvisible] = useState(false);
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
   const [visibleRows, setVisibleRows] = useState<VisiblePricingRow[]>([]);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [computeMode, setComputeMode] = useState<ComputeMode>("all-models");
+  const [primaryModelKey, setPrimaryModelKey] = useState("");
   const debouncedText = useDebouncedValue(text, 160);
+  const themeToggleId = useId();
+  const primaryModelId = useId();
 
   const counters = useMemo(() => {
     const characters = countCharacters(debouncedText);
@@ -105,6 +112,20 @@ const AppView = () => {
 
     return () => window.clearTimeout(timeoutId);
   }, [toast]);
+
+  useEffect(() => {
+    if (visibleRows.length === 0) {
+      setPrimaryModelKey("");
+      return;
+    }
+
+    const hasSelection = visibleRows.some(
+      (row) => `${row.provider}::${row.model}` === primaryModelKey,
+    );
+    if (!hasSelection) {
+      setPrimaryModelKey(`${visibleRows[0].provider}::${visibleRows[0].model}`);
+    }
+  }, [primaryModelKey, visibleRows]);
 
   const showToast = (
     message: string,
@@ -291,6 +312,10 @@ const AppView = () => {
     showToast("JSON exported");
   };
 
+  const primaryModel = visibleRows.find(
+    (row) => `${row.provider}::${row.model}` === primaryModelKey,
+  );
+
   return (
     <div className="app" data-theme={theme}>
       <header className="app__header">
@@ -301,20 +326,20 @@ const AppView = () => {
               All calculations run locally in your browser with no server calls.
             </p>
           </div>
-          <button
-            type="button"
-            className="app__button app__button--theme"
-            aria-label="Toggle color mode"
-            aria-pressed={theme === "dark"}
-            onClick={() => setTheme((prev) => (prev === "light" ? "dark" : "light"))}
-          >
-            {theme === "light" ? "Dark mode" : "Light mode"}
-          </button>
+          <Toggle
+            id={themeToggleId}
+            label="Light mode"
+            description="Dark is default"
+            checked={theme === "light"}
+            onChange={(event) =>
+              setTheme(event.target.checked ? "light" : "dark")
+            }
+          />
         </div>
       </header>
 
       <main className="app__main">
-        <section className="app__panel">
+        <section className="app__section app__section--top">
           <TextareaPanel
             value={text}
             onChange={setText}
@@ -324,104 +349,127 @@ const AppView = () => {
             onRemoveInvisibleChange={setRemoveInvisible}
             presets={PRESETS}
             onPresetSelect={handlePresetSelect}
+            onCopySummary={handleCopySummary}
+            copySummaryDisabled={visibleRows.length === 0}
+            isExportOpen={isExportOpen}
+            onExportToggle={() => setIsExportOpen((prev) => !prev)}
+            onExportCsv={handleExportCsv}
+            onExportJson={handleExportJson}
+            characterCount={counters.characters}
+            estimatedTokens={estimatedTokens}
           />
-        </section>
-
-        <section className="app__panel app__panel--grid">
-          <div className="app__card">
-            <div className="app__card-header">
-              <h2>Token Estimate</h2>
-              <button
-                type="button"
-                className="app__button"
-                onClick={handleCopySummary}
-                disabled={visibleRows.length === 0}
-              >
-                Copy summary
-              </button>
-            </div>
-            <div className="app__token-placeholder">
-              <span className="app__token-value">
-                Tokens: {estimatedTokens.toLocaleString()}
-              </span>
-              <span className="app__token-badge">Estimated</span>
-            </div>
-            <p className="app__hint app__hint--tight">
-              Token estimate uses char/4 until exact tokenizer is enabled.
-            </p>
-            {isLargeInput ? (
-              <div className="app__warning" role="status" aria-live="polite">
-                <strong>Large input detected ({debouncedText.length.toLocaleString()} chars).</strong>
-                <span>
-                  Switch to primary model mode for faster updates on large payloads.
-                </span>
-                {computeMode !== "primary-model" ? (
-                  <button
-                    type="button"
-                    className="app__button app__button--warning"
-                    onClick={() => setComputeMode("primary-model")}
-                  >
-                    Enable primary model mode
-                  </button>
-                ) : null}
+          <aside className="app__inspector">
+            <Card className="app__summary-card">
+              <div className="app__card-header">
+                <div>
+                  <h2>Primary Model</h2>
+                  <p className="app__muted">Inspector for tokens and spend.</p>
+                </div>
+                <Badge tone={computeMode === "primary-model" ? "success" : "neutral"}>
+                  {computeMode === "primary-model" ? "Focused" : "All models"}
+                </Badge>
               </div>
-            ) : null}
-          </div>
-          <CountersPanel counters={counters} />
+              <div className="app__field">
+                <label htmlFor={primaryModelId} className="app__label">
+                  Choose primary model
+                </label>
+                <select
+                  id={primaryModelId}
+                  className="app__select"
+                  value={primaryModelKey}
+                  onChange={(event) => setPrimaryModelKey(event.target.value)}
+                  disabled={visibleRows.length === 0}
+                >
+                  {visibleRows.length === 0 ? (
+                    <option value="">No models available</option>
+                  ) : (
+                    visibleRows.map((row) => (
+                      <option
+                        key={`${row.provider}-${row.model}`}
+                        value={`${row.provider}::${row.model}`}
+                      >
+                        {row.provider} · {row.model}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+              <div className="app__summary-grid">
+                <div className="app__summary-item">
+                  <span className="app__label">Tokens</span>
+                  <span className="app__value">
+                    {primaryModel?.tokens.toLocaleString() ?? "—"}
+                  </span>
+                </div>
+                <div className="app__summary-item">
+                  <span className="app__label">Total cost</span>
+                  <span className="app__value">
+                    {primaryModel ? toMoney(primaryModel.total_cost_usd) : "—"}
+                  </span>
+                </div>
+                <div className="app__summary-item">
+                  <span className="app__label">Count type</span>
+                  <span className="app__value">
+                    {primaryModel ? (
+                      <Badge
+                        tone={
+                          primaryModel.exactness === "exact" ? "success" : "warning"
+                        }
+                      >
+                        {primaryModel.exactness === "exact" ? "Exact" : "Estimated"}
+                      </Badge>
+                    ) : (
+                      "—"
+                    )}
+                  </span>
+                </div>
+              </div>
+              <Toggle
+                id="primary-mode"
+                checked={computeMode === "primary-model"}
+                onChange={(event) =>
+                  setComputeMode(
+                    event.target.checked ? "primary-model" : "all-models",
+                  )
+                }
+                label="Primary model mode"
+                description="Compute only the top match for speed"
+              />
+              {isLargeInput ? (
+                <div className="app__warning" role="status" aria-live="polite">
+                  <strong>
+                    Large input detected ({debouncedText.length.toLocaleString()} chars).
+                  </strong>
+                  <span>
+                    Switch to primary model mode for faster updates on large payloads.
+                  </span>
+                  {computeMode !== "primary-model" ? (
+                    <Button
+                      variant="warning"
+                      onClick={() => setComputeMode("primary-model")}
+                    >
+                      Enable primary model mode
+                    </Button>
+                  ) : null}
+                </div>
+              ) : null}
+            </Card>
+            <CountersPanel counters={counters} />
+          </aside>
         </section>
 
-        <section className="app__panel">
-          <div className="app__card">
+        <section className="app__section">
+          <Card>
             <div className="app__card-header">
               <div>
                 <h2>Pricing Table</h2>
                 <p className="app__muted">
                   Pricing data last updated: {prices.retrieved_at}
                 </p>
-                <label className="app__toggle app__toggle--mode">
-                  <input
-                    type="checkbox"
-                    checked={computeMode === "primary-model"}
-                    onChange={(event) =>
-                      setComputeMode(
-                        event.target.checked ? "primary-model" : "all-models",
-                      )
-                    }
-                  />
-                  <span>Primary model only</span>
-                </label>
               </div>
-              <div className="app__menu">
-                <button
-                  type="button"
-                  className="app__button"
-                  aria-haspopup="menu"
-                  aria-expanded={isExportOpen}
-                  onClick={() => setIsExportOpen((prev) => !prev)}
-                >
-                  Export
-                </button>
-                {isExportOpen ? (
-                  <div className="app__menu-panel" role="menu" aria-label="Export options">
-                    <button
-                      type="button"
-                      className="app__menu-item"
-                      role="menuitem"
-                      onClick={handleExportCsv}
-                    >
-                      Export current results to CSV
-                    </button>
-                    <button
-                      type="button"
-                      className="app__menu-item"
-                      role="menuitem"
-                      onClick={handleExportJson}
-                    >
-                      Export current results to JSON
-                    </button>
-                  </div>
-                ) : null}
-              </div>
+              <Badge tone={computeMode === "primary-model" ? "success" : "neutral"}>
+                {computeMode === "primary-model" ? "Focused" : "All models"}
+              </Badge>
             </div>
             <PricingTable
               models={prices.models}
@@ -429,7 +477,7 @@ const AppView = () => {
               computeMode={computeMode}
               onVisibleRowsChange={setVisibleRows}
             />
-          </div>
+          </Card>
         </section>
       </main>
       <div className="app__sr-live" role="status" aria-live="polite" aria-atomic="true">
@@ -439,16 +487,16 @@ const AppView = () => {
         <div className="app__toast" role="status" aria-live="polite">
           <span>{toast.message}</span>
           {toast.actionLabel && toast.onAction ? (
-            <button
-              type="button"
-              className="app__button app__button--toast"
+            <Button
+              variant="ghost"
+              size="sm"
               onClick={() => {
                 toast.onAction?.();
                 setToast(null);
               }}
             >
               {toast.actionLabel}
-            </button>
+            </Button>
           ) : null}
         </div>
       ) : null}

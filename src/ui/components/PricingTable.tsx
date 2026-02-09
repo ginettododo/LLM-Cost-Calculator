@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { computeCostUSD, getTokenCountForPricingRow } from "../../core";
 import type { PricingRow } from "../../core/types/pricing";
+import Badge from "./ui/Badge";
+import Toggle from "./ui/Toggle";
+import Tooltip from "./ui/Tooltip";
+import TableShell from "./ui/TableShell";
 
 type PricingTableProps = {
   models: PricingRow[];
@@ -40,11 +44,26 @@ const PricingTable = ({
   const [exactOnly, setExactOnly] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("provider");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
+  const [isTokenizing, setIsTokenizing] = useState(false);
 
   const providers = useMemo(
     () => Array.from(new Set(models.map((model) => model.provider))).sort(),
     [models],
   );
+
+  useEffect(() => {
+    if (text.length === 0) {
+      setIsTokenizing(false);
+      return;
+    }
+
+    setIsTokenizing(true);
+    const timeoutId = window.setTimeout(() => {
+      setIsTokenizing(false);
+    }, 220);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [text]);
 
   const filteredModels = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -182,17 +201,20 @@ const PricingTable = ({
             onChange={(event) => setSearchTerm(event.target.value)}
           />
         </label>
-        <label className="app__toggle app__toggle--inline">
-          <input
-            type="checkbox"
-            checked={exactOnly}
-            onChange={(event) => setExactOnly(event.target.checked)}
-          />
-          <span>Exact only</span>
-        </label>
+        <Toggle
+          id="exact-only"
+          checked={exactOnly}
+          onChange={(event) => setExactOnly(event.target.checked)}
+          label="Exact only"
+          description="OpenAI tokenizer"
+        />
       </div>
-      <div className="app__table-wrapper">
-        <table className="app__table">
+      <TableShell>
+        <table
+          className="app__table"
+          aria-busy={isTokenizing}
+          aria-live="polite"
+        >
           <thead>
             <tr>
               <th aria-sort={getAriaSort("provider")}>
@@ -276,20 +298,29 @@ const PricingTable = ({
                 </button>
               </th>
               <th>Count type</th>
-              <th>Tokens</th>
-              <th>Cost</th>
+              <th className="app__cell--numeric">Tokens</th>
+              <th className="app__cell--numeric">Cost</th>
             </tr>
           </thead>
           <tbody>
-            {rowsForRender.length === 0 ? (
+            {isTokenizing ? (
+              Array.from({ length: 6 }).map((_, index) => (
+                <tr key={`skeleton-${index}`} className="app__skeleton-row">
+                  {Array.from({ length: 8 }).map((_, cellIndex) => (
+                    <td key={`skeleton-${index}-${cellIndex}`}>
+                      <span className="app__skeleton" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : rowsForRender.length === 0 ? (
               <tr>
                 <td colSpan={8} className="app__empty">
                   No models match the current filters.
                 </td>
               </tr>
             ) : (
-              rowsForRender.map((row, index) => {
-                const tooltipId = `count-type-tooltip-${index}`;
+              rowsForRender.map((row) => {
                 const tooltipText =
                   row.exactness === "exact"
                     ? "Exact means tokenizer-based token count is used."
@@ -300,32 +331,27 @@ const PricingTable = ({
                     <td>{row.provider}</td>
                     <td>{row.model}</td>
                     <td>{row.release_date ?? "—"}</td>
-                    <td>${row.price_input_per_mtok.toFixed(2)}</td>
-                    <td>
+                    <td className="app__cell--numeric">
+                      ${row.price_input_per_mtok.toFixed(2)}
+                    </td>
+                    <td className="app__cell--numeric">
                       {row.price_output_per_mtok === undefined
                         ? "—"
                         : `$${row.price_output_per_mtok.toFixed(2)}`}
                     </td>
                     <td>
-                      <span className="app__tooltip-wrapper">
-                        <span
-                          className={`app__badge ${
-                            row.exactness === "exact"
-                              ? "app__badge--exact"
-                              : "app__badge--estimated"
-                          }`}
-                          tabIndex={0}
-                          aria-describedby={tooltipId}
+                      <Tooltip content={tooltipText}>
+                        <Badge
+                          tone={row.exactness === "exact" ? "success" : "warning"}
                         >
                           {row.exactness === "exact" ? "Exact" : "Estimated"}
-                        </span>
-                        <span role="tooltip" id={tooltipId} className="app__tooltip">
-                          {tooltipText}
-                        </span>
-                      </span>
+                        </Badge>
+                      </Tooltip>
                     </td>
-                    <td>{row.tokens.toLocaleString()}</td>
-                    <td>
+                    <td className="app__cell--numeric">
+                      {row.tokens.toLocaleString()}
+                    </td>
+                    <td className="app__cell--numeric">
                       <div className="app__cost">
                         <span>${row.total_cost_usd.toFixed(4)}</span>
                         <span className="app__muted">
@@ -340,7 +366,7 @@ const PricingTable = ({
             )}
           </tbody>
         </table>
-      </div>
+      </TableShell>
       <p className="app__note">
         {computeMode === "primary-model"
           ? "Primary model mode is enabled: only the top filtered model is computed."
