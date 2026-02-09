@@ -21,9 +21,13 @@ export const estimateTokens = (text: string): number => {
   return Math.ceil(text.length / 4);
 };
 
-const buildTokenCacheKey = (text: string, pricingRow: Pick<PricingRow, "provider" | "model">) => {
+const buildTokenCacheKey = (
+  text: string,
+  pricingRow: Pick<PricingRow, "provider" | "model" | "model_id">,
+) => {
   const provider = pricingRow.provider.trim().toLowerCase();
-  return `${provider}|${pricingRow.model}|${stableTextKey(text)}`;
+  const modelKey = pricingRow.model_id?.trim() || pricingRow.model;
+  return `${provider}|${modelKey}|${stableTextKey(text)}`;
 };
 
 const isOpenAIProvider = (provider: string): boolean =>
@@ -31,7 +35,7 @@ const isOpenAIProvider = (provider: string): boolean =>
 
 export const getTokenCountForPricingRow = (
   text: string,
-  pricingRow: Pick<PricingRow, "provider" | "model">,
+  pricingRow: Pick<PricingRow, "provider" | "model" | "model_id">,
 ): TokenCountResult => {
   const cacheKey = buildTokenCacheKey(text, pricingRow);
   const cached = tokenCountCache.get(cacheKey);

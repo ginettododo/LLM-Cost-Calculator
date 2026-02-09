@@ -5,7 +5,8 @@ import {
   countLines,
   countWords,
 } from "../../core/counters";
-import { estimateTokens } from "../../core";
+import { estimateTokens, formatUSD, validatePrices } from "../../core";
+import type { PricingValidationError } from "../../core";
 import prices from "../../data/prices.json";
 import CountersPanel from "../components/CountersPanel";
 import PricingTable from "../components/PricingTable";
@@ -16,6 +17,7 @@ import Badge from "../components/ui/Badge";
 import Card from "../components/ui/Card";
 import Toggle from "../components/ui/Toggle";
 import Button from "../components/ui/Button";
+import { PRESETS } from "../data/presets";
 
 type Theme = "light" | "dark";
 type ToastState = {
@@ -24,53 +26,13 @@ type ToastState = {
   actionLabel?: string;
   onAction?: () => void;
 };
+type UndoPresetState = {
+  text: string;
+  label: string;
+};
 
-const PRESETS: Array<{ id: string; label: string; value: string }> = [
-  {
-    id: "short-paragraph",
-    label: "Short paragraph",
-    value:
-      "Product teams iterate faster when measurements stay visible and simple. " +
-      "A tiny utility that estimates tokens can prevent expensive surprises.",
-  },
-  {
-    id: "long-article",
-    label: "Long article (~5k chars)",
-    value: Array.from({ length: 34 })
-      .map(
-        (_, index) =>
-          `Section ${index + 1}: Reliable product planning balances user impact, ` +
-          "implementation cost, and long-term maintainability. ",
-      )
-      .join(""),
-  },
-  {
-    id: "code-sample-json",
-    label: "Code sample (JSON)",
-    value: `{
-  "project": "LLM Cost Calculator",
-  "version": "1.0.0",
-  "features": ["export", "clipboard-summary", "presets", "theme-toggle"],
-  "limits": {
-    "network_calls": false,
-    "storage_required": false
-  },
-  "meta": {
-    "owner": "frontend-team",
-    "a11y_checked": true
-  }
-}`,
-  },
-  {
-    id: "mixed-unicode",
-    label: "Mixed unicode (emoji + accents)",
-    value:
-      "Résumé ready: naïve café users love jalapeño tacos 🌮 and crème brûlée. " +
-      "Emoji mix: 🚀✨🎯. Greek: Καλημέρα. Japanese: こんにちは. Arabic: مرحبا.",
-  },
-];
-
-const LARGE_INPUT_THRESHOLD = 50_000;
+const SOFT_INPUT_THRESHOLD = 50_000;
+const HARD_INPUT_THRESHOLD = 200_000;
 
 const AppView = () => {
   const [text, setText] = useState("");
@@ -80,11 +42,21 @@ const AppView = () => {
   const [visibleRows, setVisibleRows] = useState<VisiblePricingRow[]>([]);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [computeMode, setComputeMode] = useState<ComputeMode>("all-models");
+  const [computeMode, setComputeMode] =
+    useState<ComputeMode>("visible-rows");
   const [primaryModelKey, setPrimaryModelKey] = useState("");
+  const [undoPreset, setUndoPreset] = useState<UndoPresetState | null>(null);
   const debouncedText = useDebouncedValue(text, 160);
   const themeToggleId = useId();
   const primaryModelId = useId();
+
+  const pricingValidation = useMemo(() => {
+    try {
+      return { models: validatePrices(prices), error: null };
+    } catch (error) {
+      return { models: [], error: error as PricingValidationError };
+    }
+  }, []);
 
   const counters = useMemo(() => {
     const characters = countCharacters(debouncedText);
@@ -117,7 +89,9 @@ const AppView = () => {
     return latest;
   }, []);
 
-  const isLargeInput = debouncedText.length > LARGE_INPUT_THRESHOLD;
+  const isLargeInput = debouncedText.length >= SOFT_INPUT_THRESHOLD;
+  const isHugeInput = debouncedText.length >= HARD_INPUT_THRESHOLD;
+  const effectiveComputeMode = isHugeInput ? "primary-model" : computeMode;
 
   useEffect(() => {
     if (!toast) {
@@ -145,6 +119,20 @@ const AppView = () => {
     }
   }, [primaryModelKey, visibleRows]);
 
+  useEffect(() => {
+    if (pricingValidation.error) {
+      setVisibleRows([]);
+    }
+  }, [pricingValidation.error]);
+
+  useEffect(() => {
+    if (!isHugeInput || computeMode === "primary-model") {
+      return;
+    }
+    setComputeMode("primary-model");
+    showToast("Large input: switched to primary model mode");
+  }, [computeMode, isHugeInput]);
+
   const showToast = (
     message: string,
     options?: { actionLabel?: string; onAction?: () => void },
@@ -165,15 +153,31 @@ const AppView = () => {
 
     const previousText = text;
     setText(preset.value);
+    setUndoPreset({ text: previousText, label: preset.label });
     showToast(`Preset "${preset.label}" applied`, {
       actionLabel: "Undo",
       onAction: () => {
         setText(previousText);
+        setUndoPreset(null);
       },
     });
   };
 
-  const toMoney = (value: number) => `$${value.toFixed(4)}`;
+  const toMoney = (value: number) => formatUSD(value);
+
+  const handleUndoPreset = () => {
+    if (!undoPreset) {
+      return;
+    }
+    setText(undoPreset.text);
+    setUndoPreset(null);
+    showToast("Preset undone");
+  };
+
+  const primaryModel = useMemo(
+    () => visibleRows.find((row) => `${row.provider}::${row.model}` === primaryModelKey),
+    [primaryModelKey, visibleRows],
+  );
 
   const buildSummaryText = () => {
     const lines: string[] = [];
@@ -181,10 +185,9 @@ const AppView = () => {
       `Characters: ${counters.characters} | Words: ${counters.words} | Lines: ${counters.lines}`,
     );
 
-    const primaryRow = visibleRows[0];
-    if (primaryRow) {
+    if (primaryModel) {
       lines.push(
-        `Primary model: ${primaryRow.provider} ${primaryRow.model} | Tokens: ${primaryRow.tokens} | Cost: ${toMoney(primaryRow.total_cost_usd)} | ${primaryRow.exactness}`,
+        `Primary model: ${primaryModel.provider} ${primaryModel.model} | Tokens: ${primaryModel.tokens} | Cost: ${toMoney(primaryModel.total_cost_usd)} | ${primaryModel.exactness}`,
       );
     } else {
       lines.push("Primary model: none");
@@ -211,24 +214,53 @@ const AppView = () => {
   };
 
   const handleCopySummary = async () => {
+    const summary = buildSummaryText();
+    const attemptLegacyCopy = () => {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = summary;
+        textarea.setAttribute("readonly", "true");
+        textarea.style.position = "absolute";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const success = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        return success;
+      } catch {
+        return false;
+      }
+    };
+
     try {
-      await navigator.clipboard.writeText(buildSummaryText());
-      showToast("Copied");
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(summary);
+        showToast("Copied");
+        return;
+      }
     } catch {
-      showToast("Clipboard unavailable");
+      // fall back
     }
+
+    if (attemptLegacyCopy()) {
+      showToast("Copied");
+      return;
+    }
+
+    window.prompt("Copy summary", summary);
+    showToast("Clipboard blocked. Manual copy prompt opened.");
   };
 
   const buildExportRows = () => {
     const timestamp = new Date().toISOString();
-      const common = {
-        timestamp,
-        characters: counters.characters,
-        words: counters.words,
-        lines: counters.lines,
-        bytes: counters.bytes,
-        last_updated: lastUpdated,
-      };
+    const common = {
+      timestamp,
+      characters: counters.characters,
+      words: counters.words,
+      lines: counters.lines,
+      bytes: counters.bytes,
+      last_updated: lastUpdated,
+    };
 
     return visibleRows.map((row) => ({
       ...common,
@@ -330,10 +362,6 @@ const AppView = () => {
     showToast("JSON exported");
   };
 
-  const primaryModel = visibleRows.find(
-    (row) => `${row.provider}::${row.model}` === primaryModelKey,
-  );
-
   return (
     <div className="app" data-theme={theme}>
       <header className="app__header">
@@ -367,6 +395,8 @@ const AppView = () => {
             onRemoveInvisibleChange={setRemoveInvisible}
             presets={PRESETS}
             onPresetSelect={handlePresetSelect}
+            onUndoPreset={handleUndoPreset}
+            canUndoPreset={Boolean(undoPreset)}
             onCopySummary={handleCopySummary}
             copySummaryDisabled={visibleRows.length === 0}
             isExportOpen={isExportOpen}
@@ -383,9 +413,36 @@ const AppView = () => {
                   <h2>Primary Model</h2>
                   <p className="app__muted">Inspector for tokens and spend.</p>
                 </div>
-                <Badge tone={computeMode === "primary-model" ? "success" : "neutral"}>
-                  {computeMode === "primary-model" ? "Focused" : "All models"}
+                <Badge
+                  tone={effectiveComputeMode === "primary-model" ? "success" : "neutral"}
+                >
+                  {effectiveComputeMode === "primary-model"
+                    ? "Primary only"
+                    : "Visible rows"}
                 </Badge>
+              </div>
+              <div className="app__field">
+                <label htmlFor="compute-mode" className="app__label">
+                  Computation mode
+                </label>
+                <select
+                  id="compute-mode"
+                  className="app__select"
+                  value={effectiveComputeMode}
+                  onChange={(event) =>
+                    setComputeMode(event.target.value as ComputeMode)
+                  }
+                  disabled={isHugeInput}
+                >
+                  <option value="visible-rows">
+                    Visible rows (default)
+                  </option>
+                  <option value="primary-model">Primary model only (fast)</option>
+                </select>
+                <p className="app__hint">
+                  Visible rows computes the filtered table. Primary model only
+                  computes the top row for speed.
+                </p>
               </div>
               <div className="app__field">
                 <label htmlFor={primaryModelId} className="app__label">
@@ -442,26 +499,28 @@ const AppView = () => {
                   </span>
                 </div>
               </div>
-              <Toggle
-                id="primary-mode"
-                checked={computeMode === "primary-model"}
-                onChange={(event) =>
-                  setComputeMode(
-                    event.target.checked ? "primary-model" : "all-models",
-                  )
-                }
-                label="Primary model mode"
-                description="Compute only the top match for speed"
-              />
               {isLargeInput ? (
-                <div className="app__warning" role="status" aria-live="polite">
+                <div
+                  className={
+                    isHugeInput
+                      ? "app__warning app__warning--critical"
+                      : "app__warning"
+                  }
+                  role="status"
+                  aria-live="polite"
+                >
                   <strong>
-                    Large input detected ({debouncedText.length.toLocaleString()} chars).
+                    {isHugeInput
+                      ? "Very large input detected"
+                      : "Large input detected"}{" "}
+                    ({debouncedText.length.toLocaleString()} chars).
                   </strong>
                   <span>
-                    Switch to primary model mode for faster updates on large payloads.
+                    {isHugeInput
+                      ? "Primary model mode is enforced to prevent slowdowns."
+                      : "Switch to primary model mode for faster updates."}
                   </span>
-                  {computeMode !== "primary-model" ? (
+                  {!isHugeInput && computeMode !== "primary-model" ? (
                     <Button
                       variant="warning"
                       onClick={() => setComputeMode("primary-model")}
@@ -485,16 +544,37 @@ const AppView = () => {
                   Pricing data last updated: {lastUpdated}
                 </p>
               </div>
-              <Badge tone={computeMode === "primary-model" ? "success" : "neutral"}>
-                {computeMode === "primary-model" ? "Focused" : "All models"}
+              <Badge
+                tone={effectiveComputeMode === "primary-model" ? "success" : "neutral"}
+              >
+                {effectiveComputeMode === "primary-model"
+                  ? "Primary only"
+                  : "Visible rows"}
               </Badge>
             </div>
-            <PricingTable
-              models={prices.models}
-              text={debouncedText}
-              computeMode={computeMode}
-              onVisibleRowsChange={setVisibleRows}
-            />
+            {pricingValidation.error ? (
+              <div className="app__error-panel" role="status" aria-live="polite">
+                <h3>Pricing data issue</h3>
+                <p>
+                  We could not load the pricing data. Try refreshing or check the
+                  data source.
+                </p>
+                <ul>
+                  {pricingValidation.error.issues.slice(0, 3).map((issue) => (
+                    <li key={`${issue.path}-${issue.message}`}>
+                      <strong>{issue.path || "root"}</strong>: {issue.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <PricingTable
+                models={pricingValidation.models}
+                text={debouncedText}
+                computeMode={effectiveComputeMode}
+                onVisibleRowsChange={setVisibleRows}
+              />
+            )}
           </Card>
         </section>
       </main>

@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { computeCostUSD, getTokenCountForPricingRow } from "../../core";
+import { computeCostUSD, formatUSD, getTokenCountForPricingRow } from "../../core";
 import type { PricingRow } from "../../core/types/pricing";
 import Badge from "./ui/Badge";
 import Toggle from "./ui/Toggle";
 import Tooltip from "./ui/Tooltip";
 import TableShell from "./ui/TableShell";
+import Popover from "./ui/Popover";
 
 type PricingTableProps = {
   models: PricingRow[];
@@ -15,7 +16,7 @@ type PricingTableProps = {
 
 type SortKey = "provider" | "model" | "release_date" | "input" | "output";
 type SortDirection = "asc" | "desc";
-export type ComputeMode = "all-models" | "primary-model";
+export type ComputeMode = "visible-rows" | "primary-model";
 
 type RenderRow = VisiblePricingRow & {
   release_date?: string;
@@ -52,6 +53,8 @@ const PricingTable = ({
   const [sortKey, setSortKey] = useState<SortKey>("provider");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [isTokenizing, setIsTokenizing] = useState(false);
+  const [rowsForRender, setRowsForRender] = useState<RenderRow[]>([]);
+  const [isAccuracyHelpOpen, setIsAccuracyHelpOpen] = useState(false);
 
   const providers = useMemo(
     () => Array.from(new Set(models.map((model) => model.provider))).sort(),
@@ -59,18 +62,21 @@ const PricingTable = ({
   );
 
   useEffect(() => {
-    if (text.length === 0) {
-      setIsTokenizing(false);
-      return;
+    if (selectedProvider !== "all" && !providers.includes(selectedProvider)) {
+      setSelectedProvider("all");
     }
+  }, [providers, selectedProvider]);
 
-    setIsTokenizing(true);
-    const timeoutId = window.setTimeout(() => {
-      setIsTokenizing(false);
-    }, 220);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [text]);
+  const getSortableDate = (value: string | undefined, direction: SortDirection) => {
+    if (!value) {
+      return direction === "asc" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+    }
+    const parsed = Date.parse(value);
+    if (Number.isNaN(parsed)) {
+      return direction === "asc" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
+    }
+    return parsed;
+  };
 
   const filteredModels = useMemo(() => {
     const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -113,15 +119,17 @@ const PricingTable = ({
         case "model":
           return direction * a.model.localeCompare(b.model);
         case "release_date": {
-          const aTime = a.release_date ? Date.parse(a.release_date) : 0;
-          const bTime = b.release_date ? Date.parse(b.release_date) : 0;
+          const aTime = getSortableDate(a.release_date, sortDirection);
+          const bTime = getSortableDate(b.release_date, sortDirection);
           return direction * (aTime - bTime);
         }
         case "input":
           return direction * (a.input_per_mtok - b.input_per_mtok);
         case "output": {
-          const aOutput = a.output_per_mtok ?? 0;
-          const bOutput = b.output_per_mtok ?? 0;
+          const aOutput =
+            a.output_per_mtok ?? (sortDirection === "asc" ? Number.POSITIVE_INFINITY : -1);
+          const bOutput =
+            b.output_per_mtok ?? (sortDirection === "asc" ? Number.POSITIVE_INFINITY : -1);
           return direction * (aOutput - bOutput);
         }
         default:
@@ -137,40 +145,83 @@ const PricingTable = ({
     [computeMode, sortedModels],
   );
 
-  const rowsForRender = useMemo<RenderRow[]>(() => {
+  useEffect(() => {
+    let cancelled = false;
+    setRowsForRender([]);
+
+    if (computedModels.length === 0) {
+      setIsTokenizing(false);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    setIsTokenizing(text.length > 0);
     const rows: RenderRow[] = [];
+    let index = 0;
+    const batchSize = text.length > 50_000 ? 8 : 24;
 
-    computedModels.forEach((model) => {
-      const tokenCount = getTokenCountForPricingRow(text, model);
-      const exactness: "exact" | "estimated" = tokenCount.mode;
+    const scheduleBatch = (callback: () => void) => {
+      if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+        return (window as Window & { requestIdleCallback: (cb: () => void) => number })
+          .requestIdleCallback(callback);
+      }
+      return window.setTimeout(callback, 0);
+    };
 
-      if (exactOnly && exactness !== "exact") {
+    const runBatch = () => {
+      if (cancelled) {
         return;
       }
+      const end = Math.min(index + batchSize, computedModels.length);
+      for (; index < end; index += 1) {
+        const model = computedModels[index];
+        if (!model) {
+          continue;
+        }
+        const tokenCount = getTokenCountForPricingRow(text, model);
+        const exactness: "exact" | "estimated" = tokenCount.mode;
 
-      const costs = computeCostUSD(tokenCount.tokens, tokenCount.tokens, model);
+        if (exactOnly && exactness !== "exact") {
+          continue;
+        }
 
-      rows.push({
-        provider: model.provider,
-        model: model.model,
-        release_date: model.release_date,
-        pricing_tier: model.pricing_tier,
-        notes: model.notes,
-        modality: model.modality,
-        tokenization: model.tokenization,
-        is_tiered: model.is_tiered,
-        exactness,
-        tokens: tokenCount.tokens,
-        input_cost_usd: costs.inputCostUSD,
-        output_cost_usd:
-          model.output_per_mtok === undefined ? undefined : costs.outputCostUSD,
-        total_cost_usd: costs.totalUSD,
-        price_input_per_mtok: model.input_per_mtok,
-        price_output_per_mtok: model.output_per_mtok,
-      });
-    });
+        const costs = computeCostUSD(tokenCount.tokens, tokenCount.tokens, model);
 
-    return rows;
+        rows.push({
+          provider: model.provider,
+          model: model.model,
+          release_date: model.release_date,
+          pricing_tier: model.pricing_tier,
+          notes: model.notes,
+          modality: model.modality,
+          tokenization: model.tokenization,
+          is_tiered: model.is_tiered,
+          exactness,
+          tokens: tokenCount.tokens,
+          input_cost_usd: costs.inputCostUSD,
+          output_cost_usd:
+            model.output_per_mtok === undefined ? undefined : costs.outputCostUSD,
+          total_cost_usd: costs.totalUSD,
+          price_input_per_mtok: model.input_per_mtok,
+          price_output_per_mtok: model.output_per_mtok,
+        });
+      }
+
+      setRowsForRender([...rows]);
+
+      if (end < computedModels.length) {
+        scheduleBatch(runBatch);
+      } else {
+        setIsTokenizing(false);
+      }
+    };
+
+    scheduleBatch(runBatch);
+
+    return () => {
+      cancelled = true;
+    };
   }, [computedModels, exactOnly, text]);
 
   useEffect(() => {
@@ -331,7 +382,38 @@ const PricingTable = ({
                   </span>
                 </button>
               </th>
-              <th>Count type</th>
+              <th>
+                <div className="app__table-help">
+                  <span>Count type</span>
+                  <Popover
+                    isOpen={isAccuracyHelpOpen}
+                    panelLabel="Token accuracy help"
+                    align="end"
+                    trigger={
+                      <button
+                        type="button"
+                        className="app__help-button"
+                        aria-haspopup="dialog"
+                        aria-expanded={isAccuracyHelpOpen}
+                        onClick={() =>
+                          setIsAccuracyHelpOpen((prev) => !prev)
+                        }
+                      >
+                        ?
+                      </button>
+                    }
+                  >
+                    <div className="app__help-panel">
+                      <strong>Accuracy policy</strong>
+                      <p>
+                        Exact uses tokenizer-backed counts. Estimated uses a
+                        character heuristic when a tokenizer is unavailable or
+                        fails to load.
+                      </p>
+                    </div>
+                  </Popover>
+                </div>
+              </th>
               <th className="app__cell--numeric">Tokens</th>
               <th className="app__cell--numeric">Cost</th>
             </tr>
@@ -350,7 +432,8 @@ const PricingTable = ({
             ) : rowsForRender.length === 0 ? (
               <tr>
                 <td colSpan={8} className="app__empty">
-                  No models match the current filters.
+                  No models match the current filters. Try clearing search or
+                  toggles.
                 </td>
               </tr>
             ) : (
@@ -413,14 +496,18 @@ const PricingTable = ({
                       </Tooltip>
                     </td>
                     <td className="app__cell--numeric">
-                      {row.tokens.toLocaleString()}
+                      {Number.isFinite(row.tokens)
+                        ? row.tokens.toLocaleString()
+                        : "—"}
                     </td>
                     <td className="app__cell--numeric">
                       <div className="app__cost">
-                        <span>${row.total_cost_usd.toFixed(4)}</span>
+                        <span>{formatUSD(row.total_cost_usd)}</span>
                         <span className="app__muted">
-                          In {row.input_cost_usd.toFixed(4)} / Out{" "}
-                          {row.output_cost_usd?.toFixed(4) ?? "0.0000"}
+                          In {formatUSD(row.input_cost_usd)} / Out{" "}
+                          {row.output_cost_usd === undefined
+                            ? "—"
+                            : formatUSD(row.output_cost_usd)}
                         </span>
                       </div>
                     </td>
@@ -435,8 +522,8 @@ const PricingTable = ({
       </TableShell>
       <p className="app__note">
         {computeMode === "primary-model"
-          ? "Primary model mode is enabled: only the top filtered model is computed."
-          : "Exact tokenization uses provider tokenizers when available; other rows use char/4 estimation."}
+          ? "Primary model mode is enabled: only the top visible row is computed."
+          : "Visible rows mode computes rows after filters/search; exact uses tokenizers, estimated uses a character heuristic."}
       </p>
     </div>
   );

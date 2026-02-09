@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 
@@ -20,10 +20,15 @@ describe("smoke e2e", () => {
     await user.paste("Shipping a stable release needs reliable tests.");
 
     await waitFor(() => {
-      expect(screen.getByText(/Tokens: [1-9]/)).toBeTruthy();
+      const primaryHeading = screen.getByRole("heading", { name: "Primary Model" });
+      const primaryCard = primaryHeading.closest(".app__summary-card");
+      expect(primaryCard).toBeTruthy();
+      const tokenLabel = within(primaryCard as HTMLElement).getByText("Tokens");
+      const tokenValue = tokenLabel.parentElement?.querySelector(".app__value");
+      expect(tokenValue?.textContent).toMatch(/[1-9]/);
     });
 
-    const costCells = screen.getAllByText(/\$\d+\.\d{4}/);
+    const costCells = screen.getAllByText(/\$\d/);
     expect(costCells.length).toBeGreaterThan(0);
   });
 });
