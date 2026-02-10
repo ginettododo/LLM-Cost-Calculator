@@ -6,12 +6,13 @@ import {
   countWords,
 } from "../../core/counters";
 import { estimateTokens, formatUSD, validatePrices } from "../../core";
-import type { PricingValidationError } from "../../core";
+import type { PricingRow, PricingValidationError } from "../../core";
 import prices from "../../data/prices.json";
 import CountersPanel from "../components/CountersPanel";
 import PricingTable from "../components/PricingTable";
 import type { ComputeMode, VisiblePricingRow } from "../components/PricingTable";
 import TextareaPanel from "../components/TextareaPanel";
+import TokenDebugPanel from "../components/TokenDebugPanel";
 import useDebouncedValue from "../state/useDebouncedValue";
 import Badge from "../components/ui/Badge";
 import Card from "../components/ui/Card";
@@ -46,7 +47,7 @@ const AppView = () => {
     useState<ComputeMode>("visible-rows");
   const [primaryModelKey, setPrimaryModelKey] = useState("");
   const [undoPreset, setUndoPreset] = useState<UndoPresetState | null>(null);
-  const debouncedText = useDebouncedValue(text, 160);
+  const debouncedText = useDebouncedValue(text, 40);
   const themeToggleId = useId();
   const primaryModelId = useId();
 
@@ -117,19 +118,35 @@ const AppView = () => {
     return () => window.clearTimeout(timeoutId);
   }, [toast]);
 
+  const prioritizePrimaryModel = (rows: VisiblePricingRow[]): VisiblePricingRow | undefined => {
+    const exactOpenAI = rows
+      .filter((row) => row.exactness === "exact" && row.provider.trim().toLowerCase() === "openai")
+      .sort((a, b) => a.price_input_per_mtok - b.price_input_per_mtok);
+
+    return exactOpenAI[0] ?? rows[0];
+  };
+
   useEffect(() => {
     if (visibleRows.length === 0) {
       setPrimaryModelKey("");
       return;
     }
 
-    const hasSelection = visibleRows.some(
+    const selectedRow = visibleRows.find(
       (row) => `${row.provider}::${row.model}` === primaryModelKey,
     );
-    if (!hasSelection) {
-      setPrimaryModelKey(`${visibleRows[0].provider}::${visibleRows[0].model}`);
+
+    const needsSelection =
+      !selectedRow || (debouncedText.trim().length > 0 && selectedRow.tokens === 0);
+
+    if (needsSelection) {
+      const rowsWithTokens = visibleRows.filter((row) => row.tokens > 0);
+      const preferred = prioritizePrimaryModel(rowsWithTokens.length > 0 ? rowsWithTokens : visibleRows);
+      if (preferred) {
+        setPrimaryModelKey(`${preferred.provider}::${preferred.model}`);
+      }
     }
-  }, [primaryModelKey, visibleRows]);
+  }, [debouncedText, primaryModelKey, visibleRows]);
 
   useEffect(() => {
     if (pricingValidation.error) {
@@ -204,10 +221,25 @@ const AppView = () => {
     showToast("Preset undone");
   };
 
-  const primaryModel = useMemo(
-    () => visibleRows.find((row) => `${row.provider}::${row.model}` === primaryModelKey),
-    [primaryModelKey, visibleRows],
-  );
+  const primaryModel = useMemo(() => {
+    const selected = visibleRows.find((row) => `${row.provider}::${row.model}` === primaryModelKey);
+    if (!selected) {
+      return visibleRows.find((row) => row.tokens > 0);
+    }
+
+    if (debouncedText.trim().length > 0 && selected.tokens === 0) {
+      return visibleRows.find((row) => row.tokens > 0) ?? selected;
+    }
+
+    return selected;
+  }, [debouncedText, primaryModelKey, visibleRows]);
+
+
+  const openAIModels = useMemo<PricingRow[]>(() => {
+    return pricingValidation.models
+      .filter((model) => model.provider.trim().toLowerCase() === "openai")
+      .sort((a, b) => a.input_per_mtok - b.input_per_mtok);
+  }, [pricingValidation.models]);
 
   const buildSummaryText = () => {
     const lines: string[] = [];
@@ -567,6 +599,7 @@ const AppView = () => {
               ) : null}
             </Card>
             <CountersPanel counters={counters} />
+            <TokenDebugPanel text={debouncedText} openAIModels={openAIModels} />
           </aside>
         </section>
 

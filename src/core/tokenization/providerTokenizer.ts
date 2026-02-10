@@ -45,17 +45,10 @@ export const getTokenCountForPricingRow = (
 
   let result: TokenCountResult;
   if (isOpenAIProvider(pricingRow.provider)) {
-    try {
-      result = {
-        tokens: countOpenAITokensExact(text, pricingRow.model),
-        mode: "exact",
-      };
-    } catch {
-      result = {
-        tokens: estimateTokens(text),
-        mode: "estimated",
-      };
-    }
+    result = {
+      tokens: countOpenAITokensExact(text, pricingRow.model_id ?? pricingRow.model),
+      mode: "exact",
+    };
   } else {
     result = {
       tokens: estimateTokens(text),

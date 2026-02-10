@@ -5,6 +5,7 @@ import {
   clearOpenAITokenizerCache,
   clearTokenCountCache,
   countOpenAITokensExact,
+  getOpenAITokenDetails,
   getTokenCacheSize,
   getTokenCountForPricingRow,
   hashText,
@@ -122,5 +123,52 @@ describe("getTokenCountForPricingRow", () => {
     getTokenCountForPricingRow(text, rowB);
 
     expect(getTokenCacheSize()).toBe(2);
+  });
+});
+
+
+describe("OpenAI exact tokenizer vectors", () => {
+  it("matches known cl100k_base token ids for stable sample text", () => {
+    const text = "OpenAI tokenizer test: tokens, bytes, and ranges.";
+    const expectedTokenIds = [6447, 17527, 99665, 1746, 25, 20290, 11, 11643, 11, 326, 33269, 13];
+
+    const details = getOpenAITokenDetails(text, "openai:gpt-4o");
+
+    expect(details.map((token) => token.tokenId)).toEqual(expectedTokenIds);
+    expect(countOpenAITokensExact(text, "openai:gpt-4o")).toBe(expectedTokenIds.length);
+
+    const fallbackVector = getOpenAITokenDetails("Hello world", "openai:non-existent-model");
+    expect(fallbackVector.map((token) => token.tokenId)).toEqual([9906, 1917]);
+  });
+
+  it("returns contiguous byte ranges that reconstruct utf-8 length", () => {
+    const text = "naïve café — مرحبا — 你好 — 👩‍🚀";
+    const details = getOpenAITokenDetails(text, "gpt-4o");
+
+    const utf8Length = new TextEncoder().encode(text).length;
+    expect(details[0]?.byteStart ?? 0).toBe(0);
+
+    details.forEach((token, index) => {
+      if (index === 0) {
+        return;
+      }
+      expect(token.byteStart).toBe(details[index - 1]?.byteEnd);
+    });
+
+    const finalEnd = details[details.length - 1]?.byteEnd ?? 0;
+    expect(finalEnd).toBe(utf8Length);
+  });
+
+  it("keeps exact counting stable for a long 500+ word paragraph", () => {
+    const longParagraph = Array.from({ length: 620 }, (_, index) => `word-${index % 37}`)
+      .join(" ")
+      .trim();
+
+    const details = getOpenAITokenDetails(longParagraph, "openai:gpt-4o-mini");
+    const count = countOpenAITokensExact(longParagraph, "openai:gpt-4o-mini");
+
+    expect(longParagraph.split(/\s+/).length).toBeGreaterThan(500);
+    expect(count).toBe(details.length);
+    expect(count).toBeGreaterThan(500);
   });
 });

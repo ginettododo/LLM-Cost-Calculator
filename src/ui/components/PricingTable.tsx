@@ -176,7 +176,7 @@ const PricingTable = ({
     setIsTokenizing(text.length > 0);
     const rows: RenderRow[] = [];
     let index = 0;
-    const batchSize = text.length > 50_000 ? 8 : 24;
+    const batchSize = text.length > 50_000 ? 6 : 8;
 
     const scheduleBatch = (callback: () => void) => {
       if (typeof window !== "undefined" && "requestIdleCallback" in window) {
@@ -425,9 +425,8 @@ const PricingTable = ({
                     <div className="app__help-panel">
                       <strong>Accuracy policy</strong>
                       <p>
-                        Exact uses tokenizer-backed counts. Estimated uses a
-                        character heuristic when a tokenizer is unavailable or
-                        fails to load.
+                        Exact uses tokenizer-backed counts for OpenAI models. Estimated appears when
+                        exact local tokenizers are unavailable for that provider.
                       </p>
                     </div>
                   </Popover>
@@ -461,7 +460,7 @@ const PricingTable = ({
                 const tooltipText =
                   row.exactness === "exact"
                     ? "Exact means tokenizer-based token count is used."
-                    : "Estimated means token count is approximated using characters/4.";
+                    : "This model uses an estimate because exact tokenization data isn’t available locally. Real counts may differ.";
 
                 const rows: JSX.Element[] = [];
                 const shouldGroup =
@@ -543,7 +542,7 @@ const PricingTable = ({
       <p className="app__note">
         {computeMode === "primary-model"
           ? "Primary model mode is enabled: only the top visible row is computed."
-          : "Visible rows mode computes rows after filters/search; exact uses tokenizers, estimated uses a character heuristic."}
+          : "Visible rows mode computes rows after filters/search; exact uses tokenizer-backed counts, estimated appears when local tokenizer data is unavailable."}
       </p>
     </div>
   );
