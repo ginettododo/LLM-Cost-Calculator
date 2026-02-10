@@ -1,6 +1,7 @@
-import { useId, useRef, useState } from "react";
+import { useId, useMemo, useRef, useState } from "react";
 import type { ClipboardEvent } from "react";
 import { normalizeText } from "../../core/normalization/normalizeText";
+import type { OpenAITokenDetail } from "../../core";
 import Button from "./ui/Button";
 import Card from "./ui/Card";
 import Popover from "./ui/Popover";
@@ -10,6 +11,8 @@ type TextareaPanelProps = {
   onChange: (value: string) => void;
   normalizeOnPaste: boolean;
   removeInvisible: boolean;
+  showTokenMarkups: boolean;
+  onShowTokenMarkupsChange: (value: boolean) => void;
   presets: Array<{ id: string; label: string; approxLabel: string; length: number }>;
   onPresetSelect: (presetId: string) => void;
   onUndoPreset: () => void;
@@ -18,6 +21,9 @@ type TextareaPanelProps = {
   onRemoveInvisibleChange: (value: boolean) => void;
   characterCount: number;
   estimatedTokens: number;
+  tokenDetails: OpenAITokenDetail[];
+  tokenModelLabel: string;
+  hasExactOpenAITokenizer: boolean;
 };
 
 const TextareaPanel = ({
@@ -25,6 +31,8 @@ const TextareaPanel = ({
   onChange,
   normalizeOnPaste,
   removeInvisible,
+  showTokenMarkups,
+  onShowTokenMarkupsChange,
   presets,
   onPresetSelect,
   onUndoPreset,
@@ -33,9 +41,13 @@ const TextareaPanel = ({
   onRemoveInvisibleChange,
   characterCount,
   estimatedTokens,
+  tokenDetails,
+  tokenModelLabel,
+  hasExactOpenAITokenizer,
 }: TextareaPanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPresetOpen, setIsPresetOpen] = useState(false);
+  const [isTokenPanelOpen, setIsTokenPanelOpen] = useState(true);
   const settingsId = useId();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -91,6 +103,36 @@ const TextareaPanel = ({
 
   const canPaste =
     typeof navigator !== "undefined" && Boolean(navigator.clipboard?.readText);
+
+  const tokenHighlightSlices = useMemo(() => {
+    if (!showTokenMarkups || !hasExactOpenAITokenizer || tokenDetails.length === 0) {
+      return [];
+    }
+
+    const slices: Array<{ key: string; text: string }> = [];
+    let cursor = 0;
+
+    tokenDetails.forEach((token) => {
+      const safeStart = Math.max(cursor, token.charStart);
+      const safeEnd = Math.max(safeStart, token.charEnd);
+
+      if (safeStart > cursor) {
+        slices.push({ key: `plain-${cursor}`, text: value.slice(cursor, safeStart) });
+      }
+
+      slices.push({ key: `token-${token.index}-${token.tokenId}`, text: value.slice(safeStart, safeEnd) });
+      cursor = safeEnd;
+    });
+
+    if (cursor < value.length) {
+      slices.push({ key: `tail-${cursor}`, text: value.slice(cursor) });
+    }
+
+    return slices;
+  }, [hasExactOpenAITokenizer, showTokenMarkups, tokenDetails, value]);
+
+  const shouldRenderMarkup =
+    showTokenMarkups && hasExactOpenAITokenizer && tokenHighlightSlices.length > 0;
 
   return (
     <Card className="app__input-card">
@@ -180,20 +222,80 @@ const TextareaPanel = ({
                 />
                 <span>Remove invisible chars</span>
               </label>
+              <label className="app__toggle">
+                <input
+                  type="checkbox"
+                  checked={showTokenMarkups}
+                  disabled={!hasExactOpenAITokenizer}
+                  onChange={(event) => onShowTokenMarkupsChange(event.target.checked)}
+                />
+                <span>Show token markups</span>
+              </label>
             </Popover>
           </div>
         </div>
       </div>
-      <textarea
-        className="app__textarea"
-        placeholder="Paste or type text to estimate tokens and cost."
-        aria-label="Text to analyze"
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        onPaste={handlePaste}
-        ref={textareaRef}
-        rows={6}
-      />
+      <div className="app__textarea-shell">
+        {shouldRenderMarkup ? (
+          <div className="app__token-overlay" aria-hidden="true">
+            {tokenHighlightSlices.map((slice) => (
+              <span
+                key={slice.key}
+                className={slice.key.startsWith("token-") ? "app__token-overlay-mark" : undefined}
+              >
+                {slice.text || "\u200b"}
+              </span>
+            ))}
+          </div>
+        ) : null}
+        <textarea
+          className="app__textarea"
+          placeholder="Paste or type text to estimate tokens and cost."
+          aria-label="Text to analyze"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          onPaste={handlePaste}
+          ref={textareaRef}
+          rows={6}
+        />
+      </div>
+      {showTokenMarkups ? (
+        <div className="app__token-markup-panel">
+          <button
+            type="button"
+            className="app__token-markup-toggle"
+            onClick={() => setIsTokenPanelOpen((prev) => !prev)}
+            disabled={!hasExactOpenAITokenizer}
+          >
+            <strong>Token list {hasExactOpenAITokenizer ? `(${tokenModelLabel})` : ""}</strong>
+            <span>{isTokenPanelOpen ? "Hide" : "Show"}</span>
+          </button>
+          {isTokenPanelOpen ? (
+            <div className="app__token-markup-list" role="list">
+              {!hasExactOpenAITokenizer ? (
+                <p className="app__muted">Token markups are only available for exact OpenAI tokenizer rows.</p>
+              ) : tokenDetails.length === 0 ? (
+                <p className="app__muted">No tokens to display.</p>
+              ) : (
+                tokenDetails.map((token) => (
+                  <div
+                    key={`${token.index}-${token.tokenId}`}
+                    className="app__token-markup-row"
+                    role="listitem"
+                  >
+                    <code>#{token.index}</code>
+                    <code>{token.tokenId}</code>
+                    <code>
+                      [{token.charStart}, {token.charEnd})
+                    </code>
+                    <span>{JSON.stringify(token.text)}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
       <div className="app__textarea-footer">
         <div className="app__metric">
           <span className="app__metric-label">Characters</span>

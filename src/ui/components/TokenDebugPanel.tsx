@@ -3,13 +3,10 @@ import { getOpenAITokenDetails } from "../../core";
 import type { PricingRow } from "../../core";
 import Badge from "./ui/Badge";
 import Card from "./ui/Card";
-import Toggle from "./ui/Toggle";
 
 type TokenDebugPanelProps = {
   text: string;
   openAIModels: PricingRow[];
-  showUnderlines: boolean;
-  onShowUnderlinesChange: (value: boolean) => void;
 };
 
 const TOKEN_PREVIEW_LIMIT = 250;
@@ -17,8 +14,6 @@ const TOKEN_PREVIEW_LIMIT = 250;
 const TokenDebugPanel = ({
   text,
   openAIModels,
-  showUnderlines,
-  onShowUnderlinesChange,
 }: TokenDebugPanelProps) => {
   const [selectedModelId, setSelectedModelId] = useState(openAIModels[0]?.model_id ?? "");
 
@@ -33,22 +28,6 @@ const TokenDebugPanel = ({
     }
     return getOpenAITokenDetails(text, selectedModel.model_id ?? selectedModel.model);
   }, [selectedModel, text]);
-
-  const renderTokenizedText = () => {
-    if (text.length === 0) {
-      return <span className="app__muted">No text yet.</span>;
-    }
-
-    if (!showUnderlines || tokenDetails.length === 0) {
-      return <span>{text}</span>;
-    }
-
-    return tokenDetails.map((token) => (
-      <span key={`${token.index}-${token.tokenId}`} className="app__token-underlined">
-        {token.text}
-      </span>
-    ));
-  };
 
   return (
     <Card className="app__debug-panel">
@@ -87,17 +66,10 @@ const TokenDebugPanel = ({
           <span className="app__value">cl100k_base*</span>
         </div>
       </div>
-      <Toggle
-        id="show-underlines"
-        checked={showUnderlines}
-        onChange={(event) => onShowUnderlinesChange(event.target.checked)}
-        label="Show underlines in text"
-        description="Highlights token boundaries without affecting editing in the input field"
-      />
       <div className="app__debug-columns">
         <div className="app__debug-block">
           <h3>Raw text</h3>
-          <pre className="app__debug-text">{renderTokenizedText()}</pre>
+          <pre className="app__debug-text">{text || <span className="app__muted">No text yet.</span>}</pre>
         </div>
         <div className="app__debug-block">
           <h3>Tokens with byte ranges</h3>
