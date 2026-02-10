@@ -21,19 +21,19 @@ const CountersPanel = ({ counters }: CountersPanelProps) => {
       <div className="app__stats-grid">
         <div className="app__stats-item">
           <div className="app__label">Characters</div>
-          <div className="app__value">{counters.characters}</div>
+          <div className="app__value">{counters.characters.toLocaleString()}</div>
         </div>
         <div className="app__stats-item">
           <div className="app__label">Words</div>
-          <div className="app__value">{counters.words}</div>
+          <div className="app__value">{counters.words.toLocaleString()}</div>
         </div>
         <div className="app__stats-item">
           <div className="app__label">Lines</div>
-          <div className="app__value">{counters.lines}</div>
+          <div className="app__value">{counters.lines.toLocaleString()}</div>
         </div>
         <div className="app__stats-item">
           <div className="app__label">Bytes</div>
-          <div className="app__value">{counters.bytes}</div>
+          <div className="app__value">{counters.bytes.toLocaleString()}</div>
         </div>
       </div>
     </Card>

@@ -133,6 +133,7 @@ const TextareaPanel = ({
             </Button>
             <Popover
               isOpen={isExportOpen}
+              onClose={() => { if (isExportOpen) onExportToggle(); }}
               panelLabel="Export options"
               panelRole="menu"
               align="end"
@@ -165,6 +166,7 @@ const TextareaPanel = ({
             </Popover>
             <Popover
               isOpen={isPresetOpen}
+              onClose={() => setIsPresetOpen(false)}
               panelLabel="Preset picker"
               panelRole="menu"
               align="end"
@@ -211,6 +213,7 @@ const TextareaPanel = ({
             </Button>
             <Popover
               isOpen={isSettingsOpen}
+              onClose={() => setIsSettingsOpen(false)}
               panelLabel="Paste settings"
               panelId={settingsId}
               align="end"
@@ -252,7 +255,7 @@ const TextareaPanel = ({
             </Popover>
           </div>
         </div>
-      </div>
+      </div >
       <textarea
         className="app__textarea"
         placeholder="Paste or type text to estimate tokens and cost."
@@ -263,15 +266,17 @@ const TextareaPanel = ({
         ref={textareaRef}
         rows={10}
       />
-      {value.trim().length === 0 ? (
-        <div className="app__empty-state" aria-live="polite">
-          <strong>Paste text, pick a preset, or start typing.</strong>
-          <div className="app__hint app__hint--tight">
-            Tip: presets include realistic long-form content and unicode stress
-            tests.
+      {
+        value.trim().length === 0 ? (
+          <div className="app__empty-state" aria-live="polite">
+            <strong>Paste text, pick a preset, or start typing.</strong>
+            <div className="app__hint app__hint--tight">
+              Tip: presets include realistic long-form content and unicode stress
+              tests.
+            </div>
           </div>
-        </div>
-      ) : null}
+        ) : null
+      }
       <div className="app__textarea-footer">
         <div className="app__metric">
           <span className="app__metric-label">Characters</span>
@@ -289,7 +294,7 @@ const TextareaPanel = ({
           {normalizeOnPaste ? "Normalized paste" : "Raw paste"}
         </Badge>
       </div>
-    </Card>
+    </Card >
   );
 };
 

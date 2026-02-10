@@ -166,7 +166,7 @@ const PricingTable = ({
         return (window as Window & { requestIdleCallback: (cb: () => void) => number })
           .requestIdleCallback(callback);
       }
-      return window.setTimeout(callback, 0);
+      return globalThis.setTimeout(callback, 0);
     };
 
     const runBatch = () => {
@@ -387,6 +387,7 @@ const PricingTable = ({
                   <span>Count type</span>
                   <Popover
                     isOpen={isAccuracyHelpOpen}
+                    onClose={() => setIsAccuracyHelpOpen(false)}
                     panelLabel="Token accuracy help"
                     align="end"
                     trigger={
@@ -419,7 +420,7 @@ const PricingTable = ({
             </tr>
           </thead>
           <tbody>
-            {isTokenizing ? (
+            {isTokenizing && rowsForRender.length === 0 ? (
               Array.from({ length: 6 }).map((_, index) => (
                 <tr key={`skeleton-${index}`} className="app__skeleton-row">
                   {Array.from({ length: 8 }).map((_, cellIndex) => (

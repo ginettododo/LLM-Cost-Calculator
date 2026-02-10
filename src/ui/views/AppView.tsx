@@ -598,6 +598,10 @@ const AppView = () => {
           ) : null}
         </div>
       ) : null}
+
+      <footer className="app__footer">
+        <p>100% offline · No data ever leaves your browser · Prices from public APIs</p>
+      </footer>
     </div>
   );
 };

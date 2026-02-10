@@ -1,8 +1,10 @@
+import { useEffect, useRef, useCallback } from "react";
 import type { ReactNode } from "react";
 import classNames from "./classNames";
 
 type PopoverProps = {
   isOpen: boolean;
+  onClose?: () => void;
   trigger: ReactNode;
   children: ReactNode;
   panelLabel: string;
@@ -13,6 +15,7 @@ type PopoverProps = {
 
 const Popover = ({
   isOpen,
+  onClose,
   trigger,
   children,
   panelLabel,
@@ -20,8 +23,47 @@ const Popover = ({
   align = "end",
   panelRole = "dialog",
 }: PopoverProps) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+
+  const handleOutsideClick = useCallback(
+    (event: MouseEvent) => {
+      if (
+        isOpen &&
+        onClose &&
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        onClose();
+      }
+    },
+    [isOpen, onClose],
+  );
+
+  const handleEscape = useCallback(
+    (event: KeyboardEvent) => {
+      if (isOpen && onClose && event.key === "Escape") {
+        onClose();
+      }
+    },
+    [isOpen, onClose],
+  );
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, [isOpen, handleOutsideClick, handleEscape]);
+
   return (
-    <div className="ui-popover">
+    <div className="ui-popover" ref={containerRef}>
       {trigger}
       {isOpen ? (
         <div
