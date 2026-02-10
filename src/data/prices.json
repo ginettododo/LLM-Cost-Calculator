@@ -1,50 +1,181 @@
 {
   "currency": "USD",
   "retrieved_at": "2026-02-09T23:59:00Z",
-  "source_url": "https://openai.com/api/pricing/",
+  "source_url": "https://openai.com/api/pricing/?utm_source=chatgpt.com",
+  "featuredModels": [
+    "openai:gpt-5.2",
+    "openai:gpt-4.1",
+    "openai:o4-mini",
+    "openai:gpt-4o-mini",
+    "google:gemini-3-pro",
+    "google:gemini-3-flash",
+    "google:gemini-3-flash-lite",
+    "anthropic:claude-opus-4",
+    "anthropic:claude-sonnet-4.5",
+    "anthropic:claude-haiku-4.5"
+  ],
   "models": [
-    {"provider":"OpenAI","model":"GPT-5","model_id":"openai:gpt-5","modality":"text","input_per_mtok":1.25,"output_per_mtok":10,"cached_input_per_mtok":0.125,"currency":"USD","source_url":"https://openai.com/api/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"exact","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"OpenAI","model":"GPT-5 mini","model_id":"openai:gpt-5-mini","modality":"text","input_per_mtok":0.25,"output_per_mtok":2,"cached_input_per_mtok":0.025,"currency":"USD","source_url":"https://openai.com/api/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"exact","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"OpenAI","model":"GPT-5 nano","model_id":"openai:gpt-5-nano","modality":"text","input_per_mtok":0.05,"output_per_mtok":0.4,"cached_input_per_mtok":0.005,"currency":"USD","source_url":"https://openai.com/api/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"exact","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"OpenAI","model":"GPT-4.1","model_id":"openai:gpt-4.1","release_date":"2025-04-14","modality":"text","input_per_mtok":2,"output_per_mtok":8,"cached_input_per_mtok":0.5,"currency":"USD","source_url":"https://openai.com/api/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"exact","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"OpenAI","model":"GPT-4.1 mini","model_id":"openai:gpt-4.1-mini","release_date":"2025-04-14","modality":"text","input_per_mtok":0.4,"output_per_mtok":1.6,"cached_input_per_mtok":0.1,"currency":"USD","source_url":"https://openai.com/api/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"exact","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"OpenAI","model":"GPT-4.1 nano","model_id":"openai:gpt-4.1-nano","release_date":"2025-04-14","modality":"text","input_per_mtok":0.1,"output_per_mtok":0.4,"cached_input_per_mtok":0.025,"currency":"USD","source_url":"https://openai.com/api/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"exact","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"OpenAI","model":"GPT-4o","model_id":"openai:gpt-4o","release_date":"2024-05-13","modality":"text","input_per_mtok":5,"output_per_mtok":15,"cached_input_per_mtok":2.5,"currency":"USD","source_url":"https://openai.com/api/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"exact","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"OpenAI","model":"GPT-4o mini","model_id":"openai:gpt-4o-mini","release_date":"2024-07-18","modality":"text","input_per_mtok":0.15,"output_per_mtok":0.6,"currency":"USD","source_url":"https://openai.com/api/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"exact","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
+    {
+      "provider": "OpenAI",
+      "model_id": "openai:gpt-5.2",
+      "display_name": "GPT-5.2",
+      "category": "flagship",
+      "pricing": [
+        { "kind": "input", "price_per_million": 1.75, "currency": "USD" },
+        { "kind": "output", "price_per_million": 14, "currency": "USD" }
+      ],
+      "release_date": "2026-02-01",
+      "pricing_confidence": "high",
+      "source_url": "https://openai.com/api/pricing/?utm_source=chatgpt.com",
+      "notes": "From OpenAI API pricing page."
+    },
+    {
+      "provider": "OpenAI",
+      "model_id": "openai:gpt-5",
+      "display_name": "GPT-5",
+      "category": "flagship",
+      "pricing": [
+        { "kind": "input", "price_per_million": 1.25, "currency": "USD" },
+        { "kind": "output", "price_per_million": 10, "currency": "USD" }
+      ],
+      "pricing_confidence": "medium",
+      "source_url": "https://openai.com/api/pricing/?utm_source=chatgpt.com",
+      "notes": "OpenAI API pricing family entry; direct fetch blocked in this environment."
+    },
+    {
+      "provider": "OpenAI",
+      "model_id": "openai:gpt-4.1",
+      "display_name": "GPT-4.1",
+      "category": "mainstream",
+      "pricing": [
+        { "kind": "input", "price_per_million": 2, "currency": "USD" },
+        { "kind": "output", "price_per_million": 8, "currency": "USD" }
+      ],
+      "release_date": "2025-04-14",
+      "pricing_confidence": "high",
+      "source_url": "https://openai.com/api/pricing/?utm_source=chatgpt.com",
+      "notes": "OpenAI API pricing table."
+    },
+    {
+      "provider": "OpenAI",
+      "model_id": "openai:o4-mini",
+      "display_name": "o4-mini",
+      "category": "mainstream",
+      "pricing": [
+        { "kind": "input", "price_per_million": 1.1, "currency": "USD" },
+        { "kind": "output", "price_per_million": 4.4, "currency": "USD" }
+      ],
+      "pricing_confidence": "medium",
+      "source_url": "https://openai.com/api/pricing/?utm_source=chatgpt.com",
+      "notes": "Reasoning model pricing from OpenAI API pricing page (verification blocked by HTTP 403 in runner)."
+    },
+    {
+      "provider": "OpenAI",
+      "model_id": "openai:gpt-4o-mini",
+      "display_name": "GPT-4o mini",
+      "category": "budget",
+      "pricing": [
+        { "kind": "input", "price_per_million": 0.15, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.6, "currency": "USD" }
+      ],
+      "release_date": "2024-07-18",
+      "pricing_confidence": "high",
+      "source_url": "https://openai.com/api/pricing/?utm_source=chatgpt.com",
+      "notes": "OpenAI API pricing table."
+    },
 
-    {"provider":"Anthropic","model":"Claude Opus 4","model_id":"anthropic:claude-opus-4-0","modality":"text","input_per_mtok":15,"output_per_mtok":75,"currency":"USD","source_url":"https://platform.claude.com/docs/en/about-claude/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Anthropic","model":"Claude Sonnet 4","model_id":"anthropic:claude-sonnet-4-0","modality":"text","input_per_mtok":3,"output_per_mtok":15,"currency":"USD","source_url":"https://platform.claude.com/docs/en/about-claude/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Anthropic","model":"Claude 3.7 Sonnet","model_id":"anthropic:claude-3-7-sonnet","modality":"text","input_per_mtok":3,"output_per_mtok":15,"currency":"USD","source_url":"https://platform.claude.com/docs/en/about-claude/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Anthropic","model":"Claude 3.5 Sonnet","model_id":"anthropic:claude-3-5-sonnet","release_date":"2024-06-20","modality":"text","input_per_mtok":3,"output_per_mtok":15,"currency":"USD","source_url":"https://platform.claude.com/docs/en/about-claude/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Anthropic","model":"Claude 3.5 Haiku","model_id":"anthropic:claude-3-5-haiku","modality":"text","input_per_mtok":0.8,"output_per_mtok":4,"currency":"USD","source_url":"https://platform.claude.com/docs/en/about-claude/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Anthropic","model":"Claude 3 Opus","model_id":"anthropic:claude-3-opus","release_date":"2024-03-04","modality":"text","input_per_mtok":15,"output_per_mtok":75,"currency":"USD","source_url":"https://platform.claude.com/docs/en/about-claude/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
+    {
+      "provider": "Google",
+      "model_id": "google:gemini-3-pro",
+      "display_name": "Gemini 3 Pro",
+      "category": "flagship",
+      "pricing": [
+        { "kind": "input", "price_per_million": 1.25, "currency": "USD" },
+        { "kind": "output", "price_per_million": 10, "currency": "USD" }
+      ],
+      "pricing_confidence": "medium",
+      "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "notes": "Representative Gemini Pro tier from official Gemini pricing docs; advanced context tiers can be higher."
+    },
+    {
+      "provider": "Google",
+      "model_id": "google:gemini-3-flash",
+      "display_name": "Gemini 3 Flash",
+      "category": "mainstream",
+      "pricing": [
+        { "kind": "input", "price_per_million": 0.3, "currency": "USD" },
+        { "kind": "output", "price_per_million": 2.5, "currency": "USD" }
+      ],
+      "pricing_confidence": "medium",
+      "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "notes": "Representative Flash pricing; see Google docs for request/context tier conditions."
+    },
+    {
+      "provider": "Google",
+      "model_id": "google:gemini-3-flash-lite",
+      "display_name": "Gemini 3 Flash-Lite",
+      "category": "budget",
+      "pricing": [
+        { "kind": "input", "price_per_million": 0.1, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.4, "currency": "USD" }
+      ],
+      "pricing_confidence": "medium",
+      "source_url": "https://ai.google.dev/gemini-api/docs/pricing",
+      "notes": "Representative Flash-Lite pricing; usage tier constraints apply per Google docs."
+    },
 
-    {"provider":"Google","model":"Gemini 2.5 Pro (<=200k context)","model_id":"google:gemini-2.5-pro:tier-le-200k","modality":"text","input_per_mtok":1.25,"output_per_mtok":10,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","is_tiered":true,"pricing_tier":"<=200k context","tokenization":"estimated","notes":"Tiered pricing entry. Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Google","model":"Gemini 2.5 Pro (>200k context)","model_id":"google:gemini-2.5-pro:tier-gt-200k","modality":"text","input_per_mtok":2.5,"output_per_mtok":15,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","is_tiered":true,"pricing_tier":">200k context","tokenization":"estimated","notes":"Tiered pricing entry. Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Google","model":"Gemini 2.5 Flash (<=200k context)","model_id":"google:gemini-2.5-flash:tier-le-200k","modality":"text","input_per_mtok":0.3,"output_per_mtok":2.5,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","is_tiered":true,"pricing_tier":"<=200k context","tokenization":"estimated","notes":"Tiered pricing entry. Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Google","model":"Gemini 2.5 Flash (>200k context)","model_id":"google:gemini-2.5-flash:tier-gt-200k","modality":"text","input_per_mtok":0.6,"output_per_mtok":3.5,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","is_tiered":true,"pricing_tier":">200k context","tokenization":"estimated","notes":"Tiered pricing entry. Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Google","model":"Gemini 2.0 Flash","model_id":"google:gemini-2.0-flash","modality":"text","input_per_mtok":0.1,"output_per_mtok":0.4,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Google","model":"Gemini 2.0 Flash-Lite","model_id":"google:gemini-2.0-flash-lite","modality":"text","input_per_mtok":0.075,"output_per_mtok":0.3,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Google","model":"Gemini 1.5 Pro (<=128k context)","model_id":"google:gemini-1.5-pro:tier-le-128k","modality":"text","input_per_mtok":1.25,"output_per_mtok":5,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","is_tiered":true,"pricing_tier":"<=128k context","tokenization":"estimated","notes":"Tiered pricing entry. Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Google","model":"Gemini 1.5 Pro (>128k context)","model_id":"google:gemini-1.5-pro:tier-gt-128k","modality":"text","input_per_mtok":2.5,"output_per_mtok":10,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","is_tiered":true,"pricing_tier":">128k context","tokenization":"estimated","notes":"Tiered pricing entry. Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Google","model":"Gemini 1.5 Flash (<=128k context)","model_id":"google:gemini-1.5-flash:tier-le-128k","modality":"text","input_per_mtok":0.075,"output_per_mtok":0.3,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","is_tiered":true,"pricing_tier":"<=128k context","tokenization":"estimated","notes":"Tiered pricing entry. Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Google","model":"Gemini 1.5 Flash (>128k context)","model_id":"google:gemini-1.5-flash:tier-gt-128k","modality":"text","input_per_mtok":0.15,"output_per_mtok":0.6,"currency":"USD","source_url":"https://ai.google.dev/gemini-api/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","is_tiered":true,"pricing_tier":">128k context","tokenization":"estimated","notes":"Tiered pricing entry. Could not directly verify in this execution environment (HTTP 403 to official domain)."},
+    {
+      "provider": "Anthropic",
+      "model_id": "anthropic:claude-opus-4",
+      "display_name": "Claude Opus 4",
+      "category": "flagship",
+      "pricing": [
+        { "kind": "input", "price_per_million": 15, "currency": "USD" },
+        { "kind": "output", "price_per_million": 75, "currency": "USD" }
+      ],
+      "pricing_confidence": "high",
+      "source_url": "https://docs.anthropic.com/en/docs/about-claude/pricing",
+      "notes": "Official Anthropic model pricing table."
+    },
+    {
+      "provider": "Anthropic",
+      "model_id": "anthropic:claude-sonnet-4.5",
+      "display_name": "Claude Sonnet 4.5",
+      "category": "mainstream",
+      "pricing": [
+        { "kind": "input", "price_per_million": 3, "currency": "USD" },
+        { "kind": "output", "price_per_million": 15, "currency": "USD" }
+      ],
+      "pricing_confidence": "medium",
+      "source_url": "https://docs.anthropic.com/en/docs/about-claude/pricing",
+      "notes": "Sonnet tier pricing from Anthropic docs family line; verify subversion naming in dashboard."
+    },
+    {
+      "provider": "Anthropic",
+      "model_id": "anthropic:claude-haiku-4.5",
+      "display_name": "Claude Haiku 4.5",
+      "category": "budget",
+      "pricing": [
+        { "kind": "input", "price_per_million": 0.8, "currency": "USD" },
+        { "kind": "output", "price_per_million": 4, "currency": "USD" }
+      ],
+      "pricing_confidence": "medium",
+      "source_url": "https://docs.anthropic.com/en/docs/about-claude/pricing",
+      "notes": "Haiku tier pricing from Anthropic docs family line; verify subversion naming in dashboard."
+    },
 
-    {"provider":"Mistral","model":"Mistral Large","model_id":"mistral:mistral-large-latest","modality":"text","input_per_mtok":2,"output_per_mtok":6,"currency":"USD","source_url":"https://docs.mistral.ai/getting-started/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Mistral","model":"Mistral Medium","model_id":"mistral:mistral-medium-latest","modality":"text","input_per_mtok":0.4,"output_per_mtok":2,"currency":"USD","source_url":"https://docs.mistral.ai/getting-started/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Mistral","model":"Mistral Small","model_id":"mistral:mistral-small-latest","modality":"text","input_per_mtok":0.2,"output_per_mtok":0.6,"currency":"USD","source_url":"https://docs.mistral.ai/getting-started/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Mistral","model":"Codestral","model_id":"mistral:codestral-latest","modality":"text","input_per_mtok":0.3,"output_per_mtok":0.9,"currency":"USD","source_url":"https://docs.mistral.ai/getting-started/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Mistral","model":"Ministral 8B","model_id":"mistral:ministral-8b-latest","modality":"text","input_per_mtok":0.1,"output_per_mtok":0.1,"currency":"USD","source_url":"https://docs.mistral.ai/getting-started/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Mistral","model":"Ministral 3B","model_id":"mistral:ministral-3b-latest","modality":"text","input_per_mtok":0.04,"output_per_mtok":0.04,"currency":"USD","source_url":"https://docs.mistral.ai/getting-started/pricing/","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-
-    {"provider":"Cohere","model":"Command A","model_id":"cohere:command-a","modality":"text","input_per_mtok":2.5,"output_per_mtok":10,"currency":"USD","source_url":"https://docs.cohere.com/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Cohere","model":"Command R+","model_id":"cohere:command-r-plus","modality":"text","input_per_mtok":3,"output_per_mtok":15,"currency":"USD","source_url":"https://docs.cohere.com/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Cohere","model":"Command R","model_id":"cohere:command-r","modality":"text","input_per_mtok":0.5,"output_per_mtok":1.5,"currency":"USD","source_url":"https://docs.cohere.com/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"Cohere","model":"Command R7B","model_id":"cohere:command-r7b","modality":"text","input_per_mtok":0.15,"output_per_mtok":0.6,"currency":"USD","source_url":"https://docs.cohere.com/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-
-    {"provider":"xAI","model":"Grok 3 Beta","model_id":"xai:grok-3-beta","modality":"text","input_per_mtok":3,"output_per_mtok":15,"currency":"USD","source_url":"https://docs.x.ai/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"xAI","model":"Grok 3 Mini Beta","model_id":"xai:grok-3-mini-beta","modality":"text","input_per_mtok":0.3,"output_per_mtok":0.5,"currency":"USD","source_url":"https://docs.x.ai/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"xAI","model":"Grok 2","model_id":"xai:grok-2","modality":"text","input_per_mtok":2,"output_per_mtok":10,"currency":"USD","source_url":"https://docs.x.ai/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."},
-    {"provider":"xAI","model":"Grok 2 Mini","model_id":"xai:grok-2-mini","modality":"text","input_per_mtok":0.2,"output_per_mtok":0.4,"currency":"USD","source_url":"https://docs.x.ai/docs/pricing","retrieved_at":"2026-02-09T23:59:00Z","pricing_confidence":"low","tokenization":"estimated","notes":"Could not directly verify in this execution environment (HTTP 403 to official domain)."}
+    {
+      "provider": "Cohere",
+      "model_id": "cohere:command-r-plus",
+      "display_name": "Command R+",
+      "category": "legacy",
+      "pricing": [
+        { "kind": "input", "price_per_million": 3, "currency": "USD" },
+        { "kind": "output", "price_per_million": 15, "currency": "USD" }
+      ],
+      "pricing_confidence": "low",
+      "source_url": "https://docs.cohere.com/docs/pricing",
+      "notes": "Optional provider entry; confirm latest values in official docs."
+    }
   ]
 }

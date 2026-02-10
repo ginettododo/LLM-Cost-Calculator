@@ -1,149 +1,44 @@
-# DATA_SCHEMA — prices.json
+# DATA_SCHEMA — `src/data/prices.json`
 
-## Overview
-`prices.json` is a versioned local data file bundled with the static site. It contains pricing data for LLM models across providers. The app reads this file at runtime to populate the pricing table and “Last updated” date.
+## Top-level shape
 
-## JSON schema
-```json
-{
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "LLM Pricing Data",
-  "type": "object",
-  "required": ["currency", "retrieved_at", "source_url", "models"],
-  "properties": {
-    "currency": {
-      "type": "string",
-      "enum": ["USD"]
-    },
-    "retrieved_at": {
-      "type": "string",
-      "description": "ISO 8601 date-time when pricing was retrieved",
-      "format": "date-time"
-    },
-    "source_url": {
-      "type": "string",
-      "format": "uri"
-    },
-    "models": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": [
-          "provider",
-          "model",
-          "model_id",
-          "modality",
-          "input_per_mtok",
-          "currency",
-          "source_url",
-          "retrieved_at",
-          "pricing_confidence"
-        ],
-        "properties": {
-          "provider": {
-            "type": "string"
-          },
-          "model": {
-            "type": "string"
-          },
-          "model_id": {
-            "type": "string",
-            "description": "Stable identifier like provider:model"
-          },
-          "release_date": {
-            "type": "string",
-            "description": "Optional ISO 8601 date",
-            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-          },
-          "modality": {
-            "type": "string",
-            "enum": ["text", "audio", "realtime", "multimodal"]
-          },
-          "input_per_mtok": {
-            "type": "number",
-            "minimum": 0
-          },
-          "output_per_mtok": {
-            "type": "number",
-            "minimum": 0
-          },
-          "cached_input_per_mtok": {
-            "type": "number",
-            "minimum": 0
-          },
-          "currency": {
-            "type": "string",
-            "enum": ["USD"]
-          },
-          "source_url": {
-            "type": "string",
-            "format": "uri"
-          },
-          "retrieved_at": {
-            "type": "string",
-            "format": "date-time"
-          },
-          "pricing_confidence": {
-            "type": "string",
-            "enum": ["high", "medium", "low"]
-          },
-          "pricing_tier": {
-            "type": "string"
-          },
-          "is_tiered": {
-            "type": "boolean"
-          },
-          "tokenization": {
-            "type": "string",
-            "enum": ["exact", "estimated"]
-          },
-          "notes": {
-            "type": "string"
-          }
-        },
-        "additionalProperties": false
-      }
-    }
-  },
-  "additionalProperties": false
-}
-```
-
-## Example
 ```json
 {
   "currency": "USD",
-  "retrieved_at": "2026-02-09T00:00:00Z",
-  "source_url": "https://openai.com/pricing",
+  "retrieved_at": "2026-02-09T23:59:00Z",
+  "source_url": "https://openai.com/api/pricing/?utm_source=chatgpt.com",
+  "featuredModels": ["openai:gpt-5.2"],
   "models": [
     {
       "provider": "OpenAI",
-      "model": "gpt-4o",
-      "model_id": "openai:gpt-4o",
-      "release_date": "2024-05-13",
-      "modality": "text",
-      "input_per_mtok": 5.0,
-      "output_per_mtok": 15.0,
-      "currency": "USD",
-      "source_url": "https://openai.com/pricing",
-      "retrieved_at": "2026-02-09T00:00:00Z",
+      "model_id": "openai:gpt-5.2",
+      "display_name": "GPT-5.2",
+      "category": "flagship",
+      "pricing": [
+        { "kind": "input", "price_per_million": 1.75, "currency": "USD" },
+        { "kind": "output", "price_per_million": 14, "currency": "USD" }
+      ],
+      "release_date": "2026-02-01",
       "pricing_confidence": "high",
-      "tokenization": "exact"
-    },
-    {
-      "provider": "Anthropic",
-      "model": "claude-3.5-sonnet",
-      "model_id": "anthropic:claude-3.5-sonnet",
-      "release_date": "2024-06-20",
-      "modality": "text",
-      "input_per_mtok": 3.0,
-      "output_per_mtok": 15.0,
-      "currency": "USD",
-      "source_url": "https://www.anthropic.com/pricing",
-      "retrieved_at": "2026-02-09T00:00:00Z",
-      "pricing_confidence": "high",
-      "tokenization": "estimated"
+      "source_url": "https://openai.com/api/pricing/?utm_source=chatgpt.com",
+      "notes": "From OpenAI API pricing page."
     }
   ]
 }
 ```
+
+## Model fields
+
+- `provider`: provider display group (OpenAI, Google, Anthropic, etc).
+- `model_id`: unique stable ID (`provider:model-name`).
+- `display_name`: UI label.
+- `category`: one of `flagship | mainstream | budget | legacy`.
+- `pricing`: pricing entries; must include an `input` entry and may include `output`.
+- `release_date`: optional ISO date (`YYYY-MM-DD`) when documented.
+- `pricing_confidence`: `high | medium | low`.
+- `source_url`: official source URL.
+- `notes`: optional caveats (tiering/context-window conditions).
+
+## Featured models
+
+`featuredModels` is an ordered array of `model_id` values used by the UI featured strip.
