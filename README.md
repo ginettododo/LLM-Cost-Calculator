@@ -69,27 +69,31 @@ Notes:
 - Large-input guardrails: warnings at 50k chars and 200k chars (primary-only enforced at 200k)
 - Computation modes: visible rows (default) or primary model only for faster updates
 - Export current table to CSV/JSON
-- Copy summary to clipboard
-- Presets for quick testing
+- Copy summary to clipboard (with manual-copy fallback when permissions are blocked)
+- Presets for quick testing with long-form, realistic content
 - Light/Dark mode toggle
 
 ## Presets
-Each preset is a deterministic string with a documented length (character count).
+Each preset is deterministic (no randomness), static, and includes an exact documented character length.
 
-- Quick note (short): 275 chars
-- Long article: 4,990 chars
-- Very long article: 9,976 chars
-- Code sample (JSON + TS): 3,757 chars
-- Mixed unicode stress test: 2,109 chars
-- Prompt-like instruction block: 4,265 chars
+- Short note (quick sanity check): **241** chars
+- Long article ~5,000 chars: **5,003** chars
+- Very long article ~10,000 chars: **10,012** chars
+- Code sample (JSON + TS) ~3,000–6,000 chars: **4,275** chars
+- Mixed unicode stress test ~2,000–4,000 chars: **2,684** chars
+- Prompt-like instruction block ~4,000–7,000 chars: **4,620** chars
 
 ## Computation Modes
-- **Visible rows (default):** Computes token counts for rows after search and filters.
-- **Primary model only:** Computes only the first visible row to keep updates fast on large inputs.
+- **Visible rows (default):** Computes token counts and costs for rows currently visible after provider/search/filter controls.
+- **Primary model only (fast):** Computes only the first visible row to minimize work and keep interactions responsive.
+- **Large-input safeguards:**
+  - Warning banner at **50,000** characters (suggests primary model mode).
+  - Critical banner at **200,000** characters (primary-only mode is enforced and multi-row mode is disabled).
 
 ## Accuracy Policy
-- **Exact:** Token counts use the provider tokenizer when available.
-- **Estimated:** When a tokenizer is unavailable or fails, the app falls back to a character-based heuristic.
+- **Exact:** Token counts use tokenizer-backed counting when available for the selected provider/model.
+- **Estimated:** If tokenizer-backed counting is unavailable or fails, the app uses a deterministic `characters / 4` heuristic.
+- **UI policy:** Every computed row is labeled `Exact` or `Estimated`, and a help popover explains the difference.
 
 ## Data Export Format
 

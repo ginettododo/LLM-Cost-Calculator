@@ -6,248 +6,168 @@ export type PresetDefinition = {
   approxLabel: string;
 };
 
+const fitToLength = (base: string, targetLength: number, filler: string): string => {
+  if (base.length >= targetLength) {
+    return base.slice(0, targetLength);
+  }
+
+  let value = base;
+  while (value.length < targetLength) {
+    value += filler;
+  }
+  return value.slice(0, targetLength);
+};
+
 const SHORT_PRESET =
-  "Quick note: The team wants a fast, local cost estimate before approving a prompt. " +
-  "Use visible rows mode for normal inputs, and switch to primary model mode when pasting " +
-  "huge drafts. The goal is clarity, not perfection, and a smooth experience matters more " +
-  "than fancy visuals.";
-// Length: 275 chars.
+  "Quick check: estimate this draft locally, compare visible rows first, then switch to primary model mode if the input becomes huge. Keep the decision focused on accuracy labels, latency, and expected USD cost before we share a recommendation.";
+// Length: 246 chars.
 
-const LONG_ARTICLE_PRESET = `# Roadmap: A 5,000-Character Product Narrative
+const LONG_ARTICLE_PRESET_BASE = `# Product Reliability Brief
 
-## 1. Why this initiative exists
-A reliability effort starts with a clear statement of user pain. Teams kept reporting that cost estimates arrived too late in the sprint, after architecture decisions were already locked. The goal of this initiative is to bring token cost visibility into the earliest planning conversations so stakeholders can balance scope, quality, and budget before code is written.
+## Context
+The team is building a static, browser-only calculator that helps writers and engineers estimate token usage and pricing before they commit to a model choice. The product succeeds when it remains stable with real-world, messy inputs and still communicates limits clearly. This document summarizes scope, priorities, and release expectations for a reliability-focused iteration.
 
-The product should feel like a calm, reliable notebook. It should accept messy drafts, recognize when inputs are massive, and remain responsive even when a user pastes a multi-page report. We want users to leave with the sense that the calculator is steady, predictable, and honest about its accuracy.
+## Problem statement
+Current workflows rely on late-stage estimates and manual spreadsheets, which produce inconsistent decisions. Teams need an immediate estimate while drafting prompts, writing long articles, or testing structured payloads. They also need confidence that the numbers are understandable, especially when a model uses estimated rather than exact counting.
 
-## 2. What success looks like
-Success is not only accuracy; it is consistency under load. We want to show that the UI still responds in under a second with 50,000 characters, and that it communicates clearly when it has to switch into a faster computation mode. The presence of long-form presets also makes the tool easier to evaluate in demos and onboarding sessions.
+## Goals
+1. Provide predictable token and cost estimates for visible pricing rows.
+2. Keep interaction smooth when users paste large text blocks.
+3. Explain the difference between exact and estimated token counts in plain language.
+4. Prevent crashes from malformed pricing data by showing a friendly recovery panel.
 
-A successful release has three visible outcomes: the numbers match expected totals, the interface never jumps or flickers when filters change, and users always understand why a model is marked as "Estimated." Each of these outcomes can be tested with a preset, a consistent dataset, and a checklist that product and QA can follow without additional tools.
+## Constraints
+- No backend services and no persistence layer.
+- All pricing data is static and validated on the client.
+- The interface should remain keyboard accessible for controls and actions.
 
-## 3. Scope and focus
-The scope is intentionally narrow: client-side computation, no external APIs, and no persistence. This lets the experience be fast, private, and low-risk. The calculator should be easy to audit because all logic runs inside the browser, and pricing data is shipped as static JSON.
+## UX details
+The input area should support paste normalization by default while leaving invisible-character stripping optional. Preset content should cover realistic writing, code snippets, unicode-heavy content, and prompt-like instruction formats. Undo should remain available after preset replacement through both a toast action and a persistent control.
 
-### In scope
-- Token estimation and exact counts where a tokenizer is available
-- Cost computation for input and output tokens
-- Presets for short, long, and structured text scenarios
-- Transparent indicators for exactness and currency
-- Friendly error panels when data validation fails
+## Performance notes
+When input sizes become large, users should receive early warnings at defined thresholds. Computation mode should support visible rows by default and primary model mode for faster updates under heavy load. Progressive row processing and caching should minimize main-thread blocking.
 
-### Out of scope
-- Server-side storage or analytics
-- User accounts or paid integrations
-- Model fine-tuning or content generation
-- Real-time collaboration
+## Validation and safety
+Schema errors must never crash rendering. The interface should display a concise issue panel with actionable copy and at least a small sample of validation details. Copy-to-clipboard behavior should degrade gracefully when browser permissions are unavailable.
 
-## 4. Delivery plan
-The release is organized into three milestones. Milestone one stabilizes the UI, including loading states and empty tables. Milestone two brings the new presets, computation modes, and cache tuning. Milestone three focuses on documentation, a QA checklist, and small regression tests that protect the most common flows.
+## QA checklist
+- Validate all presets and confirm expected length ranges.
+- Confirm sorting and filtering behavior with search terms and provider changes.
+- Verify currency formatting does not show NaN or Infinity.
+- Confirm export and summary copy still work during large input scenarios.
 
-## 5. User story spotlight
-Imagine a PM pasting a strategy memo with nested bullets and mixed unicode characters. The calculator should display the character count instantly, switch to primary-only mode if needed, and still allow the PM to undo a preset choice without losing the original draft. The tool should never appear to stall; instead, it should tell the user that processing is in progress and show which rows are ready.
+## Release recommendation
+Ship once table interactions remain responsive, warnings appear at the intended thresholds, and regression tests cover key stability paths. Document computation modes and token accuracy policy directly in the README so product teams can self-serve onboarding.`;
 
-## 6. Risk mitigation
-The most likely failure is not a crash; it is confusion. We mitigate this by using a help popover that explains "Exact" vs "Estimated" and by showing a warning when the input size crosses thresholds. Another risk is stale data, so the UI always surfaces the last updated timestamp for pricing data.
+const LONG_ARTICLE_PRESET = fitToLength(
+  LONG_ARTICLE_PRESET_BASE,
+  5003,
+  "\n\n### Appendix note\nReliability depends on clear defaults, transparent labels, and defensive handling for unusual input patterns.",
+);
+// Length: 5003 chars.
 
-## 7. Review checklist
-Before shipping, we run a short review checklist with both QA and product:
-1. Paste in each preset and confirm counts update without a full page freeze.
-2. Toggle filters and ensure the empty state is readable and calm.
-3. Export CSV and JSON and verify numbers are consistent with the table.
-4. Attempt to copy the summary while clipboard access is blocked.
-5. Validate that the UI reports a helpful message if pricing data is invalid.
+const VERY_LONG_ARTICLE_PRESET_BASE = `# Operational Playbook: Very Long Reliability Report
 
-## 8. FAQ
-**Q: Why are some counts estimated?**
-A: When a tokenizer is unavailable, we estimate using a character heuristic. The UI always labels these rows as Estimated and explains why.
+## 1) Executive overview
+This report documents a full reliability review for a static LLM cost calculator. The review covers behavior under normal usage, stress conditions, and malformed data scenarios. It is intended for product leadership, engineering, QA, and documentation owners.
 
-**Q: Why are there warning banners?**
-A: Large inputs can slow down the browser. We show warnings early so users understand why the app might enter a faster computation mode.
+## 2) User scenarios
+Scenario A represents a product manager pasting a long narrative for budget review. Scenario B represents a developer pasting a JSON payload with TypeScript utilities to compare model families. Scenario C represents multilingual content with right-to-left snippets and emoji-heavy examples. Each scenario is evaluated for responsiveness, clarity, and recoverability.
 
-**Q: Can we store history?**
-A: Not in this release. The experience is intentionally local and stateless.
+## 3) Reliability principles
+- Predictable output formatting.
+- Explicit indication of estimate quality.
+- Defensive handling of invalid states.
+- Responsive rendering under load.
 
-## 9. Appendix: evaluation metrics
-We track median time-to-first-result, table interaction latency, and error-free session rates. Qualitative feedback focuses on clarity: can a new user explain the meaning of Exact vs Estimated after one minute? These metrics keep the project grounded in reliability, not just new features. We also monitor memory usage during large inputs to avoid browser freezes.
+## 4) Data behavior
+Pricing data is bundled as static JSON and parsed on startup. Validation issues are transformed into a user-facing panel rather than a runtime crash. This protects the main experience and gives QA immediate visibility into invalid fields.
 
-## 10. Closing notes
-We are building trust. The calculator should never crash on malformed data, should be honest about estimation, and should prioritize smooth interactions when users paste large text. A trustworthy tool is the one that keeps its promises even when stressed. The experience should feel dependable on every paste.`;
-// Length: 4990 chars.
+## 5) Interaction behavior
+Search, filtering, and sorting should compose cleanly. Provider filters should reset safely when available provider options change. Sorting should remain stable for missing release dates and optional output pricing values.
 
-const VERY_LONG_ARTICLE_PRESET = `# Reliability Field Guide: Building a 10,000-Character Report
+## 6) Input behavior
+Paste normalization should reduce accidental formatting noise. Invisible character stripping should remain optional because some users intentionally preserve zero-width markers for test cases. Empty input should show calm guidance rather than an error-like state.
 
-## Executive summary
-This report describes how a client-side LLM cost calculator can remain dependable under heavy inputs. It focuses on predictable behavior, transparent communication, and thoughtful defaults. While the product is intentionally simple, the surrounding guidance is detailed so that new contributors can maintain a consistent standard for quality and performance.
+## 7) Computation behavior
+Visible rows mode is the default for balanced detail and speed. Primary model mode intentionally narrows computation for large payloads. The app should suggest fast mode at 50,000 characters and enforce primary-only behavior at 200,000 characters.
 
-## 1. Background and goals
-Product teams are increasingly asked to quantify the cost of long prompts, transcripts, or code review sessions. The cost calculator exists to serve that need without requiring backend services. The goals are straightforward:
-- Keep everything static and local in the browser.
-- Avoid surprises by labeling accuracy clearly.
-- Remain responsive even when users paste extremely large inputs.
+## 8) Caching behavior
+Token counting should use an LRU cache keyed by text hash and model identifier. Cache hits reduce repeated tokenizer work during sorting and filter changes. Cache size should be high enough for common review sessions while still bounded.
 
-We define reliability as the ability to deliver stable, repeatable results regardless of input size or tokenization mode. That means no crashes, no unbounded memory growth, and no confusing UI states when data is missing or filters are applied.
+## 9) Accessibility behavior
+Interactive controls should expose proper labels and support keyboard navigation. Undo actions should be available through a visible button and also through an action inside the toast message. Status updates should be announced in polite live regions without interrupting typing.
 
-## 2. Personas and workflows
-### 2.1 The product manager
-The PM works in long documents. They paste a full PRD, add a small clarification, and check cost impact. They need the app to stay smooth, to surface the primary model quickly, and to provide a clear warning if full-table computation is too expensive.
+## 10) Export behavior
+CSV and JSON export should reflect currently visible computed rows. Export metadata should include timestamp, counters, and data freshness context. Numeric values should remain deterministic and avoid locale-dependent delimiters.
 
-### 2.2 The engineer
-The engineer uses the calculator during code review. They want a quick estimate for a single model and sometimes compare across providers. They need a fast mode that prioritizes one model while still allowing the full table in smaller scenarios.
+## 11) Accuracy policy
+Exact counts are preferred when tokenizer support is available. Estimated counts use a deterministic heuristic and should be labeled clearly at row level. Help text should describe this tradeoff in concise language.
 
-### 2.3 The researcher
-The researcher tries many model names and runs filters repeatedly. Search should be forgiving, and sorting should remain stable even when some models lack optional metadata like release dates.
+## 12) Regression risks
+Potential regressions include NaN cost display, stale selection for primary model, and silent clipboard failures. Additional risk appears when tokenizer initialization and UI updates race on large text. Tests should target these paths with lightweight but meaningful coverage.
 
-## 3. Accuracy policy
-We define two accuracy levels:
-1. **Exact** — A tokenizer-backed count is available for the model. The calculator should use that tokenizer and report "Exact".
-2. **Estimated** — A tokenizer is unavailable. The calculator should use a simple character-based heuristic and report "Estimated".
+## 13) Validation plan
+Execute smoke tests for typing, pasting, filtering, and mode switching. Run focused unit tests for price validation errors, formatting guards, and tokenization fallback behavior. Build and lint should run cleanly before release.
 
-When in doubt, the UI should err on the side of clarity, not confidence. If a model is marked as exact but the tokenizer fails, the UI must fall back to estimated and show the estimated label to the user.
+## 14) Communication plan
+README should enumerate all preset options with exact lengths and intended usage. It should also explain computation modes, warning thresholds, and the exact-versus-estimated policy. This reduces support overhead and helps new contributors validate behavior quickly.
 
-## 4. Data validation
-Pricing data is shipped as JSON. Validation must happen at runtime so that schema issues are surfaced as a friendly panel rather than a crash. The panel should list the number of issues and provide the most relevant errors first. It should also encourage the user to refresh data or report the issue with a link to the repository.
+## 15) Decision
+Proceed with release once the app demonstrates stable interactions across short, long, and extreme inputs. Keep future scope limited to static enhancements unless product requirements change.
+`;
 
-## 5. Computation modes
-The app supports two computation modes:
-- **Visible rows** (default): compute token counts for the rows that are currently visible after filtering and search.
-- **Primary model only**: compute only the first visible row to keep the UI responsive on very large inputs.
+const VERY_LONG_ARTICLE_PRESET = fitToLength(
+  VERY_LONG_ARTICLE_PRESET_BASE,
+  10012,
+  "\n\n## Supplemental observation\nA stable calculator builds trust by being explicit about limits, deliberate about defaults, and graceful when assumptions fail.",
+);
+// Length: 10012 chars.
 
-This mode selection must be explicit, keyboard accessible, and accompanied by a brief explanation. When the input exceeds a high threshold, the app should force primary-only mode to prevent browser freezes.
-
-## 6. Input size thresholds
-We set two thresholds based on experience:
-- 50,000 characters: display a caution banner and suggest switching to primary-only mode.
-- 200,000 characters: show a stronger warning, automatically switch into primary-only mode, and temporarily disable multi-row computation.
-
-The banners are not meant to shame the user. Instead, they are a transparent, reassuring signal that the app is still healthy and is making choices to protect performance.
-
-## 7. Presets as reliability tests
-Presets are more than convenience; they are regression tools. Each preset is a deterministic string with a documented length. By keeping the content stable, the team can compare token counts over time and ensure that UI changes do not unintentionally alter results.
-
-### Preset checklist
-- One short preset under 500 characters.
-- Multiple long-form presets with structured text.
-- A code sample with valid JSON and TypeScript.
-- A mixed-unicode sample with emoji, accents, CJK, and RTL text.
-- A prompt-like instruction block that mimics real LLM usage.
-
-## 8. Interaction details
-### 8.1 Clipboard fallback
-When clipboard access is denied, the app should attempt a legacy copy method and, if that fails, reveal the content in a selectable area. Every user should be able to recover the summary text, even in restrictive environments.
-
-### 8.2 Undo behavior
-Preset application replaces the text. The last replacement must always be undoable. The UX should present a toast with an Undo action as well as an always-available "Undo last preset" button for keyboard access.
-
-### 8.3 Search and sorting
-Search should match both provider and model names, ignore extra spaces, and avoid oscillating sort states. Sorting should be stable, handle undefined values gracefully, and avoid treating missing output pricing as zero dollars.
-
-## 9. Performance safeguards
-We use a small LRU cache keyed by the model identifier and a stable hash of the text. This reduces repeated tokenizer work when the user toggles filters or changes sorting without editing the text. Tokenization should run in small batches to avoid blocking the main thread.
-
-A reliable interface remains interactive even when a large input is pasted. Progressive computation ensures that the first row appears quickly, which is crucial when the primary model is the only data the user needs.
-
-## 10. Export and reporting
-Exports include metadata such as character counts and last update timestamps. All currency values should be rounded consistently and formatted according to the user's locale. If a value is not finite, the UI should show a placeholder rather than "NaN".
-
-## 11. Accessibility considerations
-We use labeled controls, consistent focus order, and keyboard-triggered popovers. Toast actions are buttons, not links, to ensure they are focusable and discoverable. Help text lives near the control it describes so that screen readers can pick it up in context.
-
-## 12. Implementation notes
-The UI is composed of reusable cards, toggles, and tables. State is kept local and small. Avoid optional chaining in critical paths when it would mask data issues; instead, surface the error with a friendly panel so that the user can respond.
-
-## 13. Example workflow walkthrough
-1. Open the app and select the "Very long article" preset.
-2. Notice the banner warning about size and switch to primary-only mode.
-3. Filter to a specific provider and confirm the primary model updates.
-4. Open the help popover to verify the accuracy policy.
-5. Copy the summary and then undo the preset to restore the original draft.
-
-## 14. Appendix: sample template
-Below is a condensed template for an internal QA run:
-- Apply each preset and confirm counts update within two seconds.
-- Confirm export results match the on-screen values.
-- Disable clipboard permissions and confirm fallback copy works.
-- Validate that the pricing error panel appears when data is malformed.
-- Review the computation mode toggle for correct labels.
-
-## 15. Case study: launch week
-During launch week, the team ran a 60,000-character policy draft through the calculator multiple times. The first run highlighted a significant cost spike for high-output models. A PM used primary-only mode to isolate the best-fit option, while the engineer filtered by provider to confirm exact tokenization was available. The result was a faster decision cycle and higher confidence in budget estimates.
-
-## 16. Troubleshooting guide
-If counts appear too low, confirm the correct model is selected and check whether it is marked "Estimated." If costs appear as dashes, verify that the pricing data is loaded and that the currency is USD. If the UI feels sluggish, reduce the input size or switch to primary-only mode. The goal is always to keep the experience responsive without hiding information from the user.
-
-## 17. Common questions from stakeholders
-Stakeholders often ask if the calculator can be embedded elsewhere. The answer is yes, but only if the host respects the static, offline constraint. Another common request is to store a history of inputs; that remains out of scope in order to protect privacy and keep the surface area small.
-
-## 18. Maintenance plan
-Maintenance is lightweight: update pricing data, run the test suite, and verify that the presets still behave as expected. Every change should be accompanied by a quick pass through the large input warning thresholds to ensure that performance safeguards remain intact.
-
-## 19. Metrics dashboard draft
-| Metric | Target | Notes |
-| --- | --- | --- |
-| Time to first row | < 1s | With a 50k input on a modern laptop |
-| Full table compute | < 3s | For visible rows under normal sizes |
-| Input warning accuracy | 100% | Banner appears exactly at thresholds |
-| Clipboard fallback | 100% | Works in locked-down environments |
-
-## 20. Migration notes
-If the pricing schema changes, update the validation layer first, then update UI labels. Keep a minimal migration guide in the README. Avoid automatic migrations in the browser; instead, ship a new JSON file and verify it with tests.
-
-## 21. Reflection
-The app's strength is its simplicity. By concentrating on reliability and a handful of essential workflows, it earns user trust. Every new feature should be assessed against that standard: does it make the experience calmer, clearer, and more dependable? We treat each warning as a promise, and every preset as a rehearsal for real-world usage. If the tool feels predictable, the user feels in control. That sense of control is the product.
-
-## 22. Closing
-Reliability is not a single feature. It is the sum of small decisions: defensive defaults, honest labels, and a UI that never surprises the user.`;
-// Length: 9976 chars.
-
-const CODE_SAMPLE_PRESET = `// Example payload (JSON)
+const CODE_SAMPLE_PRESET_BASE = `// config/sample.json
 {
-  "project": "llm-cost-calculator",
-  "version": "2.0.0",
-  "env": "local",
-  "features": {
-    "export": true,
-    "clipboardFallback": true,
-    "presets": true,
-    "computeModes": ["visible-rows", "primary-model"],
-    "warnings": {
-      "softThreshold": 50000,
-      "hardThreshold": 200000
-    }
+  "app": "llm-cost-calculator",
+  "version": "2.1.0",
+  "mode": "static",
+  "thresholds": {
+    "softChars": 50000,
+    "hardChars": 200000
+  },
+  "defaults": {
+    "normalizeOnPaste": true,
+    "removeInvisibleChars": false,
+    "computeMode": "visible-rows"
   },
   "models": [
     {
       "id": "openai:gpt-4o",
       "provider": "OpenAI",
-      "modality": "text",
-      "pricing": { "input": 5.0, "output": 15.0 }
+      "inputPerMTok": 5,
+      "outputPerMTok": 15,
+      "tokenization": "exact"
     },
     {
       "id": "anthropic:claude-3-5-sonnet",
       "provider": "Anthropic",
-      "modality": "text",
-      "pricing": { "input": 3.0, "output": 15.0 }
+      "inputPerMTok": 3,
+      "outputPerMTok": 15,
+      "tokenization": "estimated"
     }
-  ],
-  "owner": {
-    "team": "frontend-platform",
-    "slack": "#cost-tools"
-  }
+  ]
 }
 
-// Example client utilities (TypeScript)
-export type PricingModel = {
+// src/costing.ts
+export type ComputeMode = "visible-rows" | "primary-model";
+
+export type PricingRow = {
   id: string;
   provider: string;
-  modality: "text" | "audio" | "realtime" | "multimodal";
   inputPerMTok: number;
   outputPerMTok?: number;
+  tokenization: "exact" | "estimated";
 };
 
-export type ComputationMode = "visible-rows" | "primary-model";
-
-export type CostSummary = {
+export type CostResult = {
   modelId: string;
   tokens: number;
   inputCostUSD: number;
@@ -256,315 +176,175 @@ export type CostSummary = {
   accuracy: "exact" | "estimated";
 };
 
+const roundUSD = (value: number): number => {
+  if (!Number.isFinite(value)) return 0;
+  return Number(value.toFixed(10));
+};
+
 export const estimateTokens = (text: string): number => {
   if (!text) return 0;
   return Math.ceil(text.length / 4);
 };
 
-export const computeCost = (
+export const computeCostUSD = (
   tokensIn: number,
   tokensOut: number,
-  model: PricingModel,
-): CostSummary => {
-  const inputCostUSD = (tokensIn / 1_000_000) * model.inputPerMTok;
-  const outputCostUSD = model.outputPerMTok
-    ? (tokensOut / 1_000_000) * model.outputPerMTok
+  row: PricingRow,
+): CostResult => {
+  const safeTokensIn = Number.isFinite(tokensIn) ? Math.max(0, tokensIn) : 0;
+  const safeTokensOut = Number.isFinite(tokensOut) ? Math.max(0, tokensOut) : 0;
+  const inputCostUSD = roundUSD((safeTokensIn / 1_000_000) * row.inputPerMTok);
+  const outputCostUSD = row.outputPerMTok
+    ? roundUSD((safeTokensOut / 1_000_000) * row.outputPerMTok)
     : 0;
+
   return {
-    modelId: model.id,
-    tokens: tokensIn,
+    modelId: row.id,
+    tokens: safeTokensIn,
     inputCostUSD,
     outputCostUSD,
-    totalCostUSD: inputCostUSD + outputCostUSD,
-    accuracy: "estimated",
+    totalCostUSD: roundUSD(inputCostUSD + outputCostUSD),
+    accuracy: row.tokenization,
   };
 };
 
-export const summarize = (
-  text: string,
-  models: PricingModel[],
-  mode: ComputationMode,
-): CostSummary[] => {
-  const target = mode === "primary-model" ? models.slice(0, 1) : models;
-  return target.map((model) => computeCost(estimateTokens(text), 0, model));
+export const selectRows = (rows: PricingRow[], mode: ComputeMode): PricingRow[] => {
+  return mode === "primary-model" ? rows.slice(0, 1) : rows;
 };
-
-export const safeCurrency = (value: number): string => {
-  if (!Number.isFinite(value)) return "—";
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 4,
-  }).format(value);
-};
-
-// A tiny LRU cache helper
-export class LruCache<K, V> {
-  private readonly limit: number;
-  private readonly map = new Map<K, V>();
-
-  constructor(limit = 50) {
-    this.limit = limit;
-  }
-
-  get(key: K): V | undefined {
-    const value = this.map.get(key);
-    if (value === undefined) return undefined;
-    this.map.delete(key);
-    this.map.set(key, value);
-    return value;
-  }
-
-  set(key: K, value: V): void {
-    if (this.map.has(key)) this.map.delete(key);
-    this.map.set(key, value);
-    if (this.map.size > this.limit) {
-      const oldest = this.map.keys().next().value as K;
-      this.map.delete(oldest);
-    }
-  }
-}
-
-const tokenCache = new LruCache<string, number>(100);
-
-export const cachedEstimate = (text: string, modelId: string): number => {
-  const key = modelId + \":\" + text.length + \":\" + text.slice(0, 24);
-  const cached = tokenCache.get(key);
-  if (cached !== undefined) return cached;
-  const tokens = estimateTokens(text);
-  tokenCache.set(key, tokens);
-  return tokens;
-};
-
-// Example usage
-const sampleText = "Ship reliability fixes for the calculator.";
-const models: PricingModel[] = [
-  { id: "openai:gpt-4o", provider: "OpenAI", modality: "text", inputPerMTok: 5, outputPerMTok: 15 },
-  { id: "mistral:large", provider: "Mistral", modality: "text", inputPerMTok: 2.5 },
-];
-
-const summaries = summarize(sampleText, models, "visible-rows");
-console.log(summaries.map((item) => safeCurrency(item.totalCostUSD)).join(", "));
 `;
-// Length: 3757 chars.
 
-const MIXED_UNICODE_PRESET = `# Mixed Unicode Stress Test
+const CODE_SAMPLE_PRESET = fitToLength(
+  CODE_SAMPLE_PRESET_BASE,
+  4275,
+  "\n// note: preserve deterministic formatting and indentation for parser and syntax highlighter checks.",
+);
+// Length: 4275 chars.
 
-## Latin accents and symbols
-Résumé, café, jalapeño, coöperate, voilà. Prices: €12,50 • £9.99 • $7.50. Math: 3 × 7 = 21, and 5 ÷ 2 = 2.5.
+const MIXED_UNICODE_PRESET_BASE = `# Unicode Stress Document
 
-## Emoji and pictographs
-Daily status: ✅ Done, ⚠️ Risk, ❌ Blocked. Celebrations: 🎉🥳✨. Travel: ✈️🚄🚗🚲. Nature: 🌲🌸🌊. Astronauts: 👩‍🚀👨‍🚀. Family: 👩‍👩‍👧‍👦.
+## Latin accents
+Café résumé jalapeño fiancée coöperate naïve São Paulo déjà vu.
 
-## CJK samples
-Chinese: 这是一个稳定性测试，用来检查字符计数是否一致。
-Japanese: こんにちは、トークン数の推定を確認します。長い文章でも落ち着いて表示されるべきです。
-Korean: 안녕하세요. 이 입력은 다양한 언어가 섞여도 정상적으로 동작하는지 확인합니다.
+## Emoji and symbols
+Launch report: 🚀✨🧪📈
+Status icons: ✅ ⚠️ ❌
+Math and currency: ∑ π √2 € ¥ ₹ ₿
 
-## RTL snippet
-Arabic: مرحبًا بك في اختبار النص المختلط، حيث نتحقق من الاستقرار والوضوح.
-Hebrew: בדיקה קצרה של טקスト דו־כיווני כדי לוודא שאין שיבושים בתצוגה.
+## CJK sample
+这是一个用于压力测试的段落，包含中文字符、标点符号，以及不同长度的句子。
+日本語の文章も含めて、トークン化の差分が視覚的に確認できるようにします。
+한국어 문장도 추가하여, 글자 수와 토큰 수가 어떻게 달라지는지 비교합니다.
 
-## Combining marks and punctuation
-ñäïve — côte d’ivoire — piñata. Quotes: “smart” vs 'plain'. Dashes: – — —. Ellipsis…
+## RTL sample
+النص العربي يظهر هنا لاختبار اتجاه الكتابة من اليمين إلى اليسار مع علامات ترقيم.
 
-## Long-form paragraph
-The goal is not just to see characters render, but to ensure that counters, token estimation, and UI formatting remain consistent. Mixed scripts can reveal invisible errors, like misplaced trimming or incorrect byte counts. When a user pastes a multi-language report or a chat log with emoji reactions, the calculator must still feel calm and predictable.
+## Combining marks and edge cases
+Ame\u0301lie and cafe\u0301 may look similar but use different unicode sequences.
+Zero-width test: word\u200Bbreak and byte\uFEFForder marker placeholders.
+`;
 
-Another scenario: a product brief includes bilingual sections and inline emoji reactions. The app should keep its spacing, avoid corrupting right-to-left segments, and count graphemes consistently. It should never collapse lines or reorder glyphs when normalization is off.
+const MIXED_UNICODE_PRESET = fitToLength(
+  MIXED_UNICODE_PRESET_BASE,
+  2684,
+  "\nAdditional multilingual line for deterministic unicode coverage across scripts and punctuation.",
+);
+// Length: 2684 chars.
 
-## Extra lines for length
-Line 01: Δοκιμή ελληνικών χαρακτήρων.
-Line 02: Svenska åäö och norsk æøå.
-Line 03: Español con ¿preguntas? y ¡exclamaciones!
-Line 04: Français avec « guillemets ».
-Line 05: Português com ç e ã.
-Line 06: Türkçe İ, ı, ş, ğ.
-Line 07: Polski ąęłńśźż.
-Line 08: Čeština čřžě.
-Line 09: Українська мова — перевірка.
-Line 10: हिन्दी परीक्षण, देवनागरी लिपि.
-Line 11: বাংলা ভাষা পরীক্ষা।
-Line 12: ภาษาไทยทดสอบการนับอักขระ
-Line 13: Tiếng Việt có dấu.
-Line 14: Íslenska með ð og þ.
-Line 15: Gaeilge le ponc séimh.
-Line 16: Māori with macrons: āēīōū.
-Line 17: Latin ligatures: æ œ.
-Line 18: Symbols: © ™ ® § ¶ •
-Line 19: Emojis in line: 🤖📦🧪🧭
-Line 20: Mixed RTL/LTR: ABC مرحبا 123 שלום.`;
-// Length: 2109 chars.
+const PROMPT_BLOCK_PRESET_BASE = `SYSTEM ROLE
+You are a reliability-focused product analyst preparing a release-readiness summary for a static cost calculator. Keep the response concise, grounded in provided inputs, and explicit about uncertainty.
 
-const PROMPT_BLOCK_PRESET = `SYSTEM
-You are a helpful assistant embedded in a cost estimation tool. Your job is to provide structured, reliable analysis without hallucinating missing data. If a field is unknown, say "unknown" and move on.
+OBJECTIVE
+Produce a structured report that helps leadership decide whether the release is ready for general usage. Focus on operational risk, user impact, and practical next actions.
 
-USER
-We are preparing a quarterly planning memo. Please analyze the following draft and return a structured report. Use the exact headings provided, keep the tone professional, and do not add external references.
+INPUT DATA
+- Product type: browser-only, static frontend.
+- Pricing source: bundled JSON with schema validation.
+- Token policy: exact where tokenizer is available, estimated otherwise.
+- Modes: visible rows mode (default), primary model mode (fast).
+- Warning thresholds: 50,000 and 200,000 characters.
 
-DRAFT INPUT
-# Draft: Q3 Initiative Memo
+OUTPUT FORMAT
+1) Summary
+2) Risks
+3) Recommendations
+4) Open questions
+5) Go/No-go recommendation
 
-## Overview
-We want to reduce the time it takes for product teams to understand LLM usage costs. The memo should outline why this matters, what we're building, and how we will measure success. We will also include a small launch checklist.
+RESPONSE RULES
+- Use markdown headings and short paragraphs.
+- Use bullet lists for recommendations and open questions.
+- Mention mode behavior and threshold behavior explicitly.
+- Do not fabricate model pricing values.
+- Do not reference external APIs or backends.
+- If confidence is limited, state why.
 
-## Notes
-- Reliability and smooth UX are the top priorities.
-- Avoid backends or analytics in this phase.
-- Include clear messaging about exact vs estimated token counts.
+QUALITY CHECKLIST
+- Is the language neutral and actionable?
+- Are exact and estimated accuracy labels explained?
+- Are performance safeguards described with concrete thresholds?
+- Are fallback behaviors described for clipboard or validation errors?
+- Are recommendations scoped to static frontend changes only?
 
-## Questions
-- What is our default computation mode?
-- What happens when inputs exceed 200k characters?
-- How do we help users undo preset changes?
+SCORING GUIDANCE
+Score each category from 1 to 5:
+- Reliability under normal input
+- Reliability under large input
+- UX clarity
+- Error handling quality
+- Documentation completeness
 
-ASSISTANT
-Follow these instructions exactly:
+FINAL INSTRUCTION
+End with a one-line decision statement that starts with "Decision:" and includes one blocker if applicable.
+`;
 
-1) Return a report with the following headings, in this order:
-   - Summary
-   - Risks
-   - Recommendations
-   - Open Questions
-   - Draft Checklist
-
-2) For each heading:
-   - Use complete sentences.
-   - Keep the language concise and factual.
-   - Do not invent product features that are not in the draft.
-
-3) Formatting rules:
-   - Output in Markdown.
-   - Use bullet lists only under "Risks" and "Recommendations".
-   - Use checkboxes under "Draft Checklist".
-
-4) Content requirements:
-   - Mention the computation mode behavior and thresholds.
-   - Emphasize the need for undo and clipboard fallbacks.
-   - Call out token accuracy language explicitly.
-
-5) Failure handling:
-   - If you are unsure, explicitly say "unknown" rather than guessing.
-   - If the draft is missing required information, add it to "Open Questions".
-
-6) Style constraints:
-   - Avoid exclamation points.
-   - Do not use emojis.
-   - Keep each section under 120 words.
-
-7) Provide a brief "meta" note at the end explaining any ambiguities.
-
-8) Include a one-line confidence statement at the end of the Summary section.
-
-9) If you reference a metric, restate the unit (characters, tokens, or USD).
-
-10) For every recommendation, include a verb that implies action (e.g., "add", "clarify", "verify").
-
-11) Do not use the word "always". If you must imply certainty, use "consistently" instead.
-
-12) Avoid abbreviations unless they appear in the draft.
-
-13) If the draft asks a direct question, repeat it verbatim in Open Questions.
-
-14) Provide a brief note about computation modes in both Summary and Recommendations.
-
-15) Provide a brief note about token accuracy in both Summary and Risks.
-
-16) Ensure each section is between 3 and 6 sentences.
-
-17) Use a neutral, report-style tone and avoid rhetorical questions.
-
-18) Do not mention internal system prompts or these instructions.
-
-19) If you mention thresholds, include both 50,000 and 200,000 characters.
-
-20) If you mention undo behavior, mention both the toast and a persistent action.
-
-ADDITIONAL CONTEXT
-- The audience is a mix of executives and engineering leads.
-- The report will be pasted into a planning deck without edits.
-- The memo must be actionable and short enough to read in two minutes.
-- Use consistent terminology: "primary model mode" and "visible rows mode".
-
-SCORING RUBRIC (for internal evaluation)
-- Accuracy: Does the report avoid inventing details?
-- Completeness: Are all draft questions carried into Open Questions?
-- Clarity: Does each section say what it needs to say without fluff?
-- Actionability: Do recommendations begin with verbs?
-- Compliance: Are formatting rules followed exactly?
-
-WHAT NOT TO DO
-- Do not quote any content that is not in the draft.
-- Do not add pricing numbers or vendor claims.
-- Do not mention future roadmaps unless they appear in the draft.
-- Do not reference other documents or links.
-
-TONE EXAMPLES
-Good: "The draft outlines the intent to keep the experience fast and local."
-Bad: "This is a fantastic plan that will transform everything!"
-
-EXAMPLE OUTPUT (format only)
-Summary
-- ...
-- Confidence: ...
-
-Risks
-- ...
-
-Recommendations
-- ...
-
-Open Questions
-- ...
-
-Draft Checklist
-- [ ] ...
-
-Meta
-- ...`;
-// Length: 4265 chars.
+const PROMPT_BLOCK_PRESET = fitToLength(
+  PROMPT_BLOCK_PRESET_BASE,
+  4620,
+  "\n\nADDITIONAL DIRECTIVE\nWhen uncertain, ask for clarifying constraints and provide a conservative default recommendation with explicit assumptions.",
+);
+// Length: 4620 chars.
 
 export const PRESETS: PresetDefinition[] = [
   {
     id: "short-note",
-    label: "Quick note (short)",
+    label: "Short note (quick sanity check)",
     value: SHORT_PRESET,
     length: SHORT_PRESET.length,
-    approxLabel: "~300 chars",
+    approxLabel: "~250 chars",
   },
   {
     id: "long-article",
-    label: "Long article",
+    label: "Long article ~5,000 chars",
     value: LONG_ARTICLE_PRESET,
     length: LONG_ARTICLE_PRESET.length,
     approxLabel: "~5,000 chars",
   },
   {
     id: "very-long-article",
-    label: "Very long article",
+    label: "Very long article ~10,000 chars",
     value: VERY_LONG_ARTICLE_PRESET,
     length: VERY_LONG_ARTICLE_PRESET.length,
     approxLabel: "~10,000 chars",
   },
   {
     id: "code-sample",
-    label: "Code sample (JSON + TS)",
+    label: "Code sample (JSON + TS) ~3,000–6,000 chars",
     value: CODE_SAMPLE_PRESET,
     length: CODE_SAMPLE_PRESET.length,
-    approxLabel: "~3,800 chars",
+    approxLabel: "~4,300 chars",
   },
   {
     id: "mixed-unicode",
-    label: "Mixed unicode stress test",
+    label: "Mixed unicode stress test ~2,000–4,000 chars",
     value: MIXED_UNICODE_PRESET,
     length: MIXED_UNICODE_PRESET.length,
-    approxLabel: "~2,100 chars",
+    approxLabel: "~2,700 chars",
   },
   {
     id: "prompt-block",
-    label: "Prompt-like instruction block",
+    label: "Prompt-like instruction block ~4,000–7,000 chars",
     value: PROMPT_BLOCK_PRESET,
     length: PROMPT_BLOCK_PRESET.length,
-    approxLabel: "~4,300 chars",
+    approxLabel: "~4,600 chars",
   },
 ];
