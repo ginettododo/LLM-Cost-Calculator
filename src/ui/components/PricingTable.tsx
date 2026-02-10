@@ -166,7 +166,7 @@ const PricingTable = ({
         return (window as Window & { requestIdleCallback: (cb: () => void) => number })
           .requestIdleCallback(callback);
       }
-      return window.setTimeout(callback, 0);
+      return globalThis.setTimeout(callback, 0);
     };
 
     const runBatch = () => {
@@ -290,7 +290,7 @@ const PricingTable = ({
           id="exact-only"
           checked={exactOnly}
           onChange={(event) => setExactOnly(event.target.checked)}
-          label="Exact tokenization"
+          label="Exact tokenization available"
           description="Tokenizer-backed counts"
         />
       </div>
