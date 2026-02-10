@@ -472,6 +472,30 @@ p {
   font-size: 12px;
 }
 
+.app__warning--critical {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: rgba(239, 68, 68, 0.12);
+}
+
+.app__error-panel {
+  border: 1px solid rgba(239, 68, 68, 0.5);
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: var(--radius-s);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.app__error-panel ul {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .app__control {
   display: flex;
   flex-direction: column;
@@ -713,8 +737,70 @@ p {
   outline: none;
 }
 
-.app__preset-control {
-  min-width: 180px;
+.app__preset-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 260px;
+}
+
+.app__preset-item {
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  color: var(--text);
+  padding: 10px 12px;
+  border-radius: var(--radius-s);
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.app__preset-item:hover,
+.app__preset-item:focus-visible {
+  background: rgba(148, 163, 184, 0.16);
+  border-color: var(--border);
+  outline: none;
+}
+
+.app__preset-length {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.app__table-help {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.app__help-button {
+  border: 1px solid var(--border);
+  background: var(--surface-strong);
+  color: var(--text);
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app__help-button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.app__help-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  max-width: 240px;
 }
 
 .app__toast {
@@ -805,10 +891,6 @@ p {
 
   .app__control--search {
     width: 100%;
-  }
-
-  .app__preset-control {
-    min-width: 100%;
   }
 
   .ui-popover__panel--end {

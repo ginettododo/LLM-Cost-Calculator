@@ -11,8 +11,10 @@ type TextareaPanelProps = {
   onChange: (value: string) => void;
   normalizeOnPaste: boolean;
   removeInvisible: boolean;
-  presets: Array<{ id: string; label: string }>;
+  presets: Array<{ id: string; label: string; approxLabel: string; length: number }>;
   onPresetSelect: (presetId: string) => void;
+  onUndoPreset: () => void;
+  canUndoPreset: boolean;
   onNormalizeOnPasteChange: (value: boolean) => void;
   onRemoveInvisibleChange: (value: boolean) => void;
   onCopySummary: () => void;
@@ -32,6 +34,8 @@ const TextareaPanel = ({
   removeInvisible,
   presets,
   onPresetSelect,
+  onUndoPreset,
+  canUndoPreset,
   onNormalizeOnPasteChange,
   onRemoveInvisibleChange,
   onCopySummary,
@@ -44,7 +48,7 @@ const TextareaPanel = ({
   estimatedTokens,
 }: TextareaPanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [selectedPreset, setSelectedPreset] = useState("");
+  const [isPresetOpen, setIsPresetOpen] = useState(false);
   const settingsId = useId();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -159,29 +163,52 @@ const TextareaPanel = ({
                 Export current results to JSON
               </button>
             </Popover>
-            <label className="app__preset-control">
-              <span className="app__sr-only">Presets</span>
-              <select
-                className="app__select"
-                aria-label="Presets"
-                value={selectedPreset}
-                onChange={(event) => {
-                  const presetId = event.target.value;
-                  setSelectedPreset("");
-                  if (!presetId) {
-                    return;
-                  }
-                  onPresetSelect(presetId);
-                }}
-              >
-                <option value="">Presets</option>
+            <Popover
+              isOpen={isPresetOpen}
+              panelLabel="Preset picker"
+              panelRole="menu"
+              align="end"
+              trigger={
+                <Button
+                  aria-haspopup="menu"
+                  aria-expanded={isPresetOpen}
+                  onClick={() => setIsPresetOpen((prev) => !prev)}
+                >
+                  Presets
+                </Button>
+              }
+            >
+              <div className="app__preset-menu" role="menu">
                 {presets.map((preset) => (
-                  <option key={preset.id} value={preset.id}>
-                    {preset.label}
-                  </option>
+                  <button
+                    key={preset.id}
+                    type="button"
+                    className="app__preset-item"
+                    role="menuitem"
+                    onClick={() => {
+                      onPresetSelect(preset.id);
+                      setIsPresetOpen(false);
+                    }}
+                  >
+                    <span>
+                      <strong>{preset.label}</strong>
+                      <span className="app__muted"> {preset.approxLabel}</span>
+                    </span>
+                    <span className="app__preset-length">
+                      {preset.length.toLocaleString()} chars
+                    </span>
+                  </button>
                 ))}
-              </select>
-            </label>
+              </div>
+            </Popover>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onUndoPreset}
+              disabled={!canUndoPreset}
+            >
+              Undo last preset
+            </Button>
             <Popover
               isOpen={isSettingsOpen}
               panelLabel="Paste settings"
@@ -238,9 +265,10 @@ const TextareaPanel = ({
       />
       {value.trim().length === 0 ? (
         <div className="app__empty-state" aria-live="polite">
-          <strong>Start by pasting text or picking a preset.</strong>
+          <strong>Paste text, pick a preset, or start typing.</strong>
           <div className="app__hint app__hint--tight">
-            Tip: use Presets to test short, long, code, and unicode inputs quickly.
+            Tip: presets include realistic long-form content and unicode stress
+            tests.
           </div>
         </div>
       ) : null}

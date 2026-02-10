@@ -12,6 +12,9 @@ const selectFractionDigits = (value: number): number => {
 };
 
 export const formatUSD = (value: number): string => {
+  if (!Number.isFinite(value)) {
+    return "—";
+  }
   const fractionDigits = selectFractionDigits(value);
   return new Intl.NumberFormat("en-US", {
     style: "currency",

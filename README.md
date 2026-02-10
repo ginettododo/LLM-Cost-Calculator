@@ -66,12 +66,30 @@ Notes:
 ## UX Features
 - Live counters: characters, words, lines, UTF-8 bytes
 - OpenAI exact tokenization (local tokenizer) with fallback estimation for other providers
-- Large-input guardrail: warning for inputs over 50k chars
-- Compute mode toggle: `Primary model only` to keep large-input updates responsive
+- Large-input guardrails: warnings at 50k chars and 200k chars (primary-only enforced at 200k)
+- Computation modes: visible rows (default) or primary model only for faster updates
 - Export current table to CSV/JSON
 - Copy summary to clipboard
 - Presets for quick testing
 - Light/Dark mode toggle
+
+## Presets
+Each preset is a deterministic string with a documented length (character count).
+
+- Quick note (short): 275 chars
+- Long article: 4,990 chars
+- Very long article: 9,976 chars
+- Code sample (JSON + TS): 3,757 chars
+- Mixed unicode stress test: 2,109 chars
+- Prompt-like instruction block: 4,265 chars
+
+## Computation Modes
+- **Visible rows (default):** Computes token counts for rows after search and filters.
+- **Primary model only:** Computes only the first visible row to keep updates fast on large inputs.
+
+## Accuracy Policy
+- **Exact:** Token counts use the provider tokenizer when available.
+- **Estimated:** When a tokenizer is unavailable or fails, the app falls back to a character-based heuristic.
 
 ## Data Export Format
 
