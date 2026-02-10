@@ -66,9 +66,9 @@ const AppView = () => {
       };
       const asValidationError =
         typeof error === "object" &&
-        error !== null &&
-        "issues" in error &&
-        Array.isArray((error as PricingValidationError).issues)
+          error !== null &&
+          "issues" in error &&
+          Array.isArray((error as PricingValidationError).issues)
           ? (error as PricingValidationError)
           : fallback;
 
@@ -263,8 +263,8 @@ const AppView = () => {
 
   const exactOpenAIModelId =
     primaryModel &&
-    primaryModel.exactness === "exact" &&
-    primaryModel.provider.trim().toLowerCase() === "openai"
+      primaryModel.exactness === "exact" &&
+      primaryModel.provider.trim().toLowerCase() === "openai"
       ? primaryModel.model
       : "";
 
@@ -400,6 +400,8 @@ const AppView = () => {
     }
     return asText;
   };
+
+
 
   const handleExportCsv = () => {
     const rows = buildExportRows();
@@ -539,6 +541,12 @@ const AppView = () => {
             tokenDetails={textareaTokenDetails}
             tokenModelLabel={exactOpenAIModelId}
             hasExactOpenAITokenizer={Boolean(exactOpenAIModelId)}
+            isExportOpen={isExportOpen}
+            onExportToggle={() => setIsExportOpen((prev) => !prev)}
+            onExportCsv={handleExportCsv}
+            onExportJson={handleExportJson}
+            onCopySummary={handleCopySummary}
+            copySummaryDisabled={debouncedText.length === 0}
           />
           <aside className="app__inspector">
             <Card className="app__summary-card">
@@ -674,10 +682,10 @@ const AppView = () => {
                 <div className="app__kpi-chip">
                   <span>Exact tokens (primary)</span>
                   <strong>{primaryModel && primaryModel.tokens > 0
-                      ? primaryModel.tokens.toLocaleString()
-                      : debouncedText.trim().length > 0
-                        ? estimatedTokens.toLocaleString()
-                        : "—"}</strong>
+                    ? primaryModel.tokens.toLocaleString()
+                    : debouncedText.trim().length > 0
+                      ? estimatedTokens.toLocaleString()
+                      : "—"}</strong>
                 </div>
                 <div className="app__kpi-chip">
                   <span>Characters</span>
@@ -758,20 +766,20 @@ const AppView = () => {
             >
               <summary>All models</summary>
               {pricingValidation.error ? (
-              <div className="app__error-panel" role="status" aria-live="polite">
-                <h3>Pricing data issue</h3>
-                <p>
-                  We could not load the pricing data safely. Please refresh the page or verify
-                  the bundled pricing JSON format.
-                </p>
-                <ul>
-                  {pricingValidation.error.issues.slice(0, 4).map((issue) => (
-                    <li key={`${issue.path}-${issue.message}`}>
-                      <strong>{issue.path || "root"}</strong>: {issue.message}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                <div className="app__error-panel" role="status" aria-live="polite">
+                  <h3>Pricing data issue</h3>
+                  <p>
+                    We could not load the pricing data safely. Please refresh the page or verify
+                    the bundled pricing JSON format.
+                  </p>
+                  <ul>
+                    {pricingValidation.error.issues.slice(0, 4).map((issue) => (
+                      <li key={`${issue.path}-${issue.message}`}>
+                        <strong>{issue.path || "root"}</strong>: {issue.message}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ) : (
                 <PricingTable
                   models={pricingValidation.models}
