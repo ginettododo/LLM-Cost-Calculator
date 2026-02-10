@@ -10,7 +10,7 @@ export type TokenCountResult = {
   mode: TokenCountMode;
 };
 
-const TOKEN_CACHE_MAX_ENTRIES = 50;
+const TOKEN_CACHE_MAX_ENTRIES = 250;
 const tokenCountCache = new LruCache<string, TokenCountResult>(TOKEN_CACHE_MAX_ENTRIES);
 
 // Unicode ranges for smarter token estimation
@@ -77,17 +77,10 @@ export const getTokenCountForPricingRow = (
 
   let result: TokenCountResult;
   if (isOpenAIProvider(pricingRow.provider)) {
-    try {
-      result = {
-        tokens: countOpenAITokensExact(text, pricingRow.model),
-        mode: "exact",
-      };
-    } catch {
-      result = {
-        tokens: estimateTokens(text),
-        mode: "estimated",
-      };
-    }
+    result = {
+      tokens: countOpenAITokensExact(text, pricingRow.model_id ?? pricingRow.model),
+      mode: "exact",
+    };
   } else {
     result = {
       tokens: estimateTokens(text),

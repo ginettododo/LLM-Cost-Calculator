@@ -15,7 +15,9 @@ export type { CostBreakdown } from "./pricing/cost";
 export {
   clearOpenAITokenizerCache,
   countOpenAITokensExact,
+  getOpenAITokenDetails,
 } from "./tokenization/openaiTokenizer";
+export type { OpenAITokenDetail } from "./tokenization/openaiTokenizer";
 
 export {
   clearTokenCountCache,

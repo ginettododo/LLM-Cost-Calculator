@@ -5,13 +5,13 @@ import {
   countLines,
   countWords,
 } from "../../core/counters";
-import { estimateTokens, formatUSD, validatePrices } from "../../core";
-import type { PricingValidationError } from "../../core";
+import { estimateTokens, formatUSD, getOpenAITokenDetails, validatePrices } from "../../core";
+import type { PricingRow, PricingValidationError } from "../../core";
 import prices from "../../data/prices.json";
-import CountersPanel from "../components/CountersPanel";
 import PricingTable from "../components/PricingTable";
 import type { ComputeMode, VisiblePricingRow } from "../components/PricingTable";
 import TextareaPanel from "../components/TextareaPanel";
+import TokenDebugPanel from "../components/TokenDebugPanel";
 import useDebouncedValue from "../state/useDebouncedValue";
 import Badge from "../components/ui/Badge";
 import Card from "../components/ui/Card";
@@ -43,10 +43,16 @@ const AppView = () => {
   const [toast, setToast] = useState<ToastState | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [computeMode, setComputeMode] =
-    useState<ComputeMode>("visible-rows");
+    useState<ComputeMode>("primary-model");
   const [primaryModelKey, setPrimaryModelKey] = useState("");
   const [undoPreset, setUndoPreset] = useState<UndoPresetState | null>(null);
-  const debouncedText = useDebouncedValue(text, 160);
+  const [showCounterDetails, setShowCounterDetails] = useState(false);
+  const [showTokenMarkups, setShowTokenMarkups] = useState(false);
+  const [isPricingOpen, setIsPricingOpen] = useState(
+    typeof window !== "undefined" ? window.innerWidth > 760 : true,
+  );
+  const [selectedFeaturedModelKey, setSelectedFeaturedModelKey] = useState("");
+  const debouncedText = useDebouncedValue(text, 40);
   const themeToggleId = useId();
   const primaryModelId = useId();
 
@@ -54,7 +60,19 @@ const AppView = () => {
     try {
       return { models: validatePrices(prices), error: null };
     } catch (error) {
-      return { models: [], error: error as PricingValidationError };
+      const fallback: PricingValidationError = {
+        message: "Invalid pricing data.",
+        issues: [{ path: "root", message: "Unexpected pricing validation failure." }],
+      };
+      const asValidationError =
+        typeof error === "object" &&
+        error !== null &&
+        "issues" in error &&
+        Array.isArray((error as PricingValidationError).issues)
+          ? (error as PricingValidationError)
+          : fallback;
+
+      return { models: [], error: asValidationError };
     }
   }, []);
 
@@ -72,8 +90,7 @@ const AppView = () => {
   }, [debouncedText]);
 
   const lastUpdated = useMemo(() => {
-    const candidates = [prices.retrieved_at, ...prices.models.map((model) => model.retrieved_at)]
-      .filter(Boolean);
+    const candidates = [prices.retrieved_at].filter(Boolean);
     if (candidates.length === 0) {
       return "";
     }
@@ -105,19 +122,35 @@ const AppView = () => {
     return () => window.clearTimeout(timeoutId);
   }, [toast]);
 
+  const prioritizePrimaryModel = (rows: VisiblePricingRow[]): VisiblePricingRow | undefined => {
+    const exactOpenAI = rows
+      .filter((row) => row.exactness === "exact" && row.provider.trim().toLowerCase() === "openai")
+      .sort((a, b) => a.price_input_per_mtok - b.price_input_per_mtok);
+
+    return exactOpenAI[0] ?? rows[0];
+  };
+
   useEffect(() => {
     if (visibleRows.length === 0) {
       setPrimaryModelKey("");
       return;
     }
 
-    const hasSelection = visibleRows.some(
+    const selectedRow = visibleRows.find(
       (row) => `${row.provider}::${row.model}` === primaryModelKey,
     );
-    if (!hasSelection) {
-      setPrimaryModelKey(`${visibleRows[0].provider}::${visibleRows[0].model}`);
+
+    const needsSelection =
+      !selectedRow || (debouncedText.trim().length > 0 && selectedRow.tokens === 0);
+
+    if (needsSelection) {
+      const rowsWithTokens = visibleRows.filter((row) => row.tokens > 0);
+      const preferred = prioritizePrimaryModel(rowsWithTokens.length > 0 ? rowsWithTokens : visibleRows);
+      if (preferred) {
+        setPrimaryModelKey(`${preferred.provider}::${preferred.model}`);
+      }
     }
-  }, [primaryModelKey, visibleRows]);
+  }, [debouncedText, primaryModelKey, visibleRows]);
 
   useEffect(() => {
     if (pricingValidation.error) {
@@ -144,6 +177,24 @@ const AppView = () => {
       onAction: options?.onAction,
     });
   };
+
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!undoPreset) {
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        setText(undoPreset.text);
+        setUndoPreset(null);
+        showToast("Preset undone");
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [undoPreset]);
 
   const handlePresetSelect = (presetId: string) => {
     const preset = PRESETS.find((item) => item.id === presetId);
@@ -174,10 +225,55 @@ const AppView = () => {
     showToast("Preset undone");
   };
 
-  const primaryModel = useMemo(
-    () => visibleRows.find((row) => `${row.provider}::${row.model}` === primaryModelKey),
-    [primaryModelKey, visibleRows],
-  );
+
+  const primaryModel = useMemo(() => {
+    const selected = visibleRows.find((row) => `${row.provider}::${row.model}` === primaryModelKey);
+    if (!selected) {
+      return visibleRows.find((row) => row.tokens > 0);
+    }
+
+    if (debouncedText.trim().length > 0 && selected.tokens === 0) {
+      return visibleRows.find((row) => row.tokens > 0) ?? selected;
+    }
+
+    return selected;
+  }, [debouncedText, primaryModelKey, visibleRows]);
+
+  const featuredModelRows = useMemo(() => {
+    const featuredIds = new Set(prices.featuredModels ?? []);
+    return visibleRows.filter((row) => featuredIds.has(`${row.provider.toLowerCase()}:${row.model.toLowerCase().replace(/\s+/g, "-")}`) || featuredIds.has(pricingValidation.models.find((item) => item.provider === row.provider && item.model === row.model)?.model_id ?? ""));
+  }, [pricingValidation.models, visibleRows]);
+
+  const selectedFeaturedModel = useMemo(() => {
+    if (featuredModelRows.length === 0) {
+      return null;
+    }
+    const selected = featuredModelRows.find(
+      (row) => `${row.provider}::${row.model}` === selectedFeaturedModelKey,
+    );
+    return selected ?? featuredModelRows[0];
+  }, [featuredModelRows, selectedFeaturedModelKey]);
+
+
+  const openAIModels = useMemo<PricingRow[]>(() => {
+    return pricingValidation.models
+      .filter((model) => model.provider.trim().toLowerCase() === "openai")
+      .sort((a, b) => a.input_per_mtok - b.input_per_mtok);
+  }, [pricingValidation.models]);
+
+  const exactOpenAIModelId =
+    primaryModel &&
+    primaryModel.exactness === "exact" &&
+    primaryModel.provider.trim().toLowerCase() === "openai"
+      ? primaryModel.model
+      : "";
+
+  const textareaTokenDetails = useMemo(() => {
+    if (!exactOpenAIModelId || debouncedText.length === 0) {
+      return [];
+    }
+    return getOpenAITokenDetails(debouncedText, exactOpenAIModelId);
+  }, [debouncedText, exactOpenAIModelId]);
 
   const buildSummaryText = () => {
     const lines: string[] = [];
@@ -247,8 +343,13 @@ const AppView = () => {
       return;
     }
 
-    window.prompt("Copy summary", summary);
-    showToast("Clipboard blocked. Manual copy prompt opened.");
+    if (typeof window.prompt === "function") {
+      window.prompt("Copy summary", summary);
+      showToast("Clipboard blocked. Manual copy prompt opened.");
+      return;
+    }
+
+    showToast("Clipboard unavailable. Select and copy manually.");
   };
 
   const buildExportRows = () => {
@@ -364,47 +465,80 @@ const AppView = () => {
 
   return (
     <div className="app" data-theme={theme}>
-      <header className="app__header">
-        <div className="app__header-row">
-          <div>
-            <h1>Token &amp; LLM Cost Calculator</h1>
-            <p className="app__subtitle">
-              All calculations run locally in your browser with no server calls.
-            </p>
-          </div>
+      <header className="app__toolbar" role="toolbar" aria-label="Top actions">
+        <div className="app__toolbar-left">
+          <span className="app__toolbar-brand">Token Cost</span>
+        </div>
+        <div className="app__toolbar-actions">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="app__icon-btn"
+            aria-label="Copy summary"
+            onClick={handleCopySummary}
+            disabled={visibleRows.length === 0}
+          >
+            ⧉
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="app__icon-btn"
+            aria-haspopup="menu"
+            aria-expanded={isExportOpen}
+            aria-label="Export options"
+            onClick={() => setIsExportOpen((prev) => !prev)}
+          >
+            ⇩
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="app__icon-btn"
+            aria-label="Preset picker"
+            onClick={() => handlePresetSelect(PRESETS[0]?.id ?? "")}
+          >
+            ⚡
+          </Button>
           <Toggle
             id={themeToggleId}
-            label="Light mode"
-            description="Dark is default"
+            label="Light"
             checked={theme === "light"}
-            onChange={(event) =>
-              setTheme(event.target.checked ? "light" : "dark")
-            }
+            onChange={(event) => setTheme(event.target.checked ? "light" : "dark")}
           />
         </div>
+        {isExportOpen ? (
+          <div className="app__toolbar-export">
+            <Button size="sm" onClick={handleExportCsv}>CSV</Button>
+            <Button size="sm" onClick={handleExportJson}>JSON</Button>
+          </div>
+        ) : null}
       </header>
 
       <main className="app__main">
+        <section className="app__title-row">
+          <h1>Token &amp; LLM Cost Calculator</h1>
+          <p className="app__subtitle">Fully local and static. No backend calls.</p>
+        </section>
         <section className="app__section app__section--top">
           <TextareaPanel
             value={text}
             onChange={setText}
             normalizeOnPaste={normalizeOnPaste}
             removeInvisible={removeInvisible}
-            onNormalizeOnPasteChange={setNormalizeOnPaste}
-            onRemoveInvisibleChange={setRemoveInvisible}
             presets={PRESETS}
             onPresetSelect={handlePresetSelect}
             onUndoPreset={handleUndoPreset}
             canUndoPreset={Boolean(undoPreset)}
-            onCopySummary={handleCopySummary}
-            copySummaryDisabled={visibleRows.length === 0}
-            isExportOpen={isExportOpen}
-            onExportToggle={() => setIsExportOpen((prev) => !prev)}
-            onExportCsv={handleExportCsv}
-            onExportJson={handleExportJson}
+            onNormalizeOnPasteChange={setNormalizeOnPaste}
+            onRemoveInvisibleChange={setRemoveInvisible}
             characterCount={counters.characters}
             estimatedTokens={estimatedTokens}
+            showTokenMarkups={showTokenMarkups}
+            onShowTokenMarkupsChange={setShowTokenMarkups}
+            tokenDetails={textareaTokenDetails}
+            tokenModelLabel={exactOpenAIModelId}
+            hasExactOpenAITokenizer={Boolean(exactOpenAIModelId)}
           />
           <aside className="app__inspector">
             <Card className="app__summary-card">
@@ -473,7 +607,11 @@ const AppView = () => {
                 <div className="app__summary-item">
                   <span className="app__label">Tokens</span>
                   <span className="app__value">
-                    {primaryModel?.tokens.toLocaleString() ?? "—"}
+                    {primaryModel && primaryModel.tokens > 0
+                      ? primaryModel.tokens.toLocaleString()
+                      : debouncedText.trim().length > 0
+                        ? estimatedTokens.toLocaleString()
+                        : "—"}
                   </span>
                 </div>
                 <div className="app__summary-item">
@@ -531,8 +669,69 @@ const AppView = () => {
                 </div>
               ) : null}
             </Card>
-            <CountersPanel counters={counters} />
+            <Card className="app__stats-card" variant="inset">
+              <div className="app__kpi-row">
+                <div className="app__kpi-chip">
+                  <span>Exact tokens (primary)</span>
+                  <strong>{primaryModel && primaryModel.tokens > 0
+                      ? primaryModel.tokens.toLocaleString()
+                      : debouncedText.trim().length > 0
+                        ? estimatedTokens.toLocaleString()
+                        : "—"}</strong>
+                </div>
+                <div className="app__kpi-chip">
+                  <span>Characters</span>
+                  <strong>{counters.characters.toLocaleString()}</strong>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowCounterDetails((prev) => !prev)}
+              >
+                {showCounterDetails ? "Hide details" : "Show details"}
+              </Button>
+              {showCounterDetails ? (
+                <div className="app__details-inline">
+                  <span>Words: {counters.words.toLocaleString()}</span>
+                  <span>Lines: {counters.lines.toLocaleString()}</span>
+                  <span>Bytes: {counters.bytes.toLocaleString()}</span>
+                </div>
+              ) : null}
+            </Card>
+            <TokenDebugPanel
+              text={debouncedText}
+              openAIModels={openAIModels}
+            />
           </aside>
+        </section>
+
+        <section className="app__section">
+          <Card>
+            <h2>Featured Models</h2>
+            <div className="app__featured-strip">
+              {featuredModelRows.map((row) => (
+                <button
+                  type="button"
+                  key={`${row.provider}-${row.model}`}
+                  className="app__featured-card"
+                  onClick={() => setSelectedFeaturedModelKey(`${row.provider}::${row.model}`)}
+                >
+                  <span>{row.model}</span>
+                  <strong>{toMoney(row.total_cost_usd)}</strong>
+                </button>
+              ))}
+            </div>
+            {selectedFeaturedModel ? (
+              <div className="app__featured-detail">
+                <strong>
+                  {selectedFeaturedModel.provider} · {selectedFeaturedModel.model}
+                </strong>
+                <span>{selectedFeaturedModel.tokens.toLocaleString()} tokens</span>
+                <span>{toMoney(selectedFeaturedModel.total_cost_usd)}</span>
+              </div>
+            ) : null}
+          </Card>
         </section>
 
         <section className="app__section">
@@ -552,29 +751,36 @@ const AppView = () => {
                   : "Visible rows"}
               </Badge>
             </div>
-            {pricingValidation.error ? (
+            <details
+              className="app__accordion"
+              open={isPricingOpen}
+              onToggle={(event) => setIsPricingOpen((event.currentTarget as HTMLDetailsElement).open)}
+            >
+              <summary>All models</summary>
+              {pricingValidation.error ? (
               <div className="app__error-panel" role="status" aria-live="polite">
                 <h3>Pricing data issue</h3>
                 <p>
-                  We could not load the pricing data. Try refreshing or check the
-                  data source.
+                  We could not load the pricing data safely. Please refresh the page or verify
+                  the bundled pricing JSON format.
                 </p>
                 <ul>
-                  {pricingValidation.error.issues.slice(0, 3).map((issue) => (
+                  {pricingValidation.error.issues.slice(0, 4).map((issue) => (
                     <li key={`${issue.path}-${issue.message}`}>
                       <strong>{issue.path || "root"}</strong>: {issue.message}
                     </li>
                   ))}
                 </ul>
               </div>
-            ) : (
-              <PricingTable
-                models={pricingValidation.models}
-                text={debouncedText}
-                computeMode={effectiveComputeMode}
-                onVisibleRowsChange={setVisibleRows}
-              />
-            )}
+              ) : (
+                <PricingTable
+                  models={pricingValidation.models}
+                  text={debouncedText}
+                  computeMode={effectiveComputeMode}
+                  onVisibleRowsChange={setVisibleRows}
+                />
+              )}
+            </details>
           </Card>
         </section>
       </main>
@@ -588,6 +794,7 @@ const AppView = () => {
             <Button
               variant="ghost"
               size="sm"
+              aria-label={`Toast action: ${toast.actionLabel}`}
               onClick={() => {
                 toast.onAction?.();
                 setToast(null);
