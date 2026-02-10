@@ -1,7 +1,6 @@
 import { useId, useRef, useState } from "react";
 import type { ClipboardEvent } from "react";
 import { normalizeText } from "../../core/normalization/normalizeText";
-import Badge from "./ui/Badge";
 import Button from "./ui/Button";
 import Card from "./ui/Card";
 import Popover from "./ui/Popover";
@@ -17,12 +16,6 @@ type TextareaPanelProps = {
   canUndoPreset: boolean;
   onNormalizeOnPasteChange: (value: boolean) => void;
   onRemoveInvisibleChange: (value: boolean) => void;
-  onCopySummary: () => void;
-  copySummaryDisabled: boolean;
-  isExportOpen: boolean;
-  onExportToggle: () => void;
-  onExportCsv: () => void;
-  onExportJson: () => void;
   characterCount: number;
   estimatedTokens: number;
 };
@@ -38,12 +31,6 @@ const TextareaPanel = ({
   canUndoPreset,
   onNormalizeOnPasteChange,
   onRemoveInvisibleChange,
-  onCopySummary,
-  copySummaryDisabled,
-  isExportOpen,
-  onExportToggle,
-  onExportCsv,
-  onExportJson,
   characterCount,
   estimatedTokens,
 }: TextareaPanelProps) => {
@@ -110,59 +97,16 @@ const TextareaPanel = ({
       <div className="app__card-header app__card-header--stack">
         <div>
           <h2>Input Text</h2>
-          <p className="app__muted">
-            Paste, type, or choose a preset. We keep counts live as you edit.
-          </p>
+          <p className="app__muted">Paste, type, or choose a preset.</p>
         </div>
         <div className="app__actions">
           <div className="app__actions-group">
-            <Button
-              variant="primary"
-              onClick={handlePasteButton}
-              disabled={!canPaste}
-            >
+            <Button variant="primary" onClick={handlePasteButton} disabled={!canPaste}>
               Paste
             </Button>
             <Button onClick={() => onChange("")} disabled={!value}>
               Clear
             </Button>
-          </div>
-          <div className="app__actions-group">
-            <Button onClick={onCopySummary} disabled={copySummaryDisabled}>
-              Copy summary
-            </Button>
-            <Popover
-              isOpen={isExportOpen}
-              panelLabel="Export options"
-              panelRole="menu"
-              align="end"
-              trigger={
-                <Button
-                  aria-haspopup="menu"
-                  aria-expanded={isExportOpen}
-                  onClick={onExportToggle}
-                >
-                  Export
-                </Button>
-              }
-            >
-              <button
-                type="button"
-                className="app__menu-item"
-                role="menuitem"
-                onClick={onExportCsv}
-              >
-                Export current results to CSV
-              </button>
-              <button
-                type="button"
-                className="app__menu-item"
-                role="menuitem"
-                onClick={onExportJson}
-              >
-                Export current results to JSON
-              </button>
-            </Popover>
             <Popover
               isOpen={isPresetOpen}
               panelLabel="Preset picker"
@@ -195,19 +139,12 @@ const TextareaPanel = ({
                       <strong>{preset.label}</strong>
                       <span className="app__muted"> {preset.approxLabel}</span>
                     </span>
-                    <span className="app__preset-length">
-                      {preset.length.toLocaleString()} chars
-                    </span>
+                    <span className="app__preset-length">{preset.length.toLocaleString()} chars</span>
                   </button>
                 ))}
               </div>
             </Popover>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onUndoPreset}
-              disabled={!canUndoPreset}
-            >
+            <Button variant="ghost" size="sm" onClick={onUndoPreset} disabled={!canUndoPreset}>
               Undo last preset
             </Button>
             <Popover
@@ -230,9 +167,7 @@ const TextareaPanel = ({
                 <input
                   type="checkbox"
                   checked={normalizeOnPaste}
-                  onChange={(event) =>
-                    onNormalizeOnPasteChange(event.target.checked)
-                  }
+                  onChange={(event) => onNormalizeOnPasteChange(event.target.checked)}
                 />
                 <span>Normalize on paste</span>
               </label>
@@ -241,15 +176,10 @@ const TextareaPanel = ({
                   type="checkbox"
                   checked={removeInvisible}
                   disabled={!normalizeOnPaste}
-                  onChange={(event) =>
-                    onRemoveInvisibleChange(event.target.checked)
-                  }
+                  onChange={(event) => onRemoveInvisibleChange(event.target.checked)}
                 />
                 <span>Remove invisible chars</span>
               </label>
-              <p className="app__hint app__hint--tight">
-                Normalization only applies to paste actions.
-              </p>
             </Popover>
           </div>
         </div>
@@ -262,32 +192,17 @@ const TextareaPanel = ({
         onChange={(event) => onChange(event.target.value)}
         onPaste={handlePaste}
         ref={textareaRef}
-        rows={10}
+        rows={6}
       />
-      {value.trim().length === 0 ? (
-        <div className="app__empty-state" aria-live="polite">
-          <strong>Start with a preset or paste your own draft to see live token and cost estimates.</strong>
-          <div className="app__hint app__hint--tight">
-            Tip: use long-form presets to test performance safeguards and computation modes.
-          </div>
-        </div>
-      ) : null}
       <div className="app__textarea-footer">
         <div className="app__metric">
           <span className="app__metric-label">Characters</span>
-          <span className="app__metric-value">
-            {characterCount.toLocaleString()}
-          </span>
+          <span className="app__metric-value">{characterCount.toLocaleString()}</span>
         </div>
         <div className="app__metric">
-          <span className="app__metric-label">Estimated tokens</span>
-          <span className="app__metric-value">
-            {estimatedTokens.toLocaleString()}
-          </span>
+          <span className="app__metric-label">Token estimate</span>
+          <span className="app__metric-value">{estimatedTokens.toLocaleString()}</span>
         </div>
-        <Badge tone={normalizeOnPaste ? "success" : "warning"}>
-          {normalizeOnPaste ? "Normalized paste" : "Raw paste"}
-        </Badge>
       </div>
     </Card>
   );

@@ -24,6 +24,25 @@ type RenderRow = VisiblePricingRow & {
   notes?: string;
 };
 
+
+const PROVIDER_ORDER = ["OpenAI", "Google", "Anthropic"];
+
+const getProviderRank = (provider: string) => {
+  const index = PROVIDER_ORDER.indexOf(provider);
+  return index === -1 ? PROVIDER_ORDER.length : index;
+};
+
+const getTierRank = (model: PricingRow) => {
+  const name = model.model.toLowerCase();
+  if (name.includes("opus") || name.includes("pro") || name.includes("gpt-5") || name.includes("ultra")) {
+    return 0;
+  }
+  if (name.includes("mini") || name.includes("flash") || name.includes("haiku") || name.includes("nano")) {
+    return 1;
+  }
+  return 2;
+};
+
 export type VisiblePricingRow = {
   provider: string;
   model: string;
@@ -72,7 +91,10 @@ const PricingTable = ({
   };
 
   const providers = useMemo(
-    () => Array.from(new Set(models.map((model) => model.provider))).sort(),
+    () => Array.from(new Set(models.map((model) => model.provider))).sort((a, b) => {
+      const rankDiff = getProviderRank(a) - getProviderRank(b);
+      return rankDiff !== 0 ? rankDiff : a.localeCompare(b);
+    }),
     [models],
   );
 
@@ -129,8 +151,17 @@ const PricingTable = ({
     sorted.sort((a, b) => {
       const direction = sortDirection === "asc" ? 1 : -1;
       switch (sortKey) {
-        case "provider":
-          return direction * a.provider.localeCompare(b.provider);
+        case "provider": {
+          const providerDiff = getProviderRank(a.provider) - getProviderRank(b.provider);
+          if (providerDiff !== 0) {
+            return direction * providerDiff;
+          }
+          const tierDiff = getTierRank(a) - getTierRank(b);
+          if (tierDiff !== 0) {
+            return direction * tierDiff;
+          }
+          return direction * a.model.localeCompare(b.model);
+        }
         case "model":
           return direction * a.model.localeCompare(b.model);
         case "release_date": {
@@ -156,7 +187,9 @@ const PricingTable = ({
 
   const computedModels = useMemo(
     () =>
-      computeMode === "primary-model" ? sortedModels.slice(0, 1) : sortedModels,
+      computeMode === "primary-model"
+        ? (sortedModels.find((model) => model.modality === "text") ? [sortedModels.find((model) => model.modality === "text") as PricingRow] : sortedModels.slice(0, 1))
+        : sortedModels,
     [computeMode, sortedModels],
   );
 
@@ -469,7 +502,7 @@ const PricingTable = ({
 
                 if (shouldGroup) {
                   rows.push(
-                    <tr key={`${row.provider}-group`} className="app__table-group">
+                    <tr key={`${row.provider}-group-${index}`} className="app__table-group">
                       <td colSpan={8}>
                         <strong>{row.provider}</strong>
                       </td>
