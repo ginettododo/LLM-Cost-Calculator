@@ -1,7 +1,20 @@
+export type ModelCategory = "flagship" | "mainstream" | "budget" | "legacy";
+
+export type PricingKind = "input" | "output";
+
+export type PricingEntry = {
+  kind: PricingKind;
+  price_per_million: number;
+  currency: string;
+};
+
 export type PricingRow = {
   provider: string;
   model: string;
   model_id: string;
+  display_name?: string;
+  category?: ModelCategory;
+  pricing?: PricingEntry[];
   release_date?: string;
   modality: "text" | "audio" | "realtime" | "multimodal";
   input_per_mtok: number;

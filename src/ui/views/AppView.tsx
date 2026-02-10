@@ -90,8 +90,7 @@ const AppView = () => {
   }, [debouncedText]);
 
   const lastUpdated = useMemo(() => {
-    const candidates = [prices.retrieved_at, ...prices.models.map((model) => model.retrieved_at)]
-      .filter(Boolean);
+    const candidates = [prices.retrieved_at].filter(Boolean);
     if (candidates.length === 0) {
       return "";
     }
@@ -241,11 +240,9 @@ const AppView = () => {
   }, [debouncedText, primaryModelKey, visibleRows]);
 
   const featuredModelRows = useMemo(() => {
-    const featuredKeywords = ["gpt-5", "gemini", "opus", "sonnet", "haiku"];
-    return visibleRows
-      .filter((row) => featuredKeywords.some((keyword) => row.model.toLowerCase().includes(keyword)))
-      .slice(0, 8);
-  }, [visibleRows]);
+    const featuredIds = new Set(prices.featuredModels ?? []);
+    return visibleRows.filter((row) => featuredIds.has(`${row.provider.toLowerCase()}:${row.model.toLowerCase().replace(/\s+/g, "-")}`) || featuredIds.has(pricingValidation.models.find((item) => item.provider === row.provider && item.model === row.model)?.model_id ?? ""));
+  }, [pricingValidation.models, visibleRows]);
 
   const selectedFeaturedModel = useMemo(() => {
     if (featuredModelRows.length === 0) {

@@ -32,16 +32,14 @@ const getProviderRank = (provider: string) => {
   return index === -1 ? PROVIDER_ORDER.length : index;
 };
 
-const getTierRank = (model: PricingRow) => {
-  const name = model.model.toLowerCase();
-  if (name.includes("opus") || name.includes("pro") || name.includes("gpt-5") || name.includes("ultra")) {
-    return 0;
-  }
-  if (name.includes("mini") || name.includes("flash") || name.includes("haiku") || name.includes("nano")) {
-    return 1;
-  }
-  return 2;
+const CATEGORY_ORDER: Record<"flagship" | "mainstream" | "budget" | "legacy", number> = {
+  flagship: 0,
+  mainstream: 1,
+  budget: 2,
+  legacy: 3,
 };
+
+const getTierRank = (model: PricingRow) => (model.category ? CATEGORY_ORDER[model.category] ?? 99 : 99);
 
 export type VisiblePricingRow = {
   provider: string;
