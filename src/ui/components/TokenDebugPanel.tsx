@@ -8,13 +8,19 @@ import Toggle from "./ui/Toggle";
 type TokenDebugPanelProps = {
   text: string;
   openAIModels: PricingRow[];
+  showUnderlines: boolean;
+  onShowUnderlinesChange: (value: boolean) => void;
 };
 
 const TOKEN_PREVIEW_LIMIT = 250;
 
-const TokenDebugPanel = ({ text, openAIModels }: TokenDebugPanelProps) => {
+const TokenDebugPanel = ({
+  text,
+  openAIModels,
+  showUnderlines,
+  onShowUnderlinesChange,
+}: TokenDebugPanelProps) => {
   const [selectedModelId, setSelectedModelId] = useState(openAIModels[0]?.model_id ?? "");
-  const [showUnderlines, setShowUnderlines] = useState(false);
 
   const selectedModel = useMemo(
     () => openAIModels.find((model) => model.model_id === selectedModelId) ?? openAIModels[0],
@@ -84,7 +90,7 @@ const TokenDebugPanel = ({ text, openAIModels }: TokenDebugPanelProps) => {
       <Toggle
         id="show-underlines"
         checked={showUnderlines}
-        onChange={(event) => setShowUnderlines(event.target.checked)}
+        onChange={(event) => onShowUnderlinesChange(event.target.checked)}
         label="Show underlines in text"
         description="Highlights token boundaries without affecting editing in the input field"
       />
