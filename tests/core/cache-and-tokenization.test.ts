@@ -153,10 +153,13 @@ describe("OpenAI exact tokenizer vectors", () => {
         return;
       }
       expect(token.byteStart).toBe(details[index - 1]?.byteEnd);
+      expect(token.charStart).toBe(details[index - 1]?.charEnd);
     });
 
     const finalEnd = details[details.length - 1]?.byteEnd ?? 0;
     expect(finalEnd).toBe(utf8Length);
+    expect(details[0]?.charStart ?? 0).toBe(0);
+    expect(details[details.length - 1]?.charEnd ?? 0).toBe(text.length);
   });
 
   it("keeps exact counting stable for a long 500+ word paragraph", () => {

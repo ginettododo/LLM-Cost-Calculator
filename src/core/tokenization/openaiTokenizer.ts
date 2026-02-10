@@ -10,6 +10,33 @@ export type OpenAITokenDetail = {
   text: string;
   byteStart: number;
   byteEnd: number;
+  charStart: number;
+  charEnd: number;
+};
+
+const utf8Encoder = new TextEncoder();
+
+const mapByteOffsetsToCharIndices = (text: string): Uint32Array => {
+  const utf8Length = utf8Encoder.encode(text).length;
+  const byteToChar = new Uint32Array(utf8Length + 1);
+
+  let byteOffset = 0;
+  let charOffset = 0;
+  byteToChar[0] = 0;
+
+  for (const symbol of text) {
+    const symbolBytes = utf8Encoder.encode(symbol).length;
+
+    for (let index = 0; index < symbolBytes; index += 1) {
+      byteToChar[byteOffset + index] = charOffset;
+    }
+
+    byteOffset += symbolBytes;
+    charOffset += symbol.length;
+    byteToChar[byteOffset] = charOffset;
+  }
+
+  return byteToChar;
 };
 
 const normalizeModelName = (model: string): string => {
@@ -57,6 +84,7 @@ export const getOpenAITokenDetails = (
 
   const encoder = getEncoderForModel(model);
   const tokenIds = encoder.encode(text);
+  const byteToCharOffset = mapByteOffsetsToCharIndices(text);
   let byteCursor = 0;
 
   return tokenIds.map((tokenId, index) => {
@@ -70,6 +98,8 @@ export const getOpenAITokenDetails = (
       text: tokenText,
       byteStart: byteCursor,
       byteEnd: byteCursor + tokenBytes.length,
+      charStart: byteToCharOffset[byteCursor] ?? 0,
+      charEnd: byteToCharOffset[byteCursor + tokenBytes.length] ?? text.length,
     };
     byteCursor += tokenBytes.length;
     return detail;

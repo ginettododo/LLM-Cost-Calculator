@@ -1,0 +1,397 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TextareaPanel token markup rendering > does not render token overlay when exact tokenizer is unavailable 1`] = `
+<div
+  class="ui-card ui-card--default app__input-card"
+>
+  <div
+    class="app__card-header app__card-header--stack"
+  >
+    <div>
+      <h2>
+        Input Text
+      </h2>
+      <p
+        class="app__muted"
+      >
+        Paste, type, or choose a preset.
+      </p>
+    </div>
+    <div
+      class="app__actions"
+    >
+      <div
+        class="app__actions-group"
+      >
+        <button
+          class="ui-button ui-button--primary ui-button--md"
+          disabled=""
+          type="button"
+        >
+          Paste
+        </button>
+        <button
+          class="ui-button ui-button--subtle ui-button--md"
+          type="button"
+        >
+          Clear
+        </button>
+        <div
+          class="ui-popover"
+        >
+          <button
+            aria-expanded="false"
+            aria-haspopup="menu"
+            class="ui-button ui-button--subtle ui-button--md"
+            type="button"
+          >
+            Presets
+          </button>
+        </div>
+        <button
+          class="ui-button ui-button--ghost ui-button--sm"
+          disabled=""
+          type="button"
+        >
+          Undo last preset
+        </button>
+        <div
+          class="ui-popover"
+        >
+          <button
+            aria-controls=":r1:"
+            aria-expanded="false"
+            aria-haspopup="dialog"
+            class="ui-button ui-button--subtle ui-button--md"
+            type="button"
+          >
+            Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="app__textarea-shell"
+  >
+    <textarea
+      aria-label="Text to analyze"
+      class="app__textarea"
+      placeholder="Paste or type text to estimate tokens and cost."
+      rows="6"
+    >
+      fallback
+    </textarea>
+  </div>
+  <div
+    class="app__token-markup-panel"
+  >
+    <button
+      class="app__token-markup-toggle"
+      disabled=""
+      type="button"
+    >
+      <strong>
+        Token list 
+      </strong>
+      <span>
+        Hide
+      </span>
+    </button>
+    <div
+      class="app__token-markup-list"
+      role="list"
+    >
+      <p
+        class="app__muted"
+      >
+        Token markups are only available for exact OpenAI tokenizer rows.
+      </p>
+    </div>
+  </div>
+  <div
+    class="app__textarea-footer"
+  >
+    <div
+      class="app__metric"
+    >
+      <span
+        class="app__metric-label"
+      >
+        Characters
+      </span>
+      <span
+        class="app__metric-value"
+      >
+        8
+      </span>
+    </div>
+    <div
+      class="app__metric"
+    >
+      <span
+        class="app__metric-label"
+      >
+        Token estimate
+      </span>
+      <span
+        class="app__metric-value"
+      >
+        2
+      </span>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`TextareaPanel token markup rendering > renders token overlay and token list when exact OpenAI tokenization is enabled 1`] = `
+<div
+  class="ui-card ui-card--default app__input-card"
+>
+  <div
+    class="app__card-header app__card-header--stack"
+  >
+    <div>
+      <h2>
+        Input Text
+      </h2>
+      <p
+        class="app__muted"
+      >
+        Paste, type, or choose a preset.
+      </p>
+    </div>
+    <div
+      class="app__actions"
+    >
+      <div
+        class="app__actions-group"
+      >
+        <button
+          class="ui-button ui-button--primary ui-button--md"
+          disabled=""
+          type="button"
+        >
+          Paste
+        </button>
+        <button
+          class="ui-button ui-button--subtle ui-button--md"
+          type="button"
+        >
+          Clear
+        </button>
+        <div
+          class="ui-popover"
+        >
+          <button
+            aria-expanded="false"
+            aria-haspopup="menu"
+            class="ui-button ui-button--subtle ui-button--md"
+            type="button"
+          >
+            Presets
+          </button>
+        </div>
+        <button
+          class="ui-button ui-button--ghost ui-button--sm"
+          disabled=""
+          type="button"
+        >
+          Undo last preset
+        </button>
+        <div
+          class="ui-popover"
+        >
+          <button
+            aria-controls=":r0:"
+            aria-expanded="false"
+            aria-haspopup="dialog"
+            class="ui-button ui-button--subtle ui-button--md"
+            type="button"
+          >
+            Settings
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="app__textarea-shell"
+  >
+    <div
+      aria-hidden="true"
+      class="app__token-overlay"
+    >
+      <span
+        class="app__token-overlay-mark"
+      >
+        Open
+      </span>
+      <span
+        class="app__token-overlay-mark"
+      >
+        AI
+      </span>
+      <span
+        class="app__token-overlay-mark"
+      >
+         token
+      </span>
+      <span
+        class="app__token-overlay-mark"
+      >
+         marks
+      </span>
+    </div>
+    <textarea
+      aria-label="Text to analyze"
+      class="app__textarea"
+      placeholder="Paste or type text to estimate tokens and cost."
+      rows="6"
+    >
+      OpenAI token marks
+    </textarea>
+  </div>
+  <div
+    class="app__token-markup-panel"
+  >
+    <button
+      class="app__token-markup-toggle"
+      type="button"
+    >
+      <strong>
+        Token list 
+        (openai:gpt-4o)
+      </strong>
+      <span>
+        Hide
+      </span>
+    </button>
+    <div
+      class="app__token-markup-list"
+      role="list"
+    >
+      <div
+        class="app__token-markup-row"
+        role="listitem"
+      >
+        <code>
+          #
+          0
+        </code>
+        <code>
+          6447
+        </code>
+        <code>
+          [
+          0
+          , 
+          4
+          )
+        </code>
+        <span>
+          "Open"
+        </span>
+      </div>
+      <div
+        class="app__token-markup-row"
+        role="listitem"
+      >
+        <code>
+          #
+          1
+        </code>
+        <code>
+          17527
+        </code>
+        <code>
+          [
+          4
+          , 
+          6
+          )
+        </code>
+        <span>
+          "AI"
+        </span>
+      </div>
+      <div
+        class="app__token-markup-row"
+        role="listitem"
+      >
+        <code>
+          #
+          2
+        </code>
+        <code>
+          6602
+        </code>
+        <code>
+          [
+          6
+          , 
+          12
+          )
+        </code>
+        <span>
+          " token"
+        </span>
+      </div>
+      <div
+        class="app__token-markup-row"
+        role="listitem"
+      >
+        <code>
+          #
+          3
+        </code>
+        <code>
+          22891
+        </code>
+        <code>
+          [
+          12
+          , 
+          18
+          )
+        </code>
+        <span>
+          " marks"
+        </span>
+      </div>
+    </div>
+  </div>
+  <div
+    class="app__textarea-footer"
+  >
+    <div
+      class="app__metric"
+    >
+      <span
+        class="app__metric-label"
+      >
+        Characters
+      </span>
+      <span
+        class="app__metric-value"
+      >
+        18
+      </span>
+    </div>
+    <div
+      class="app__metric"
+    >
+      <span
+        class="app__metric-label"
+      >
+        Token estimate
+      </span>
+      <span
+        class="app__metric-value"
+      >
+        4
+      </span>
+    </div>
+  </div>
+</div>
+`;

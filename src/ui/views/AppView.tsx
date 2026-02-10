@@ -5,7 +5,7 @@ import {
   countLines,
   countWords,
 } from "../../core/counters";
-import { estimateTokens, formatUSD, validatePrices } from "../../core";
+import { estimateTokens, formatUSD, getOpenAITokenDetails, validatePrices } from "../../core";
 import type { PricingRow, PricingValidationError } from "../../core";
 import prices from "../../data/prices.json";
 import PricingTable from "../components/PricingTable";
@@ -47,7 +47,7 @@ const AppView = () => {
   const [primaryModelKey, setPrimaryModelKey] = useState("");
   const [undoPreset, setUndoPreset] = useState<UndoPresetState | null>(null);
   const [showCounterDetails, setShowCounterDetails] = useState(false);
-  const [showUnderlines, setShowUnderlines] = useState(false);
+  const [showTokenMarkups, setShowTokenMarkups] = useState(false);
   const [isPricingOpen, setIsPricingOpen] = useState(
     typeof window !== "undefined" ? window.innerWidth > 760 : true,
   );
@@ -260,6 +260,20 @@ const AppView = () => {
       .filter((model) => model.provider.trim().toLowerCase() === "openai")
       .sort((a, b) => a.input_per_mtok - b.input_per_mtok);
   }, [pricingValidation.models]);
+
+  const exactOpenAIModelId =
+    primaryModel &&
+    primaryModel.exactness === "exact" &&
+    primaryModel.provider.trim().toLowerCase() === "openai"
+      ? primaryModel.model
+      : "";
+
+  const textareaTokenDetails = useMemo(() => {
+    if (!exactOpenAIModelId || debouncedText.length === 0) {
+      return [];
+    }
+    return getOpenAITokenDetails(debouncedText, exactOpenAIModelId);
+  }, [debouncedText, exactOpenAIModelId]);
 
   const buildSummaryText = () => {
     const lines: string[] = [];
@@ -492,12 +506,6 @@ const AppView = () => {
             checked={theme === "light"}
             onChange={(event) => setTheme(event.target.checked ? "light" : "dark")}
           />
-          <Toggle
-            id="show-underlines-toolbar"
-            label="Underlines"
-            checked={showUnderlines}
-            onChange={(event) => setShowUnderlines(event.target.checked)}
-          />
         </div>
         {isExportOpen ? (
           <div className="app__toolbar-export">
@@ -526,6 +534,11 @@ const AppView = () => {
             onRemoveInvisibleChange={setRemoveInvisible}
             characterCount={counters.characters}
             estimatedTokens={estimatedTokens}
+            showTokenMarkups={showTokenMarkups}
+            onShowTokenMarkupsChange={setShowTokenMarkups}
+            tokenDetails={textareaTokenDetails}
+            tokenModelLabel={exactOpenAIModelId}
+            hasExactOpenAITokenizer={Boolean(exactOpenAIModelId)}
           />
           <aside className="app__inspector">
             <Card className="app__summary-card">
@@ -689,8 +702,6 @@ const AppView = () => {
             <TokenDebugPanel
               text={debouncedText}
               openAIModels={openAIModels}
-              showUnderlines={showUnderlines}
-              onShowUnderlinesChange={setShowUnderlines}
             />
           </aside>
         </section>
