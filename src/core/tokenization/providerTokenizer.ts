@@ -10,7 +10,7 @@ export type TokenCountResult = {
   mode: TokenCountMode;
 };
 
-const TOKEN_CACHE_MAX_ENTRIES = 50;
+const TOKEN_CACHE_MAX_ENTRIES = 250;
 const tokenCountCache = new LruCache<string, TokenCountResult>(TOKEN_CACHE_MAX_ENTRIES);
 
 export const estimateTokens = (text: string): number => {

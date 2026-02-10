@@ -9,7 +9,10 @@ export type CostBreakdown = {
 const USD_ROUNDING_DIGITS = 10;
 
 const roundUSD = (value: number): number =>
-  Number(value.toFixed(USD_ROUNDING_DIGITS));
+  Number.isFinite(value) ? Number(value.toFixed(USD_ROUNDING_DIGITS)) : 0;
+
+const sanitizeTokenCount = (value: number): number =>
+  Number.isFinite(value) ? Math.max(0, value) : 0;
 
 export const computeCostUSD = (
   tokensIn: number,
@@ -17,12 +20,12 @@ export const computeCostUSD = (
   pricingRow: PricingRow,
 ): CostBreakdown => {
   const inputCostUSD = roundUSD(
-    (tokensIn / 1_000_000) * pricingRow.input_per_mtok,
+    (sanitizeTokenCount(tokensIn) / 1_000_000) * pricingRow.input_per_mtok,
   );
   const outputCostUSD =
     pricingRow.output_per_mtok === undefined
       ? 0
-      : roundUSD((tokensOut / 1_000_000) * pricingRow.output_per_mtok);
+      : roundUSD((sanitizeTokenCount(tokensOut) / 1_000_000) * pricingRow.output_per_mtok);
   const totalUSD = roundUSD(inputCostUSD + outputCostUSD);
 
   return {

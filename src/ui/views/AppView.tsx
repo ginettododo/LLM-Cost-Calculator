@@ -54,7 +54,19 @@ const AppView = () => {
     try {
       return { models: validatePrices(prices), error: null };
     } catch (error) {
-      return { models: [], error: error as PricingValidationError };
+      const fallback: PricingValidationError = {
+        message: "Invalid pricing data.",
+        issues: [{ path: "root", message: "Unexpected pricing validation failure." }],
+      };
+      const asValidationError =
+        typeof error === "object" &&
+        error !== null &&
+        "issues" in error &&
+        Array.isArray((error as PricingValidationError).issues)
+          ? (error as PricingValidationError)
+          : fallback;
+
+      return { models: [], error: asValidationError };
     }
   }, []);
 
@@ -144,6 +156,24 @@ const AppView = () => {
       onAction: options?.onAction,
     });
   };
+
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!undoPreset) {
+        return;
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "z") {
+        event.preventDefault();
+        setText(undoPreset.text);
+        setUndoPreset(null);
+        showToast("Preset undone");
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [undoPreset]);
 
   const handlePresetSelect = (presetId: string) => {
     const preset = PRESETS.find((item) => item.id === presetId);
@@ -247,8 +277,13 @@ const AppView = () => {
       return;
     }
 
-    window.prompt("Copy summary", summary);
-    showToast("Clipboard blocked. Manual copy prompt opened.");
+    if (typeof window.prompt === "function") {
+      window.prompt("Copy summary", summary);
+      showToast("Clipboard blocked. Manual copy prompt opened.");
+      return;
+    }
+
+    showToast("Clipboard unavailable. Select and copy manually.");
   };
 
   const buildExportRows = () => {
@@ -556,11 +591,11 @@ const AppView = () => {
               <div className="app__error-panel" role="status" aria-live="polite">
                 <h3>Pricing data issue</h3>
                 <p>
-                  We could not load the pricing data. Try refreshing or check the
-                  data source.
+                  We could not load the pricing data safely. Please refresh the page or verify
+                  the bundled pricing JSON format.
                 </p>
                 <ul>
-                  {pricingValidation.error.issues.slice(0, 3).map((issue) => (
+                  {pricingValidation.error.issues.slice(0, 4).map((issue) => (
                     <li key={`${issue.path}-${issue.message}`}>
                       <strong>{issue.path || "root"}</strong>: {issue.message}
                     </li>
@@ -588,6 +623,7 @@ const AppView = () => {
             <Button
               variant="ghost"
               size="sm"
+              aria-label={`Toast action: ${toast.actionLabel}`}
               onClick={() => {
                 toast.onAction?.();
                 setToast(null);

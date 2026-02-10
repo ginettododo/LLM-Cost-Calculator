@@ -185,6 +185,7 @@ const TextareaPanel = ({
                     type="button"
                     className="app__preset-item"
                     role="menuitem"
+                    aria-label={`${preset.label}, approximately ${preset.length.toLocaleString()} characters`}
                     onClick={() => {
                       onPresetSelect(preset.id);
                       setIsPresetOpen(false);
@@ -265,10 +266,9 @@ const TextareaPanel = ({
       />
       {value.trim().length === 0 ? (
         <div className="app__empty-state" aria-live="polite">
-          <strong>Paste text, pick a preset, or start typing.</strong>
+          <strong>Start with a preset or paste your own draft to see live token and cost estimates.</strong>
           <div className="app__hint app__hint--tight">
-            Tip: presets include realistic long-form content and unicode stress
-            tests.
+            Tip: use long-form presets to test performance safeguards and computation modes.
           </div>
         </div>
       ) : null}

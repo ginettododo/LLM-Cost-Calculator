@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { computeCostUSD, formatUSD, getTokenCountForPricingRow } from "../../core";
 import type { PricingRow } from "../../core/types/pricing";
 import Badge from "./ui/Badge";
@@ -55,6 +55,21 @@ const PricingTable = ({
   const [isTokenizing, setIsTokenizing] = useState(false);
   const [rowsForRender, setRowsForRender] = useState<RenderRow[]>([]);
   const [isAccuracyHelpOpen, setIsAccuracyHelpOpen] = useState(false);
+  const idleTaskRef = useRef<number | null>(null);
+
+  const cancelScheduledTask = () => {
+    if (idleTaskRef.current === null) {
+      return;
+    }
+    if (typeof window !== "undefined" && "cancelIdleCallback" in window) {
+      (window as Window & { cancelIdleCallback: (id: number) => void }).cancelIdleCallback(
+        idleTaskRef.current,
+      );
+    } else {
+      globalThis.clearTimeout(idleTaskRef.current);
+    }
+    idleTaskRef.current = null;
+  };
 
   const providers = useMemo(
     () => Array.from(new Set(models.map((model) => model.provider))).sort(),
@@ -147,6 +162,8 @@ const PricingTable = ({
 
   useEffect(() => {
     let cancelled = false;
+    cancelScheduledTask();
+
     setRowsForRender([]);
 
     if (computedModels.length === 0) {
@@ -163,10 +180,11 @@ const PricingTable = ({
 
     const scheduleBatch = (callback: () => void) => {
       if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-        return (window as Window & { requestIdleCallback: (cb: () => void) => number })
+        idleTaskRef.current = (window as Window & { requestIdleCallback: (cb: () => void) => number })
           .requestIdleCallback(callback);
+        return;
       }
-      return globalThis.setTimeout(callback, 0);
+      idleTaskRef.current = globalThis.setTimeout(callback, 0);
     };
 
     const runBatch = () => {
@@ -221,6 +239,7 @@ const PricingTable = ({
 
     return () => {
       cancelled = true;
+      cancelScheduledTask();
     };
   }, [computedModels, exactOnly, text]);
 
@@ -432,8 +451,9 @@ const PricingTable = ({
             ) : rowsForRender.length === 0 ? (
               <tr>
                 <td colSpan={8} className="app__empty">
-                  No models match the current filters. Try clearing search or
-                  toggles.
+                  {text.trim().length === 0
+                    ? "Add text or choose a preset to compute token and cost results."
+                    : "No models match your filters. Clear search or toggles to see more rows."}
                 </td>
               </tr>
             ) : (
