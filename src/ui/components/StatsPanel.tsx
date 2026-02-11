@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { formatUSD } from "../../core";
+import { computeCostUSD, formatUSD } from "../../core";
 import { PricingRow } from "../../core/types/pricing";
 import { TokenStats } from "../state/useTokenStats";
 import Badge from "./ui/Badge";
@@ -7,31 +7,31 @@ import Card from "./ui/Card";
 import Button from "./ui/Button";
 
 type StatsPanelProps = {
-    text: string;
-    stats: TokenStats | null;
-    selectedModelId: string;
-    models: PricingRow[];
-    onModelChange: (modelId: string) => void;
-    characterCount: number;
-    wordCount: number;
-    onCopySummary: () => void;
-    onExport: () => void;
+  text: string;
+  stats: TokenStats | null;
+  selectedModelId: string;
+  models: PricingRow[];
+  onModelChange: (modelId: string) => void;
+  characterCount: number;
+  wordCount: number;
+  onCopySummary: () => void;
+  onExport: () => void;
 };
 
 const StatsPanel = ({
-    stats,
-    selectedModelId,
-    models,
-    onModelChange,
-    characterCount,
-    wordCount,
-    onCopySummary,
-    onExport,
+  stats,
+  selectedModelId,
+  models,
+  onModelChange,
+  characterCount,
+  wordCount,
+  onCopySummary,
+  onExport,
 }: StatsPanelProps) => {
 
-    const sortedModels = useMemo(() => {
-        return [...models].sort((a, b) => a.provider.localeCompare(b.provider) || a.model.localeCompare(b.model));
-    }, [models]);
+  const sortedModels = useMemo(() => {
+    return [...models].sort((a, b) => a.provider.localeCompare(b.provider) || a.model.localeCompare(b.model));
+  }, [models]);
 
   return (
     <div className="app__stats-panel">
@@ -106,6 +106,29 @@ const StatsPanel = ({
           <Button variant="ghost" onClick={onExport} className="u-full-width">
             Export Report
           </Button>
+        </div>
+
+        <div className="app__quick-compare">
+          <span className="app__compare-title">Quick Comparison</span>
+          <div className="app__compare-list">
+            {sortedModels
+              .filter(m => `${m.provider}::${m.model}` !== selectedModelId)
+              .slice(0, 8)
+              .map(model => {
+                const modelCost = stats ? computeCostUSD(stats.tokens, stats.tokens, model).totalUSD : 0;
+                return (
+                  <div key={`${model.provider}::${model.model}`} className="app__compare-row">
+                    <div className="app__compare-model">
+                      <Badge tone="neutral">{model.provider}</Badge>
+                      <span className="app__compare-name">{model.model}</span>
+                    </div>
+                    <span className="app__compare-cost">
+                      {stats ? formatUSD(computeCostUSD(stats.tokens, stats.tokens, model).totalUSD) : "$0.00"}
+                    </span>
+                  </div>
+                );
+              })}
+          </div>
         </div>
       </Card>
 

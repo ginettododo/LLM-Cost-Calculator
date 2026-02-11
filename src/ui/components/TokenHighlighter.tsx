@@ -9,11 +9,11 @@ type TokenHighlighterProps = {
 };
 
 const COLORS = [
-    "rgba(41, 151, 255, 0.2)", // Blue-ish
-    "rgba(0, 255, 157, 0.2)",  // Green-ish
-    "rgba(255, 179, 0, 0.2)",  // Orange-ish
-    "rgba(255, 77, 77, 0.2)",  // Red-ish
-    "rgba(170, 77, 255, 0.2)", // Purple-ish
+    "rgba(41, 151, 255, 0.15)", // Subtle Blue
+    "rgba(0, 255, 157, 0.15)",  // Subtle Green
+    "rgba(255, 179, 0, 0.15)",  // Subtle Orange
+    "rgba(255, 77, 77, 0.15)",  // Subtle Red
+    "rgba(170, 77, 255, 0.15)", // Subtle Purple
 ];
 
 const TokenHighlighter = ({ text, model, isEnabled }: TokenHighlighterProps) => {

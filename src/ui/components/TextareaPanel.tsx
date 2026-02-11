@@ -196,11 +196,18 @@ const TextareaPanel = ({
       </div>
 
       <div className="app__editor-wrapper">
-        <TokenHighlighter
-          text={value}
-          model={selectedModel}
-          isEnabled={highlightEnabled}
-        />
+        <div
+          ref={(el) => {
+            if (el) (window as any).highlighterRef = el;
+          }}
+          className="app__highlighter-container"
+        >
+          <TokenHighlighter
+            text={value}
+            model={selectedModel}
+            isEnabled={highlightEnabled}
+          />
+        </div>
         <textarea
           className={`app__textarea ${highlightEnabled ? 'app__textarea--overlay' : ''}`}
           placeholder="Paste or type text to estimate tokens and cost."
@@ -209,6 +216,12 @@ const TextareaPanel = ({
           onChange={(event) => onChange(event.target.value)}
           onPaste={handlePaste}
           ref={textareaRef}
+          onScroll={(e) => {
+            const highlighter = (window as any).highlighterRef;
+            if (highlighter) {
+              highlighter.scrollTop = e.currentTarget.scrollTop;
+            }
+          }}
           rows={12}
         />
         {value.length === 0 && (

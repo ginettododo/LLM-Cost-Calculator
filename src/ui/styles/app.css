@@ -42,24 +42,38 @@
 
   --radius-s: 8px;
   --radius-m: 12px;
-  --radius-l: 16px;
+  /* Glassmorphism */
+  --glass-bg: rgba(10, 10, 10, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-blur: blur(16px);
+  --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --accent-shadow: 0 0 20px var(--accent-glow);
+
+  --font-sans: 'Outfit', 'Inter', -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
 }
 
 [data-theme="light"] {
-  --bg: #ffffff;
-  --surface: #f5f5f7;
+  color-scheme: light;
+  /* Ensure light mode is explicitly set */
+  --bg: #f8f9fa;
+  --surface: #ffffff;
   --surface-elevated: #ffffff;
-  --surface-strong: #eeeeee;
-  --surface-hover: #e5e5e5;
-  --text: #000000;
-  --text-secondary: #666;
-  --muted: #999;
-  --border: #ddd;
-  --border-strong: #ccc;
+  --surface-strong: #f1f3f5;
+  --surface-hover: #e9ecef;
+  --text: #1a1a1b;
+  --text-secondary: #495057;
+  --muted: #adb5bd;
+  --border: #dee2e6;
+  --border-strong: #ced4da;
   --accent: #0066cc;
-  --accent-glow: rgba(0, 102, 204, 0.1);
-  --success: #009966;
-  --success-glow: rgba(0, 153, 102, 0.1);
+  --accent-glow: rgba(0, 102, 204, 0.08);
+  --success: #0ca678;
+  --success-glow: rgba(12, 166, 120, 0.08);
+
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(0, 0, 0, 0.05);
+  --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 * {
@@ -72,13 +86,13 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
-  line-height: 1.5;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
 .app {
-  max-width: 1000px;
-  /* Tighter width for calculator feel */
+  max-width: 1100px;
+  /* Slightly wider for the 2-col layout */
   margin: 0 auto;
   min-height: 100vh;
   display: flex;
@@ -90,7 +104,7 @@ body {
 .app__header-main {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding-bottom: var(--space-m);
+  padding-bottom: var(--space-s);
 }
 
 .app__top-bar {
@@ -98,25 +112,26 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: var(--space-m) var(--space-l);
-  border-bottom: 1px solid var(--border);
 }
 
 .app__brand {
-  font-weight: 700;
-  font-size: 1rem;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.03em;
   display: flex;
   align-items: center;
   gap: var(--space-s);
+  color: var(--accent);
 }
 
 .app__tagary {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   background: var(--surface-strong);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
   color: var(--text-secondary);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.1em;
+  font-weight: 700;
 }
 
 .app__actions-row {
@@ -579,6 +594,11 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-m);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .app__stats-header {
@@ -586,8 +606,64 @@ body {
   flex-direction: column;
   gap: var(--space-xs);
   padding-bottom: var(--space-m);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--glass-border);
 }
+
+.app__quick-compare {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+  padding-top: var(--space-m);
+  border-top: 1px solid var(--glass-border);
+}
+
+.app__compare-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.app__compare-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app__compare-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: var(--radius-s);
+  transition: background 0.2s;
+}
+
+.app__compare-row:hover {
+  background: var(--surface-hover);
+}
+
+.app__compare-model {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.app__compare-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app__compare-cost {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  color: var(--success);
+}
+
 
 .app__big-stats-col {
   display: flex;
@@ -606,7 +682,7 @@ body {
   grid-template-columns: 1fr 1fr;
   gap: var(--space-m);
   padding: var(--space-m) 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .app__stat-mini {
@@ -634,7 +710,7 @@ body {
   font-size: 0.85rem;
   color: var(--text-secondary);
   padding: var(--space-m) 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--glass-border);
 }
 
 .app__breakdown-row {
