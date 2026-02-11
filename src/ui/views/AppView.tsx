@@ -9,7 +9,7 @@ import { estimateTokens, formatUSD, getOpenAITokenDetails, validatePrices } from
 import type { PricingRow, PricingValidationError } from "../../core";
 import prices from "../../data/prices.json";
 import PricingTable from "../components/PricingTable";
-import type { ComputeMode, VisiblePricingRow } from "../components/PricingTable";
+import type { VisiblePricingRow } from "../components/PricingTable";
 import TextareaPanel from "../components/TextareaPanel";
 import TokenDebugPanel from "../components/TokenDebugPanel";
 import useDebouncedValue from "../state/useDebouncedValue";
@@ -31,7 +31,6 @@ type UndoPresetState = {
   label: string;
 };
 
-const SOFT_INPUT_THRESHOLD = 50_000;
 const HARD_INPUT_THRESHOLD = 200_000;
 
 const AppView = () => {
@@ -42,16 +41,21 @@ const AppView = () => {
   const [visibleRows, setVisibleRows] = useState<VisiblePricingRow[]>([]);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
-  const [computeMode, setComputeMode] =
-    useState<ComputeMode>("primary-model");
+
+  // Compute mode is now automatic based on input size
+  // const [computeMode, setComputeMode] = useState<ComputeMode>("primary-model"); 
+
   const [primaryModelKey, setPrimaryModelKey] = useState("");
   const [undoPreset, setUndoPreset] = useState<UndoPresetState | null>(null);
+
+  // Debug panel hidden by default
+  const [showDebug, setShowDebug] = useState(false);
   const [showCounterDetails, setShowCounterDetails] = useState(false);
   const [showTokenMarkups, setShowTokenMarkups] = useState(false);
-  const [isPricingOpen, setIsPricingOpen] = useState(
-    typeof window !== "undefined" ? window.innerWidth > 760 : true,
-  );
-  const [selectedFeaturedModelKey, setSelectedFeaturedModelKey] = useState("");
+
+  // Pricing table open state
+  const [isPricingOpen, setIsPricingOpen] = useState(false);
+
   const debouncedText = useDebouncedValue(text, 40);
   const themeToggleId = useId();
   const primaryModelId = useId();
@@ -106,9 +110,9 @@ const AppView = () => {
     return latest;
   }, []);
 
-  const isLargeInput = debouncedText.length >= SOFT_INPUT_THRESHOLD;
   const isHugeInput = debouncedText.length >= HARD_INPUT_THRESHOLD;
-  const effectiveComputeMode = isHugeInput ? "primary-model" : computeMode;
+  // Always use primary-model mode for very large inputs implicitly
+  const effectiveComputeMode = isHugeInput ? "primary-model" : "visible-rows";
 
   useEffect(() => {
     if (!toast) {
@@ -123,6 +127,17 @@ const AppView = () => {
   }, [toast]);
 
   const prioritizePrimaryModel = (rows: VisiblePricingRow[]): VisiblePricingRow | undefined => {
+    // Default to GPT-4o or similar high-value model if available
+    const preferredOrder = ["openai:gpt-4o", "openai:gpt-4-turbo", "anthropic:claude-3-5-sonnet"];
+
+    for (const modelId of preferredOrder) {
+      const found = rows.find(row =>
+        (row.provider.toLowerCase() + ":" + row.model.toLowerCase()).includes(modelId.split(":")[1]) ||
+        row.model.toLowerCase().includes(modelId.split(":")[1])
+      );
+      if (found) return found;
+    }
+
     const exactOpenAI = rows
       .filter((row) => row.exactness === "exact" && row.provider.trim().toLowerCase() === "openai")
       .sort((a, b) => a.price_input_per_mtok - b.price_input_per_mtok);
@@ -136,18 +151,21 @@ const AppView = () => {
       return;
     }
 
+    // specific exact text
     const selectedRow = visibleRows.find(
       (row) => `${row.provider}::${row.model}` === primaryModelKey,
     );
 
     const needsSelection =
-      !selectedRow || (debouncedText.trim().length > 0 && selectedRow.tokens === 0);
+      !selectedRow || (debouncedText.trim().length > 0 && selectedRow.tokens === 0 && selectedRow.exactness === "exact");
 
     if (needsSelection) {
-      const rowsWithTokens = visibleRows.filter((row) => row.tokens > 0);
-      const preferred = prioritizePrimaryModel(rowsWithTokens.length > 0 ? rowsWithTokens : visibleRows);
-      if (preferred) {
-        setPrimaryModelKey(`${preferred.provider}::${preferred.model}`);
+      // Only auto-switch if we don't have a valid selection or the current selection is invalid
+      if (!primaryModelKey || !selectedRow) {
+        const preferred = prioritizePrimaryModel(visibleRows);
+        if (preferred) {
+          setPrimaryModelKey(`${preferred.provider}::${preferred.model}`);
+        }
       }
     }
   }, [debouncedText, primaryModelKey, visibleRows]);
@@ -157,14 +175,6 @@ const AppView = () => {
       setVisibleRows([]);
     }
   }, [pricingValidation.error]);
-
-  useEffect(() => {
-    if (!isHugeInput || computeMode === "primary-model") {
-      return;
-    }
-    setComputeMode("primary-model");
-    showToast("Large input: switched to primary model mode");
-  }, [computeMode, isHugeInput]);
 
   const showToast = (
     message: string,
@@ -177,7 +187,6 @@ const AppView = () => {
       onAction: options?.onAction,
     });
   };
-
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -225,34 +234,17 @@ const AppView = () => {
     showToast("Preset undone");
   };
 
-
   const primaryModel = useMemo(() => {
+    // If we have a key, try to find it in visible rows
     const selected = visibleRows.find((row) => `${row.provider}::${row.model}` === primaryModelKey);
-    if (!selected) {
-      return visibleRows.find((row) => row.tokens > 0);
-    }
 
-    if (debouncedText.trim().length > 0 && selected.tokens === 0) {
-      return visibleRows.find((row) => row.tokens > 0) ?? selected;
+    // If not found (e.g. filtered out), fall back to the first visible row or keep using the detailed info if we can find it in the full list (not implemented here for simplicity, assuming visible rows source of truth)
+    if (!selected && visibleRows.length > 0) {
+      return visibleRows[0];
     }
 
     return selected;
-  }, [debouncedText, primaryModelKey, visibleRows]);
-
-  const featuredModelRows = useMemo(() => {
-    const featuredIds = new Set(prices.featuredModels ?? []);
-    return visibleRows.filter((row) => featuredIds.has(`${row.provider.toLowerCase()}:${row.model.toLowerCase().replace(/\s+/g, "-")}`) || featuredIds.has(pricingValidation.models.find((item) => item.provider === row.provider && item.model === row.model)?.model_id ?? ""));
-  }, [pricingValidation.models, visibleRows]);
-
-  const selectedFeaturedModel = useMemo(() => {
-    if (featuredModelRows.length === 0) {
-      return null;
-    }
-    const selected = featuredModelRows.find(
-      (row) => `${row.provider}::${row.model}` === selectedFeaturedModelKey,
-    );
-    return selected ?? featuredModelRows[0];
-  }, [featuredModelRows, selectedFeaturedModelKey]);
+  }, [primaryModelKey, visibleRows]);
 
 
   const openAIModels = useMemo<PricingRow[]>(() => {
@@ -287,23 +279,6 @@ const AppView = () => {
       );
     } else {
       lines.push("Primary model: none");
-    }
-
-    lines.push("Top 3 cheapest (input cost):");
-    const topThree = [...visibleRows]
-      .sort((a, b) => a.input_cost_usd - b.input_cost_usd)
-      .slice(0, 3);
-
-    if (topThree.length === 0) {
-      lines.push("- none");
-    } else {
-      topThree.forEach((row, index) => {
-        lines.push(
-          `${index + 1}. ${row.provider} ${row.model} | ${toMoney(
-            row.input_cost_usd,
-          )} input | Tokens: ${row.tokens}`,
-        );
-      });
     }
 
     return lines.join("\n");
@@ -401,8 +376,6 @@ const AppView = () => {
     return asText;
   };
 
-
-
   const handleExportCsv = () => {
     const rows = buildExportRows();
     const columns = [
@@ -467,62 +440,76 @@ const AppView = () => {
 
   return (
     <div className="app" data-theme={theme}>
-      <header className="app__toolbar" role="toolbar" aria-label="Top actions">
-        <div className="app__toolbar-left">
-          <span className="app__toolbar-brand">Token Cost</span>
-        </div>
-        <div className="app__toolbar-actions">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="app__icon-btn"
-            aria-label="Copy summary"
-            onClick={handleCopySummary}
-            disabled={visibleRows.length === 0}
-          >
-            ⧉
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="app__icon-btn"
-            aria-haspopup="menu"
-            aria-expanded={isExportOpen}
-            aria-label="Export options"
-            onClick={() => setIsExportOpen((prev) => !prev)}
-          >
-            ⇩
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="app__icon-btn"
-            aria-label="Preset picker"
-            onClick={() => handlePresetSelect(PRESETS[0]?.id ?? "")}
-          >
-            ⚡
-          </Button>
-          <Toggle
-            id={themeToggleId}
-            label="Light"
-            checked={theme === "light"}
-            onChange={(event) => setTheme(event.target.checked ? "light" : "dark")}
-          />
-        </div>
-        {isExportOpen ? (
-          <div className="app__toolbar-export">
-            <Button size="sm" onClick={handleExportCsv}>CSV</Button>
-            <Button size="sm" onClick={handleExportJson}>JSON</Button>
+      <header className="app__header-main">
+        {/* Top Bar with basic actions */}
+        <div className="app__top-bar">
+          <div className="app__brand">LLM Calculator <span className="app__tagary">BETA</span></div>
+          <div className="app__actions-row">
+            <Toggle
+              id={themeToggleId}
+              label="Light"
+              checked={theme === "light"}
+              onChange={(event) => setTheme(event.target.checked ? "light" : "dark")}
+            />
+            <Button variant="ghost" size="sm" onClick={() => setShowDebug(!showDebug)}>
+              {showDebug ? "Hide Debug" : "Data"}
+            </Button>
           </div>
-        ) : null}
+        </div>
+
+        {/* Primary Calculator Display */}
+        <div className="app__calculator-display">
+          <div className="app__model-selector-large">
+            <label htmlFor={primaryModelId} className="app__label-large">Model</label>
+            <select
+              id={primaryModelId}
+              className="app__select-large"
+              value={primaryModelKey}
+              onChange={(event) => setPrimaryModelKey(event.target.value)}
+              disabled={visibleRows.length === 0}
+            >
+              {visibleRows.length === 0 ? (
+                <option value="">No models available</option>
+              ) : (
+                visibleRows.map((row) => (
+                  <option
+                    key={`${row.provider}-${row.model}`}
+                    value={`${row.provider}::${row.model}`}
+                  >
+                    {row.provider} / {row.model}
+                  </option>
+                ))
+              )}
+            </select>
+          </div>
+
+          <div className="app__big-stats">
+            <div className="app__big-stat-item">
+              <span className="app__label-stat">Estimated Cost</span>
+              <span className="app__value-stat app__value-stat--cost">
+                {primaryModel ? toMoney(primaryModel.total_cost_usd) : "$0.00"}
+              </span>
+            </div>
+            <div className="app__big-stat-item">
+              <span className="app__label-stat">
+                Token Count
+                {primaryModel?.exactness === 'exact' && <Badge tone="success">EXACT</Badge>}
+                {primaryModel?.exactness === 'estimated' && <Badge tone="warning">EST</Badge>}
+              </span>
+              <span className="app__value-stat">
+                {primaryModel && primaryModel.tokens > 0
+                  ? primaryModel.tokens.toLocaleString()
+                  : debouncedText.trim().length > 0
+                    ? estimatedTokens.toLocaleString()
+                    : "0"}
+              </span>
+            </div>
+          </div>
+        </div>
       </header>
 
-      <main className="app__main">
-        <section className="app__title-row">
-          <h1>Token &amp; LLM Cost Calculator</h1>
-          <p className="app__subtitle">Fully local and static. No backend calls.</p>
-        </section>
-        <section className="app__section app__section--top">
+      <main className="app__main-content">
+        <section className="app__section-input">
           <TextareaPanel
             value={text}
             onChange={setText}
@@ -548,135 +535,11 @@ const AppView = () => {
             onCopySummary={handleCopySummary}
             copySummaryDisabled={debouncedText.length === 0}
           />
-          <aside className="app__inspector">
-            <Card className="app__summary-card">
-              <div className="app__card-header">
-                <div>
-                  <h2>Primary Model</h2>
-                  <p className="app__muted">Inspector for tokens and spend.</p>
-                </div>
-                <Badge
-                  tone={effectiveComputeMode === "primary-model" ? "success" : "neutral"}
-                >
-                  {effectiveComputeMode === "primary-model"
-                    ? "Primary only"
-                    : "Visible rows"}
-                </Badge>
-              </div>
-              <div className="app__field">
-                <label htmlFor="compute-mode" className="app__label">
-                  Computation mode
-                </label>
-                <select
-                  id="compute-mode"
-                  className="app__select"
-                  value={effectiveComputeMode}
-                  onChange={(event) =>
-                    setComputeMode(event.target.value as ComputeMode)
-                  }
-                  disabled={isHugeInput}
-                >
-                  <option value="visible-rows">
-                    Visible rows (default)
-                  </option>
-                  <option value="primary-model">Primary model only (fast)</option>
-                </select>
-                <p className="app__hint">
-                  Visible rows computes the filtered table. Primary model only
-                  computes the top row for speed.
-                </p>
-              </div>
-              <div className="app__field">
-                <label htmlFor={primaryModelId} className="app__label">
-                  Choose primary model
-                </label>
-                <select
-                  id={primaryModelId}
-                  className="app__select"
-                  value={primaryModelKey}
-                  onChange={(event) => setPrimaryModelKey(event.target.value)}
-                  disabled={visibleRows.length === 0}
-                >
-                  {visibleRows.length === 0 ? (
-                    <option value="">No models available</option>
-                  ) : (
-                    visibleRows.map((row) => (
-                      <option
-                        key={`${row.provider}-${row.model}`}
-                        value={`${row.provider}::${row.model}`}
-                      >
-                        {row.provider} · {row.model}
-                      </option>
-                    ))
-                  )}
-                </select>
-              </div>
-              <div className="app__summary-grid">
-                <div className="app__summary-item">
-                  <span className="app__label">Tokens</span>
-                  <span className="app__value">
-                    {primaryModel && primaryModel.tokens > 0
-                      ? primaryModel.tokens.toLocaleString()
-                      : debouncedText.trim().length > 0
-                        ? estimatedTokens.toLocaleString()
-                        : "—"}
-                  </span>
-                </div>
-                <div className="app__summary-item">
-                  <span className="app__label">Total cost</span>
-                  <span className="app__value">
-                    {primaryModel ? toMoney(primaryModel.total_cost_usd) : "—"}
-                  </span>
-                </div>
-                <div className="app__summary-item">
-                  <span className="app__label">Count type</span>
-                  <span className="app__value">
-                    {primaryModel ? (
-                      <Badge
-                        tone={
-                          primaryModel.exactness === "exact" ? "success" : "warning"
-                        }
-                      >
-                        {primaryModel.exactness === "exact" ? "Exact" : "Estimated"}
-                      </Badge>
-                    ) : (
-                      "—"
-                    )}
-                  </span>
-                </div>
-              </div>
-              {isLargeInput ? (
-                <div
-                  className={
-                    isHugeInput
-                      ? "app__warning app__warning--critical"
-                      : "app__warning"
-                  }
-                  role="status"
-                  aria-live="polite"
-                >
-                  <strong>
-                    {isHugeInput
-                      ? "Very large input detected"
-                      : "Large input detected"}{" "}
-                    ({debouncedText.length.toLocaleString()} chars).
-                  </strong>
-                  <span>
-                    {isHugeInput
-                      ? "Primary model mode is enforced to prevent slowdowns."
-                      : "Switch to primary model mode for faster updates."}
-                  </span>
-                  {!isHugeInput && computeMode !== "primary-model" ? (
-                    <Button
-                      variant="warning"
-                      onClick={() => setComputeMode("primary-model")}
-                    >
-                      Enable primary model mode
-                    </Button>
-                  ) : null}
-                </div>
-              ) : null}
-            </Card>
+        </section>
+
+        {/* Token Debugger (Conditional) */}
+        {showDebug && (
+          <section className="app__section-debug">
             <Card className="app__stats-card" variant="inset">
               <div className="app__kpi-row">
                 <div className="app__kpi-chip">
@@ -706,92 +569,57 @@ const AppView = () => {
                   <span>Bytes: {counters.bytes.toLocaleString()}</span>
                 </div>
               ) : null}
+              <TokenDebugPanel
+                text={debouncedText}
+                openAIModels={openAIModels}
+              />
             </Card>
-            <TokenDebugPanel
-              text={debouncedText}
-              openAIModels={openAIModels}
-            />
-          </aside>
-        </section>
+          </section>
+        )}
 
-        <section className="app__section">
+        <section className="app__section-table">
           <Card>
-            <h2>Featured Models</h2>
-            <div className="app__featured-strip">
-              {featuredModelRows.map((row) => (
-                <button
-                  type="button"
-                  key={`${row.provider}-${row.model}`}
-                  className="app__featured-card"
-                  onClick={() => setSelectedFeaturedModelKey(`${row.provider}::${row.model}`)}
-                >
-                  <span>{row.model}</span>
-                  <strong>{toMoney(row.total_cost_usd)}</strong>
-                </button>
-              ))}
-            </div>
-            {selectedFeaturedModel ? (
-              <div className="app__featured-detail">
-                <strong>
-                  {selectedFeaturedModel.provider} · {selectedFeaturedModel.model}
-                </strong>
-                <span>{selectedFeaturedModel.tokens.toLocaleString()} tokens</span>
-                <span>{toMoney(selectedFeaturedModel.total_cost_usd)}</span>
-              </div>
-            ) : null}
-          </Card>
-        </section>
-
-        <section className="app__section">
-          <Card>
-            <div className="app__card-header">
+            <div className="app__card-header-interact" onClick={() => setIsPricingOpen(!isPricingOpen)}>
               <div>
-                <h2>Pricing Table</h2>
+                <h2>All Models Comparison</h2>
                 <p className="app__muted">
-                  Pricing data last updated: {lastUpdated}
+                  {visibleRows.length} models available. Last updated: {lastUpdated}
                 </p>
               </div>
-              <Badge
-                tone={effectiveComputeMode === "primary-model" ? "success" : "neutral"}
-              >
-                {effectiveComputeMode === "primary-model"
-                  ? "Primary only"
-                  : "Visible rows"}
-              </Badge>
+              <Button variant="ghost" size="sm">{isPricingOpen ? "Collapse" : "Expand"}</Button>
             </div>
-            <details
-              className="app__accordion"
-              open={isPricingOpen}
-              onToggle={(event) => setIsPricingOpen((event.currentTarget as HTMLDetailsElement).open)}
-            >
-              <summary>All models</summary>
-              {pricingValidation.error ? (
-                <div className="app__error-panel" role="status" aria-live="polite">
-                  <h3>Pricing data issue</h3>
-                  <p>
-                    We could not load the pricing data safely. Please refresh the page or verify
-                    the bundled pricing JSON format.
-                  </p>
-                  <ul>
-                    {pricingValidation.error.issues.slice(0, 4).map((issue) => (
-                      <li key={`${issue.path}-${issue.message}`}>
-                        <strong>{issue.path || "root"}</strong>: {issue.message}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <PricingTable
-                  models={pricingValidation.models}
-                  text={debouncedText}
-                  computeMode={effectiveComputeMode}
-                  onVisibleRowsChange={setVisibleRows}
-                />
-              )}
-            </details>
+
+            {(isPricingOpen || debouncedText.length === 0) && (
+              <div className="app__table-container">
+                {pricingValidation.error ? (
+                  <div className="app__error-panel" role="status" aria-live="polite">
+                    <h3>Pricing data issue</h3>
+                    <p>
+                      We could not load the pricing data safely. Please refresh the page or verify
+                      the bundled pricing JSON format.
+                    </p>
+                    <ul>
+                      {pricingValidation.error.issues.slice(0, 4).map((issue) => (
+                        <li key={`${issue.path}-${issue.message}`}>
+                          <strong>{issue.path || "root"}</strong>: {issue.message}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <PricingTable
+                    models={pricingValidation.models}
+                    text={debouncedText}
+                    computeMode={effectiveComputeMode}
+                    onVisibleRowsChange={setVisibleRows}
+                  />
+                )}
+              </div>
+            )}
           </Card>
         </section>
       </main>
+
       <div className="app__sr-live" role="status" aria-live="polite" aria-atomic="true">
         {toast?.message ?? ""}
       </div>
@@ -815,7 +643,7 @@ const AppView = () => {
       ) : null}
 
       <footer className="app__footer">
-        <p>100% offline · No data ever leaves your browser · Prices from public APIs</p>
+        <p>100% offline · Prices from public sources</p>
       </footer>
     </div>
   );
