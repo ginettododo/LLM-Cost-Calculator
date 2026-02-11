@@ -1,7 +1,7 @@
 import type { PricingRow } from "../types/pricing";
 import { LruCache } from "../cache/lru";
 import { stableTextKey } from "../cache/hash";
-import { countOpenAITokensExact } from "./openaiTokenizer";
+import { countOpenAITokensExact, countOpenAITokensAsync } from "./openaiTokenizer";
 
 export type TokenCountMode = "exact" | "estimated";
 
@@ -82,6 +82,35 @@ export const getTokenCountForPricingRow = (
       mode: "exact",
     };
   } else {
+    result = {
+      tokens: estimateTokens(text),
+      mode: "estimated",
+    };
+  }
+
+  tokenCountCache.set(cacheKey, result);
+  return result;
+};
+
+export const getTokenCountForPricingRowAsync = async (
+  text: string,
+  pricingRow: Pick<PricingRow, "provider" | "model" | "model_id">,
+): Promise<TokenCountResult> => {
+  const cacheKey = buildTokenCacheKey(text, pricingRow);
+  const cached = tokenCountCache.get(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
+  let result: TokenCountResult;
+  if (isOpenAIProvider(pricingRow.provider)) {
+    const tokens = await countOpenAITokensAsync(text, pricingRow.model_id ?? pricingRow.model);
+    result = {
+      tokens,
+      mode: "exact",
+    };
+  } else {
+    // Estimations are fast enough to be sync, but wrapped in promise for consistency
     result = {
       tokens: estimateTokens(text),
       mode: "estimated",

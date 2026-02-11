@@ -19,6 +19,8 @@ const AppView = () => {
   const [theme, setTheme] = useState<Theme>("dark");
   const [primaryModelKey, setPrimaryModelKey] = useState("");
   const [showCompare, setShowCompare] = useState(false);
+  const [outputMode, setOutputMode] = useState<"ratio" | "fixed">("ratio");
+  const [outputValue, setOutputValue] = useState<number>(0);
 
   const debouncedText = useDebouncedValue(text, 100);
 
@@ -46,7 +48,10 @@ const AppView = () => {
     return pricingData.models.find(m => `${m.provider}::${m.model}` === primaryModelKey);
   }, [primaryModelKey, pricingData.models]);
 
-  const stats = useTokenStats(debouncedText, selectedModel);
+  const stats = useTokenStats(debouncedText, selectedModel, {
+    outputMode,
+    outputValue,
+  });
 
   const handleCopySummary = async () => {
     const summary = `LLM Cost Est: ${selectedModel?.model}
@@ -121,6 +126,10 @@ Characters: ${counters.characters} | Words: ${counters.words}`;
                 wordCount={counters.words}
                 onCopySummary={handleCopySummary}
                 onExport={handleExport}
+                outputMode={outputMode}
+                outputValue={outputValue}
+                onOutputModeChange={setOutputMode}
+                onOutputValueChange={setOutputValue}
               />
             </div>
           </div>

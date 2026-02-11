@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.1.0] - 2026-02-11
+### Performance
+- **Critical Fix**: Tokenizer freezing resolved by migrating to Web Worker and optimizing byte scanning to O(N).
+- **Architecture**: Removed global window references in `TextareaPanel`.
+
+### Features
+- **Output Cost**: Configurable Output Cost calculation (Ratio or Fixed amount).
+
+### UI/UX
+- **Polish**: Enhanced "Neon" aesthetic, removed `!important` overrides, and fixed sync issues between editor and highlighter.
+
 ## [1.0.0] - 2026-02-09
 ### Added
 - OpenAI exact token counting path (local tokenizer) with snapshot coverage.

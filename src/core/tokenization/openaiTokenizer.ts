@@ -19,25 +19,56 @@ export type OpenAITokenDetail = {
 
 
 // Helper to map byte offsets to character indices for accurate highlighting
+// optimized to avoid instantiating TextEncoder in a loop
 const mapByteOffsetsToCharIndices = (text: string): Uint32Array => {
-  const utf8Length = new TextEncoder().encode(text).length;
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(text);
+  const utf8Length = bytes.length;
   const byteToChar = new Uint32Array(utf8Length + 1);
 
-  let byteOffset = 0;
   let charOffset = 0;
-  byteToChar[0] = 0;
+  let byteOffset = 0;
 
-  for (const symbol of text) {
-    const symbolBytes = new TextEncoder().encode(symbol).length;
+  while (byteOffset < utf8Length) {
+    const b = bytes[byteOffset];
 
-    for (let index = 0; index < symbolBytes; index += 1) {
-      byteToChar[byteOffset + index] = charOffset;
+    // Fill the mapping for the start byte
+    byteToChar[byteOffset] = charOffset;
+
+    let seqLen = 1;
+    let charLen = 1;
+
+    if (b < 0x80) {
+      // 1-byte sequence (ASCII)
+      seqLen = 1;
+      charLen = 1;
+    } else if ((b & 0xe0) === 0xc0) {
+      // 2-byte sequence
+      seqLen = 2;
+      charLen = 1;
+    } else if ((b & 0xf0) === 0xe0) {
+      // 3-byte sequence
+      seqLen = 3;
+      charLen = 1;
+    } else if ((b & 0xf8) === 0xf0) {
+      // 4-byte sequence (surrogate pair in JS)
+      seqLen = 4;
+      charLen = 2;
     }
 
-    byteOffset += symbolBytes;
-    charOffset += symbol.length;
-    byteToChar[byteOffset] = charOffset;
+    // Fill mapping for continuation bytes
+    for (let i = 1; i < seqLen; i++) {
+      if (byteOffset + i < utf8Length) {
+        byteToChar[byteOffset + i] = charOffset;
+      }
+    }
+
+    byteOffset += seqLen;
+    charOffset += charLen;
   }
+
+  // Final offset
+  byteToChar[utf8Length] = charOffset;
 
   return byteToChar;
 };
@@ -128,4 +159,57 @@ export const countOpenAITokensExact = (text: string, model: string): number => {
 
 export const clearOpenAITokenizerCache = (): void => {
   encoderCache.clear();
+  if (worker) {
+    worker.postMessage({ type: "clearCache" });
+  }
+};
+
+// --- Web Worker Client ---
+
+let worker: Worker | null = null;
+const pending
+  = new Map<string, { resolve: (val: any) => void; reject: (err: any) => void }>();
+
+const getWorker = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  if (!worker) {
+    worker = new Worker(new URL("./tokenizer.worker.ts", import.meta.url), {
+      type: "module",
+    });
+    worker.onmessage = (e) => {
+      const { id, error, count, details } = e.data;
+      const p = pending.get(id);
+      if (p) {
+        if (error) p.reject(new Error(error));
+        else if (count !== undefined) p.resolve(count);
+        else if (details !== undefined) p.resolve(details);
+        pending.delete(id);
+      }
+    };
+  }
+  return worker;
+};
+
+export const countOpenAITokensAsync = (text: string, model: string): Promise<number> => {
+  const w = getWorker();
+  if (!w) return Promise.resolve(countOpenAITokensExact(text, model));
+
+  return new Promise((resolve, reject) => {
+    const id = Math.random().toString(36).slice(2);
+    pending.set(id, { resolve, reject });
+    w.postMessage({ type: "count", text, model, id });
+  });
+};
+
+export const getOpenAITokenDetailsAsync = (text: string, model: string): Promise<OpenAITokenDetail[]> => {
+  const w = getWorker();
+  if (!w) return Promise.resolve(getOpenAITokenDetails(text, model));
+
+  return new Promise((resolve, reject) => {
+    const id = Math.random().toString(36).slice(2);
+    pending.set(id, { resolve, reject });
+    w.postMessage({ type: "details", text, model, id });
+  });
 };

@@ -16,6 +16,10 @@ type StatsPanelProps = {
   wordCount: number;
   onCopySummary: () => void;
   onExport: () => void;
+  outputMode: "ratio" | "fixed";
+  outputValue: number;
+  onOutputModeChange: (mode: "ratio" | "fixed") => void;
+  onOutputValueChange: (val: number) => void;
 };
 
 const StatsPanel = ({
@@ -27,6 +31,10 @@ const StatsPanel = ({
   wordCount,
   onCopySummary,
   onExport,
+  outputMode,
+  outputValue,
+  onOutputModeChange,
+  onOutputValueChange,
 }: StatsPanelProps) => {
 
   const sortedModels = useMemo(() => {
@@ -98,6 +106,37 @@ const StatsPanel = ({
             </div>
           </div>
         )}
+
+        <div className="app__stats-settings">
+          <div className="app__label-row">
+            <span className="app__label-mini">Output Tokens</span>
+            <div className="app__toggle-group">
+              <button
+                type="button"
+                className={`app__toggle-btn ${outputMode === "ratio" ? "active" : ""}`}
+                onClick={() => onOutputModeChange("ratio")}
+              >Ratio</button>
+              <button
+                type="button"
+                className={`app__toggle-btn ${outputMode === "fixed" ? "active" : ""}`}
+                onClick={() => onOutputModeChange("fixed")}
+              >Fixed</button>
+            </div>
+          </div>
+          <div className="app__input-row">
+            <input
+              type="number"
+              className="app__input-mini"
+              value={outputValue}
+              onChange={(e) => onOutputValueChange(parseFloat(e.target.value) || 0)}
+              step={outputMode === "ratio" ? 0.1 : 1}
+              min={0}
+            />
+            <span className="app__unit-label">
+              {outputMode === "ratio" ? "x Input" : "Tokens"}
+            </span>
+          </div>
+        </div>
 
         <div className="app__stats-actions">
           <Button variant="subtle" onClick={onCopySummary} className="u-full-width">

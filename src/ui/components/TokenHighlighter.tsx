@@ -1,5 +1,4 @@
-import { useMemo } from "react";
-import { getOpenAITokenDetails } from "../../core";
+import { useTokenDetails } from "../state/useTokenDetails";
 import { PricingRow } from "../../core/types/pricing";
 
 type TokenHighlighterProps = {
@@ -17,16 +16,7 @@ const COLORS = [
 ];
 
 const TokenHighlighter = ({ text, model, isEnabled }: TokenHighlighterProps) => {
-    const tokenDetails = useMemo(() => {
-        if (!isEnabled || !model || !text) {
-            return [];
-        }
-        // Only support OpenAI for now as per requirements/availability
-        if (model.provider.toLowerCase() !== "openai") {
-            return [];
-        }
-        return getOpenAITokenDetails(text, model.model_id ?? model.model);
-    }, [text, model, isEnabled]);
+    const tokenDetails = useTokenDetails(text, model, isEnabled);
 
     if (!isEnabled || tokenDetails.length === 0) {
         return null;

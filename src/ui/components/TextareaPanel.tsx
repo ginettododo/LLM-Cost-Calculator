@@ -35,6 +35,7 @@ const TextareaPanel = ({
   const [highlightEnabled, setHighlightEnabled] = useState(true);
   const settingsId = useId();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const highlighterRef = useRef<HTMLDivElement>(null);
 
   const applyInsert = (insertValue: string, target: HTMLTextAreaElement | null) => {
     if (!target) {
@@ -197,9 +198,7 @@ const TextareaPanel = ({
 
       <div className="app__editor-wrapper">
         <div
-          ref={(el) => {
-            if (el) (window as any).highlighterRef = el;
-          }}
+          ref={highlighterRef}
           className="app__highlighter-container"
         >
           <TokenHighlighter
@@ -217,9 +216,8 @@ const TextareaPanel = ({
           onPaste={handlePaste}
           ref={textareaRef}
           onScroll={(e) => {
-            const highlighter = (window as any).highlighterRef;
-            if (highlighter) {
-              highlighter.scrollTop = e.currentTarget.scrollTop;
+            if (highlighterRef.current) {
+              highlighterRef.current.scrollTop = e.currentTarget.scrollTop;
             }
           }}
           rows={12}

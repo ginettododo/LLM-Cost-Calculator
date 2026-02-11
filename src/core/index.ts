@@ -24,6 +24,7 @@ export {
   estimateTokens,
   getTokenCacheSize,
   getTokenCountForPricingRow,
+  getTokenCountForPricingRowAsync,
 } from "./tokenization/providerTokenizer";
 export type {
   TokenCountMode,

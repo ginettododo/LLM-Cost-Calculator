@@ -273,8 +273,9 @@ body {
 }
 
 .app__textarea:focus {
-  border-color: var(--accent) !important;
-  background: var(--surface-hover) !important;
+  border-color: var(--accent);
+  background: var(--surface-hover);
+  box-shadow: 0 0 20px var(--accent-glow);
 }
 
 .app__textarea-toolbar {
@@ -307,23 +308,36 @@ body {
 }
 
 .app__textarea {
-  background: var(--surface) !important;
-  border: 1px solid var(--border) !important;
-  border-top: none !important;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
   /* Toolbar handles top border */
-  border-top-left-radius: 0 !important;
-  border-top-right-radius: 0 !important;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
   min-height: 300px;
-  font-family: var(--font-mono) !important;
-  font-size: 0.95rem !important;
-  padding: var(--space-l) !important;
-  border-bottom-left-radius: var(--radius-l) !important;
-  border-bottom-right-radius: var(--radius-l) !important;
-  box-shadow: none !important;
-  transition: all 0.2s;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding: var(--space-l);
+  border-bottom-left-radius: var(--radius-l);
+  border-bottom-right-radius: var(--radius-l);
+  box-shadow: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
   /* Full width */
   resize: vertical;
+  color: var(--text);
+  caret-color: var(--text);
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.app__textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 20px var(--accent-glow);
+  background: var(--surface-hover);
 }
 
 /* ── Components: Pricing Table & Accordion ────────────────────────────── */
@@ -970,17 +984,17 @@ body {
   transition: transform 0.2s;
 }
 
-.ui-toggle__input:checked + .ui-toggle__control {
+.ui-toggle__input:checked+.ui-toggle__control {
   background: color-mix(in srgb, var(--accent) 30%, var(--surface-strong));
   border-color: var(--accent);
 }
 
-.ui-toggle__input:checked + .ui-toggle__control::after {
+.ui-toggle__input:checked+.ui-toggle__control::after {
   transform: translateX(12px);
   background: #fff;
 }
 
-.ui-toggle__input:disabled + .ui-toggle__control {
+.ui-toggle__input:disabled+.ui-toggle__control {
   opacity: 0.4;
 }
 
@@ -1008,16 +1022,17 @@ body {
   font-family: var(--font-mono);
   font-size: 0.95rem;
   /* Match textarea */
-  line-height: 1.5;
+  line-height: 1.6;
   /* Match textarea */
   white-space: pre-wrap;
   word-wrap: break-word;
   color: transparent;
   /* Hide text, show spans bg */
   overflow: hidden;
-  /* Scroll is handled by sync or hidden? Wait, we need sync */
   border: 1px solid transparent;
-  /* Match border width */
+  /* Match border width of textarea to align content */
+  border-top: none;
+  /* Textarea has no top border */
   z-index: 0;
 }
 
@@ -1026,11 +1041,14 @@ body {
 }
 
 /* Ensure textarea sits on top and background is transparent */
+/* Ensure textarea sits on top and background is transparent */
 .app__textarea--overlay {
   position: relative;
   z-index: 1;
   background: transparent !important;
-  /* Allow highlighter to show through */
+  /* Keep transparent for overlap */
+  -webkit-text-fill-color: transparent;
+  /* Webkit trick for transparent text but visible caret */
 }
 
 /* ── Utilities ───────────────────────────────────────────────────────── */
