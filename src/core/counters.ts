@@ -1,5 +1,5 @@
 const DEFAULT_WORD_REGEX =
-  /[\p{L}\p{N}]+(?:[\p{M}]+)?(?:['’\-][\p{L}\p{N}\p{M}]+)*/gu;
+  /[\p{L}\p{N}]+(?:[\p{M}]+)?(?:['’-][\p{L}\p{N}\p{M}]+)*/gu;
 
 type SegmenterLike = {
   segment: (text: string) => Iterable<{ isWordLike?: boolean }>;
@@ -43,6 +43,7 @@ export const countGraphemes = (text: string): number => {
   }
 
   let count = 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   for (const _segment of segmenter.segment(text)) {
     count += 1;
   }

@@ -5,7 +5,7 @@ import {
   countLines,
   countWords,
 } from "../../core/counters";
-import { estimateTokens, formatUSD, getOpenAITokenDetails, validatePrices } from "../../core";
+import { estimateTokens, formatUSD, validatePrices } from "../../core";
 import type { PricingRow, PricingValidationError } from "../../core";
 import prices from "../../data/prices.json";
 import PricingTable from "../components/PricingTable";
@@ -51,7 +51,6 @@ const AppView = () => {
   // Debug panel hidden by default
   const [showDebug, setShowDebug] = useState(false);
   const [showCounterDetails, setShowCounterDetails] = useState(false);
-  const [showTokenMarkups, setShowTokenMarkups] = useState(false);
 
   // Pricing table open state
   const [isPricingOpen, setIsPricingOpen] = useState(false);
@@ -253,19 +252,7 @@ const AppView = () => {
       .sort((a, b) => a.input_per_mtok - b.input_per_mtok);
   }, [pricingValidation.models]);
 
-  const exactOpenAIModelId =
-    primaryModel &&
-      primaryModel.exactness === "exact" &&
-      primaryModel.provider.trim().toLowerCase() === "openai"
-      ? primaryModel.model
-      : "";
 
-  const textareaTokenDetails = useMemo(() => {
-    if (!exactOpenAIModelId || debouncedText.length === 0) {
-      return [];
-    }
-    return getOpenAITokenDetails(debouncedText, exactOpenAIModelId);
-  }, [debouncedText, exactOpenAIModelId]);
 
   const buildSummaryText = () => {
     const lines: string[] = [];
@@ -416,17 +403,11 @@ const AppView = () => {
         bytes: counters.bytes,
         last_updated: lastUpdated,
       },
-      rows: buildExportRows().map(
-        ({
-          timestamp: _timestamp,
-          characters: _characters,
-          words: _words,
-          lines: _lines,
-          bytes: _bytes,
-          last_updated: _lastUpdated,
-          ...row
-        }) => row,
-      ),
+      rows: buildExportRows().map((row) => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { timestamp, characters, words, lines, bytes, last_updated, ...rest } = row;
+        return rest;
+      }),
     };
 
     downloadFile(
@@ -523,11 +504,6 @@ const AppView = () => {
             onRemoveInvisibleChange={setRemoveInvisible}
             characterCount={counters.characters}
             estimatedTokens={estimatedTokens}
-            showTokenMarkups={showTokenMarkups}
-            onShowTokenMarkupsChange={setShowTokenMarkups}
-            tokenDetails={textareaTokenDetails}
-            tokenModelLabel={exactOpenAIModelId}
-            hasExactOpenAITokenizer={Boolean(exactOpenAIModelId)}
             isExportOpen={isExportOpen}
             onExportToggle={() => setIsExportOpen((prev) => !prev)}
             onExportCsv={handleExportCsv}

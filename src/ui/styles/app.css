@@ -247,6 +247,7 @@ body {
 .app__textarea {
   background: var(--surface) !important;
   border: 1px solid var(--border) !important;
+  min-height: 300px;
   font-family: var(--font-mono) !important;
   font-size: 0.95rem !important;
   padding: var(--space-l) !important;

@@ -1,7 +1,6 @@
 import { useId, useRef, useState } from "react";
 import type { ClipboardEvent } from "react";
 import { normalizeText } from "../../core/normalization/normalizeText";
-import type { OpenAITokenDetail } from "../../core";
 import Badge from "./ui/Badge";
 import Button from "./ui/Button";
 import Card from "./ui/Card";
@@ -26,11 +25,6 @@ type TextareaPanelProps = {
   onExportJson: () => void;
   characterCount: number;
   estimatedTokens: number;
-  showTokenMarkups: boolean;
-  onShowTokenMarkupsChange: (value: boolean) => void;
-  tokenDetails: OpenAITokenDetail[];
-  tokenModelLabel: string;
-  hasExactOpenAITokenizer: boolean;
 };
 
 const TextareaPanel = ({
@@ -52,11 +46,6 @@ const TextareaPanel = ({
   onExportJson,
   characterCount,
   estimatedTokens,
-  showTokenMarkups,
-  onShowTokenMarkupsChange,
-  tokenDetails: _tokenDetails,
-  tokenModelLabel: _tokenModelLabel,
-  hasExactOpenAITokenizer,
 }: TextareaPanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isPresetOpen, setIsPresetOpen] = useState(false);
@@ -253,18 +242,6 @@ const TextareaPanel = ({
               />
               <span>Remove invisible chars</span>
             </label>
-            {hasExactOpenAITokenizer && (
-              <label className="app__toggle">
-                <input
-                  type="checkbox"
-                  checked={showTokenMarkups}
-                  onChange={(event) =>
-                    onShowTokenMarkupsChange(event.target.checked)
-                  }
-                />
-                <span>Show token markup</span>
-              </label>
-            )}
             <p className="app__hint app__hint--tight">
               Normalization only applies to paste actions.
             </p>
