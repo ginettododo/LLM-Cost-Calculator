@@ -101,7 +101,7 @@ const TextareaPanel = ({
             onClose={() => setIsPresetOpen(false)}
             panelLabel="Preset picker"
             panelRole="menu"
-            align="end"
+            align="start"
             trigger={
               <Button
                 variant="subtle"
