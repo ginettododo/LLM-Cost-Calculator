@@ -470,7 +470,9 @@ const PricingTable = ({
 
                 rows.push(
                   <tr key={`${row.provider}-${row.model}-${row.pricing_tier ?? "base"}`}>
-                    <td>{row.provider}</td>
+                    <td className="app__cell--muted">
+                      {sortKey === "provider" ? null : row.provider}
+                    </td>
                     <td>
                       {row.notes ? (
                         <Tooltip content={row.notes}>{modelLabel}</Tooltip>

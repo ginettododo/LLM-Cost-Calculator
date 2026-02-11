@@ -261,10 +261,49 @@ body {
   background: var(--surface-hover) !important;
 }
 
-.app__textarea-footer {
-  padding-top: var(--space-s);
-  padding-left: var(--space-s);
-  padding-right: var(--space-s);
+.app__textarea-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-s);
+  padding: var(--space-s) var(--space-m);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-elevated);
+  border-top-left-radius: var(--radius-l);
+  border-top-right-radius: var(--radius-l);
+}
+
+.app__toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.app__toolbar-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
+  margin: 0 var(--space-xs);
+}
+
+.app__textarea {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-top: none !important;
+  /* Toolbar handles top border */
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+  min-height: 300px;
+  font-family: var(--font-mono) !important;
+  font-size: 0.95rem !important;
+  padding: var(--space-l) !important;
+  border-bottom-left-radius: var(--radius-l) !important;
+  border-bottom-right-radius: var(--radius-l) !important;
+  box-shadow: none !important;
+  transition: all 0.2s;
+  width: 100%;
+  /* Full width */
+  resize: vertical;
 }
 
 /* ── Components: Pricing Table & Accordion ────────────────────────────── */
@@ -295,6 +334,8 @@ body {
   border: 1px solid var(--border);
   border-radius: var(--radius-m);
   overflow: hidden;
+  overflow-x: auto;
+  /* Allow horizontal scroll for narrow screens */
 }
 
 /* ── Pricing Table Specifics ────────────────────────────────────────── */

@@ -2,7 +2,7 @@ import { encodingForModel, getEncoding } from "js-tiktoken";
 
 const DEFAULT_OPENAI_ENCODING = "cl100k_base";
 const encoderCache = new Map<string, ReturnType<typeof getEncoding>>();
-const utf8Decoder = new TextDecoder("utf-8", { fatal: false });
+
 
 export type OpenAITokenDetail = {
   index: number;
@@ -14,10 +14,13 @@ export type OpenAITokenDetail = {
   charEnd: number;
 };
 
-const utf8Encoder = new TextEncoder();
 
+
+
+
+// Helper to map byte offsets to character indices for accurate highlighting
 const mapByteOffsetsToCharIndices = (text: string): Uint32Array => {
-  const utf8Length = utf8Encoder.encode(text).length;
+  const utf8Length = new TextEncoder().encode(text).length;
   const byteToChar = new Uint32Array(utf8Length + 1);
 
   let byteOffset = 0;
@@ -25,7 +28,7 @@ const mapByteOffsetsToCharIndices = (text: string): Uint32Array => {
   byteToChar[0] = 0;
 
   for (const symbol of text) {
-    const symbolBytes = utf8Encoder.encode(symbol).length;
+    const symbolBytes = new TextEncoder().encode(symbol).length;
 
     for (let index = 0; index < symbolBytes; index += 1) {
       byteToChar[byteOffset + index] = charOffset;
@@ -88,20 +91,29 @@ export const getOpenAITokenDetails = (
   let byteCursor = 0;
 
   return tokenIds.map((tokenId, index) => {
-    const tokenBytes =
-      (encoder as unknown as { textMap?: Map<number, Uint8Array> }).textMap?.get(tokenId) ??
-      new Uint8Array();
-    const tokenText = utf8Decoder.decode(tokenBytes);
+    // Access internal textMap for exact byte sequences since public decode() is lossy for split-char tokens
+    const internalEncoder = encoder as unknown as { textMap?: Map<number, Uint8Array> };
+    const tokenBytes = internalEncoder.textMap?.get(tokenId) ?? new Uint8Array();
+
+    // Fallback if textMap is missing (e.g. library update)
+    if (tokenBytes.length === 0) {
+      // If we can't get exact bytes, we might have issues with highlighting.
+      // But preventing crash is priority.
+    }
+
+    const tokenText = new TextDecoder().decode(tokenBytes);
+    const byteLength = tokenBytes.length;
+
     const detail: OpenAITokenDetail = {
       index,
       tokenId,
       text: tokenText,
       byteStart: byteCursor,
-      byteEnd: byteCursor + tokenBytes.length,
+      byteEnd: byteCursor + byteLength,
       charStart: byteToCharOffset[byteCursor] ?? 0,
-      charEnd: byteToCharOffset[byteCursor + tokenBytes.length] ?? text.length,
+      charEnd: byteToCharOffset[byteCursor + byteLength] ?? text.length,
     };
-    byteCursor += tokenBytes.length;
+    byteCursor += byteLength;
     return detail;
   });
 };

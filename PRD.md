@@ -9,7 +9,7 @@ People evaluating or using LLMs often need to estimate token usage and cost quic
 
 ## Goals
 1. Provide instant token counts and cost estimates for popular LLMs without any backend.
-2. Offer transparent pricing data sourced and versioned locally in `prices.json`.
+2. Offer transparent pricing data sourced locally in `prices.json` with strict Zod schema validation.
 3. Clearly communicate accuracy: “Exact” vs “Estimated” token counting.
 4. Enable quick comparison across providers and models with filtering, sorting, and search.
 

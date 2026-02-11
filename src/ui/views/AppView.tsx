@@ -246,10 +246,15 @@ const AppView = () => {
   }, [primaryModelKey, visibleRows]);
 
 
-  const openAIModels = useMemo<PricingRow[]>(() => {
-    return pricingValidation.models
-      .filter((model) => model.provider.trim().toLowerCase() === "openai")
-      .sort((a, b) => a.input_per_mtok - b.input_per_mtok);
+  // Sort visibility rows by Provider then Model
+  const sortedModels = useMemo<PricingRow[]>(() => {
+    const sorted = [...pricingValidation.models].sort((a, b) => {
+      const providerCmd = a.provider.localeCompare(b.provider);
+      if (providerCmd !== 0) return providerCmd;
+      return a.model.localeCompare(b.model);
+    });
+
+    return sorted;
   }, [pricingValidation.models]);
 
 
@@ -519,14 +524,6 @@ const AppView = () => {
             <Card className="app__stats-card" variant="inset">
               <div className="app__kpi-row">
                 <div className="app__kpi-chip">
-                  <span>Exact tokens (primary)</span>
-                  <strong>{primaryModel && primaryModel.tokens > 0
-                    ? primaryModel.tokens.toLocaleString()
-                    : debouncedText.trim().length > 0
-                      ? estimatedTokens.toLocaleString()
-                      : "—"}</strong>
-                </div>
-                <div className="app__kpi-chip">
                   <span>Characters</span>
                   <strong>{counters.characters.toLocaleString()}</strong>
                 </div>
@@ -547,7 +544,7 @@ const AppView = () => {
               ) : null}
               <TokenDebugPanel
                 text={debouncedText}
-                openAIModels={openAIModels}
+                openAIModels={sortedModels.filter(m => m.provider.toLowerCase() === 'openai')}
               />
             </Card>
           </section>

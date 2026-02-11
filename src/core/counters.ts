@@ -34,8 +34,15 @@ const getWordSegments = (
   return Array.from(segmenter.segment(text));
 };
 
+/**
+ * Counts the number of characters in the text (UTF-16 code units).
+ */
 export const countCharacters = (text: string): number => text.length;
 
+/**
+ * Counts the number of user-perceived characters (grapheme clusters).
+ * Uses Intl.Segmenter if available, otherwise falls back to character length.
+ */
 export const countGraphemes = (text: string): number => {
   const segmenter = getSegmenter("grapheme");
   if (!segmenter) {
@@ -50,6 +57,10 @@ export const countGraphemes = (text: string): number => {
   return count;
 };
 
+/**
+ * Counts the number of words in the text.
+ * Uses Intl.Segmenter if available, otherwise falls back to a regex.
+ */
 export const countWords = (text: string): number => {
   const segments = getWordSegments(text);
   if (segments) {
@@ -60,6 +71,10 @@ export const countWords = (text: string): number => {
   return matches ? matches.length : 0;
 };
 
+/**
+ * Counts the number of lines in the text based on newline characters.
+ * Empty text returns 0 lines.
+ */
 export const countLines = (text: string): number => {
   if (text.length === 0) {
     return 0;
@@ -74,5 +89,9 @@ export const countLines = (text: string): number => {
   return count;
 };
 
+/**
+ * Counts the byte size of the text when encoded as UTF-8.
+ */
 export const countBytesUtf8 = (text: string): number =>
   new TextEncoder().encode(text).length;
+

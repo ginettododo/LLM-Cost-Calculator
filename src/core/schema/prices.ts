@@ -90,6 +90,14 @@ const toPricingRow = (
   };
 };
 
+/**
+ * Validates and transforms raw JSON data into a strongly-typed array of PricingRow objects.
+ * Supports both the current `PricesFile` format and legacy array formats.
+ *
+ * @param data - The raw JSON data to validate.
+ * @returns A parsed and normalized array of PricingRow objects.
+ * @throws {PricingValidationError} If validation fails.
+ */
 export const validatePrices = (data: unknown): PricingRow[] => {
   const parsed = PricesSchema.safeParse(data);
   if (!parsed.success) {
@@ -110,3 +118,4 @@ export const validatePrices = (data: unknown): PricingRow[] => {
   const fileData = parsed.data as PricesFile;
   return fileData.models.map((row) => toPricingRow(row, fileData));
 };
+

@@ -107,22 +107,23 @@ const TextareaPanel = ({
 
   return (
     <Card className="app__input-card">
-      <div className="app__actions-row-packed">
-        <div className="app__actions-group">
+      <div className="app__textarea-toolbar">
+        <div className="app__toolbar-group">
           <Button
-            variant="primary"
+            variant="ghost"
+            size="sm"
             onClick={handlePasteButton}
             disabled={!canPaste}
+            title="Paste from clipboard"
           >
             Paste
           </Button>
-          <Button onClick={() => onChange("")} disabled={!value}>
+          <Button variant="ghost" size="sm" onClick={() => onChange("")} disabled={!value}>
             Clear
           </Button>
-        </div>
-        <div className="app__actions-group">
-          <Button onClick={onCopySummary} disabled={copySummaryDisabled}>
-            Copy summary
+          <div className="app__toolbar-divider" />
+          <Button variant="ghost" size="sm" onClick={onCopySummary} disabled={copySummaryDisabled}>
+            Copy Summary
           </Button>
           <Popover
             isOpen={isExportOpen}
@@ -132,6 +133,8 @@ const TextareaPanel = ({
             align="end"
             trigger={
               <Button
+                variant="ghost"
+                size="sm"
                 aria-haspopup="menu"
                 aria-expanded={isExportOpen}
                 onClick={onExportToggle}
@@ -146,7 +149,7 @@ const TextareaPanel = ({
               role="menuitem"
               onClick={onExportCsv}
             >
-              Export current results to CSV
+              Export to CSV
             </button>
             <button
               type="button"
@@ -154,9 +157,12 @@ const TextareaPanel = ({
               role="menuitem"
               onClick={onExportJson}
             >
-              Export current results to JSON
+              Export to JSON
             </button>
           </Popover>
+        </div>
+
+        <div className="app__toolbar-group">
           <Popover
             isOpen={isPresetOpen}
             onClose={() => setIsPresetOpen(false)}
@@ -165,11 +171,13 @@ const TextareaPanel = ({
             align="end"
             trigger={
               <Button
+                variant="ghost"
+                size="sm"
                 aria-haspopup="menu"
                 aria-expanded={isPresetOpen}
                 onClick={() => setIsPresetOpen((prev) => !prev)}
               >
-                Presets
+                Presets ▾
               </Button>
             }
           >
