@@ -3,9 +3,7 @@ import { computeCostUSD, formatUSD, getTokenCountForPricingRow } from "../../cor
 import type { PricingRow } from "../../core/types/pricing";
 import Badge from "./ui/Badge";
 import Toggle from "./ui/Toggle";
-import Tooltip from "./ui/Tooltip";
 import TableShell from "./ui/TableShell";
-import Popover from "./ui/Popover";
 
 type PricingTableProps = {
   models: PricingRow[];
@@ -54,7 +52,6 @@ const PricingTable = ({
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const [isTokenizing, setIsTokenizing] = useState(false);
   const [rowsForRender, setRowsForRender] = useState<RenderRow[]>([]);
-  const [isAccuracyHelpOpen, setIsAccuracyHelpOpen] = useState(false);
 
   const providers = useMemo(
     () => Array.from(new Set(models.map((model) => model.provider))).sort(),
@@ -302,22 +299,6 @@ const PricingTable = ({
         >
           <thead>
             <tr>
-              <th aria-sort={getAriaSort("provider")}>
-                <button
-                  type="button"
-                  className="app__table-sort"
-                  onClick={() => handleSort("provider")}
-                >
-                  Provider
-                  <span aria-hidden="true" className="app__table-sort-icon">
-                    {sortKey === "provider"
-                      ? sortDirection === "asc"
-                        ? "↑"
-                        : "↓"
-                      : "↕"}
-                  </span>
-                </button>
-              </th>
               <th aria-sort={getAriaSort("model")}>
                 <button
                   type="button"
@@ -327,6 +308,22 @@ const PricingTable = ({
                   Model
                   <span aria-hidden="true" className="app__table-sort-icon">
                     {sortKey === "model"
+                      ? sortDirection === "asc"
+                        ? "↑"
+                        : "↓"
+                      : "↕"}
+                  </span>
+                </button>
+              </th>
+              <th aria-sort={getAriaSort("provider")}>
+                <button
+                  type="button"
+                  className="app__table-sort"
+                  onClick={() => handleSort("provider")}
+                >
+                  Provider
+                  <span aria-hidden="true" className="app__table-sort-icon">
+                    {sortKey === "provider"
                       ? sortDirection === "asc"
                         ? "↑"
                         : "↓"
@@ -382,39 +379,7 @@ const PricingTable = ({
                   </span>
                 </button>
               </th>
-              <th>
-                <div className="app__table-help">
-                  <span>Count type</span>
-                  <Popover
-                    isOpen={isAccuracyHelpOpen}
-                    onClose={() => setIsAccuracyHelpOpen(false)}
-                    panelLabel="Token accuracy help"
-                    align="end"
-                    trigger={
-                      <button
-                        type="button"
-                        className="app__help-button"
-                        aria-haspopup="dialog"
-                        aria-expanded={isAccuracyHelpOpen}
-                        onClick={() =>
-                          setIsAccuracyHelpOpen((prev) => !prev)
-                        }
-                      >
-                        ?
-                      </button>
-                    }
-                  >
-                    <div className="app__help-panel">
-                      <strong>Accuracy policy</strong>
-                      <p>
-                        Exact uses tokenizer-backed counts. Estimated uses a
-                        character heuristic when a tokenizer is unavailable or
-                        fails to load.
-                      </p>
-                    </div>
-                  </Popover>
-                </div>
-              </th>
+
               <th className="app__cell--numeric">Tokens</th>
               <th className="app__cell--numeric">Cost</th>
             </tr>
@@ -438,47 +403,21 @@ const PricingTable = ({
                 </td>
               </tr>
             ) : (
-              rowsForRender.flatMap((row, index) => {
-                const tooltipText =
-                  row.exactness === "exact"
-                    ? "Exact means tokenizer-based token count is used."
-                    : "Estimated means token count is approximated using characters/4.";
-
+              rowsForRender.flatMap((row) => {
                 const rows: JSX.Element[] = [];
-                const shouldGroup =
-                  sortKey === "provider" &&
-                  (index === 0 || row.provider !== rowsForRender[index - 1]?.provider);
-
-                if (shouldGroup) {
-                  rows.push(
-                    <tr key={`${row.provider}-group`} className="app__table-group">
-                      <td colSpan={8}>
-                        <strong>{row.provider}</strong>
-                      </td>
-                    </tr>,
-                  );
-                }
-
-                const modelLabel = (
-                  <div className="app__model-cell">
-                    <span>{row.model}</span>
-                    {row.pricing_tier ? (
-                      <Badge tone="neutral">{row.pricing_tier}</Badge>
-                    ) : null}
-                  </div>
-                );
 
                 rows.push(
                   <tr key={`${row.provider}-${row.model}-${row.pricing_tier ?? "base"}`}>
-                    <td className="app__cell--muted">
-                      {sortKey === "provider" ? null : row.provider}
-                    </td>
                     <td>
-                      {row.notes ? (
-                        <Tooltip content={row.notes}>{modelLabel}</Tooltip>
-                      ) : (
-                        modelLabel
-                      )}
+                      <div className="app__model-cell">
+                        <span className="app__model-name">{row.model}</span>
+                        {row.pricing_tier ? (
+                          <Badge tone="neutral">{row.pricing_tier}</Badge>
+                        ) : null}
+                      </div>
+                    </td>
+                    <td className="app__cell--muted">
+                      {row.provider}
                     </td>
                     <td>{row.release_date ?? "—"}</td>
                     <td className="app__cell--numeric">
@@ -489,15 +428,7 @@ const PricingTable = ({
                         ? "—"
                         : `$${row.price_output_per_mtok.toFixed(2)}`}
                     </td>
-                    <td>
-                      <Tooltip content={tooltipText}>
-                        <Badge
-                          tone={row.exactness === "exact" ? "success" : "warning"}
-                        >
-                          {row.exactness === "exact" ? "Exact" : "Estimated"}
-                        </Badge>
-                      </Tooltip>
-                    </td>
+
                     <td className="app__cell--numeric">
                       {Number.isFinite(row.tokens)
                         ? row.tokens.toLocaleString()

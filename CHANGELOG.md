@@ -8,6 +8,7 @@
     - Increased main content max-width to **1200px** for better use of screen real estate.
     - Adjusted grid proportions on desktop (Editor vs Results) for a more balanced layout.
     - Refined spacing and component hierarchy.
+    - **Pricing Table**: Simplified columns (Model first, removed "Count Type" and description text) for a cleaner look.
 
 ## [1.1.0] - 2026-02-11
 ### Performance
