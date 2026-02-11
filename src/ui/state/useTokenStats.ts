@@ -40,14 +40,9 @@ export const useTokenStats = (
         }
 
         let isMounted = true;
-        const controller = new AbortController();
 
-        // 1. Debounce the heavy worker call
-        const timer = setTimeout(async () => {
+        const fetchStats = async () => {
             try {
-                // Double check if model/text changed during debounce (though effect deps handle this mostly)
-                // but async race conditions can happen
-
                 const currentText = latestTextRef.current;
                 const currentModel = latestModelRef.current;
                 const currentConfig = latestConfigRef.current;
@@ -60,7 +55,6 @@ export const useTokenStats = (
 
                 // Check if we are still processing the relevant request
                 if (currentText !== text || currentModel !== model) {
-                    // This result is stale because props changed while we were awaiting
                     return;
                 }
 
@@ -82,12 +76,12 @@ export const useTokenStats = (
                 console.error("Token counting failed", err);
                 if (isMounted) setStats(null);
             }
-        }, 150); // 150ms debounce
+        };
+
+        fetchStats();
 
         return () => {
             isMounted = false;
-            clearTimeout(timer);
-            controller.abort();
         };
     }, [text, model, config.outputMode, config.outputValue]);
 

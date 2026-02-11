@@ -240,7 +240,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--space-l);
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
 }
@@ -590,8 +590,9 @@ body {
 
 @media (min-width: 1024px) {
   .app__layout-container {
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr 360px;
     align-items: start;
+    gap: var(--space-xl);
   }
 }
 
@@ -1038,6 +1039,19 @@ body {
 
 .app__token-span {
   border-radius: 2px;
+}
+
+.app__highlighter-warning {
+  margin-top: var(--space-m);
+  padding: var(--space-s) var(--space-m);
+  background: var(--surface-strong);
+  border: 1px solid var(--warning);
+  color: var(--warning);
+  border-radius: var(--radius-m);
+  font-size: 0.85rem;
+  font-family: var(--font-sans);
+  display: inline-block;
+  pointer-events: auto;
 }
 
 /* Ensure textarea sits on top and background is transparent */

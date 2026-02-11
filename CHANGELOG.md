@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0] - 2026-02-11
+### Major Refactoring
+- **Performance**: Implemented a **5,000 token rendering cap** in `TokenHighlighter` to prevent DOM overload on large texts. Truncation warning added. This solves the "broken/slow" feel on large files.
+- **Architecture**: Simplified `useTokenStats.ts` by removing dead `AbortController` code and redundant debouncing (latency reduced by ~150ms).
+- **UI/UX**:
+    - Increased main content max-width to **1200px** for better use of screen real estate.
+    - Adjusted grid proportions on desktop (Editor vs Results) for a more balanced layout.
+    - Refined spacing and component hierarchy.
+
 ## [1.1.0] - 2026-02-11
 ### Performance
 - **Critical Fix**: Tokenizer freezing resolved by migrating to Web Worker and optimizing byte scanning to O(N).
