@@ -544,3 +544,170 @@ body {
   border-top: 1px solid var(--border);
   background: var(--surface);
 }
+
+/* ── New Layout: Grid & Stats Panel ──────────────────────────────────── */
+
+.app__layout-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-l);
+  width: 100%;
+}
+
+@media (min-width: 1024px) {
+  .app__layout-container {
+    grid-template-columns: 1fr 320px;
+    align-items: start;
+  }
+}
+
+.app__column-editor {
+  min-width: 0;
+  /* Fix grid overflow */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+
+.app__column-results {
+  min-width: 0;
+}
+
+.app__stats-card-sticky {
+  position: sticky;
+  top: var(--space-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-m);
+}
+
+.app__stats-header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding-bottom: var(--space-m);
+  border-bottom: 1px solid var(--border);
+}
+
+.app__big-stats-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-l);
+}
+
+.app__label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.app__stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-m);
+  padding: var(--space-m) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.app__stat-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.app__label-mini {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.app__value-mini {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.app__cost-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  padding: var(--space-m) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.app__breakdown-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.app__stats-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-s);
+}
+
+.app__disclaimer {
+  margin-top: var(--space-s);
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ── Token Highlighter ───────────────────────────────────────────────── */
+
+.app__editor-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.app__highlighter-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: transparent;
+  padding: var(--space-l);
+  /* Match textarea padding */
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  /* Match textarea */
+  line-height: 1.5;
+  /* Match textarea */
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  color: transparent;
+  /* Hide text, show spans bg */
+  overflow: hidden;
+  /* Scroll is handled by sync or hidden? Wait, we need sync */
+  border: 1px solid transparent;
+  /* Match border width */
+  z-index: 0;
+}
+
+.app__token-span {
+  border-radius: 2px;
+}
+
+/* Ensure textarea sits on top and background is transparent */
+.app__textarea--overlay {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+  /* Allow highlighter to show through */
+}
+
+/* ── Utilities ───────────────────────────────────────────────────────── */
+
+.u-full-width {
+  width: 100% !important;
+}
+
+.u-sticky {
+  position: sticky;
+  top: var(--space-m);
+}
