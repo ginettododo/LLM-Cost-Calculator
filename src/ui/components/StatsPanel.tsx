@@ -115,7 +115,6 @@ const StatsPanel = ({
               .filter(m => `${m.provider}::${m.model}` !== selectedModelId)
               .slice(0, 8)
               .map(model => {
-                const modelCost = stats ? computeCostUSD(stats.tokens, stats.tokens, model).totalUSD : 0;
                 return (
                   <div key={`${model.provider}::${model.model}`} className="app__compare-row">
                     <div className="app__compare-model">
