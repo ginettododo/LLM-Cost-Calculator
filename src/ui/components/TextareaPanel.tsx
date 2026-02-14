@@ -36,7 +36,7 @@ const TextareaPanel = ({
   selectedModel,
 }: TextareaPanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [highlightEnabled, setHighlightEnabled] = useState(true);
+  const [highlightEnabled] = useState(true);
   const settingsId = useId();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const highlighterRef = useRef<HTMLDivElement | null>(null);
@@ -133,12 +133,6 @@ const TextareaPanel = ({
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-          <Toggle
-            label="Highlight"
-            checked={highlightEnabled}
-            onChange={setHighlightEnabled}
-          />
-
           <Button
             variant="secondary"
             size="sm"
@@ -316,9 +310,11 @@ const TextareaPanel = ({
           {value.length.toLocaleString()} characters
         </span>
 
-        <span style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>
-          {selectedModel ? `Tokenizer: ${selectedModel.provider} ${selectedModel.model}` : "Tokenizer: auto"}
-        </span>
+        {selectedModel ? (
+          <span style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>
+            Tokenizer: {selectedModel.provider} {selectedModel.model}
+          </span>
+        ) : null}
       </div>
     </Card>
   );
