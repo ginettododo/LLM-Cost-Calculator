@@ -1,9 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { computeCostUSD, formatUSD, getTokenCountForPricingRow } from "../../core";
 import type { PricingRow } from "../../core/types/pricing";
-import Badge from "./ui/Badge";
-import Toggle from "./ui/Toggle";
-import TableShell from "./ui/TableShell";
+import {
+  TableShell,
+  TableHeader,
+  TableRow,
+  TableHead,
+  TableCell,
+  Badge,
+  Input,
+  Select,
+  Toggle,
+  Tooltip,
+} from "./base";
 
 type PricingTableProps = {
   models: PricingRow[];
@@ -68,10 +77,12 @@ const PricingTable = ({
     if (!value) {
       return direction === "asc" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
     }
+
     const parsed = Date.parse(value);
     if (Number.isNaN(parsed)) {
       return direction === "asc" ? Number.POSITIVE_INFINITY : Number.NEGATIVE_INFINITY;
     }
+
     return parsed;
   };
 
@@ -108,8 +119,10 @@ const PricingTable = ({
 
   const sortedModels = useMemo(() => {
     const sorted = [...filteredModels];
+
     sorted.sort((a, b) => {
       const direction = sortDirection === "asc" ? 1 : -1;
+
       switch (sortKey) {
         case "provider":
           return direction * a.provider.localeCompare(b.provider);
@@ -133,12 +146,12 @@ const PricingTable = ({
           return 0;
       }
     });
+
     return sorted;
   }, [filteredModels, sortDirection, sortKey]);
 
   const computedModels = useMemo(
-    () =>
-      computeMode === "primary-model" ? sortedModels.slice(0, 1) : sortedModels,
+    () => (computeMode === "primary-model" ? sortedModels.slice(0, 1) : sortedModels),
     [computeMode, sortedModels],
   );
 
@@ -154,6 +167,7 @@ const PricingTable = ({
     }
 
     setIsTokenizing(text.length > 0);
+
     const rows: RenderRow[] = [];
     let index = 0;
     const batchSize = text.length > 50_000 ? 8 : 24;
@@ -163,6 +177,7 @@ const PricingTable = ({
         return (window as Window & { requestIdleCallback: (cb: () => void) => number })
           .requestIdleCallback(callback);
       }
+
       return globalThis.setTimeout(callback, 0);
     };
 
@@ -170,12 +185,15 @@ const PricingTable = ({
       if (cancelled) {
         return;
       }
+
       const end = Math.min(index + batchSize, computedModels.length);
+
       for (; index < end; index += 1) {
         const model = computedModels[index];
         if (!model) {
           continue;
         }
+
         const tokenCount = getTokenCountForPricingRow(text, model);
         const exactness: "exact" | "estimated" = tokenCount.mode;
 
@@ -230,24 +248,23 @@ const PricingTable = ({
       setSortDirection((prev) => (prev === "asc" ? "desc" : "asc"));
       return;
     }
+
     setSortKey(key);
     setSortDirection("asc");
   };
 
-  const getAriaSort = (key: SortKey) => {
-    if (sortKey !== key) {
-      return "none";
-    }
-    return sortDirection === "asc" ? "ascending" : "descending";
-  };
+  const SortIcon = ({ active, direction }: { active: boolean; direction: SortDirection }) => (
+    <span style={{ marginLeft: "4px", fontSize: "10px", opacity: active ? 1 : 0.35 }}>
+      {active ? (direction === "asc" ? "▲" : "▼") : "↕"}
+    </span>
+  );
 
   return (
-    <div className="app__table-section">
-      <div className="app__table-controls">
-        <label className="app__control">
-          <span className="app__label">Provider</span>
-          <select
-            className="app__select"
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "flex-end" }}>
+        <div style={{ width: "200px" }}>
+          <Select
+            label="Provider"
             value={selectedProvider}
             onChange={(event) => setSelectedProvider(event.target.value)}
           >
@@ -257,207 +274,148 @@ const PricingTable = ({
                 {provider}
               </option>
             ))}
-          </select>
-        </label>
-        <label className="app__control app__control--search">
-          <span className="app__label">Search</span>
-          <input
-            className="app__input"
+          </Select>
+        </div>
+
+        <div style={{ flex: 1, minWidth: "220px" }}>
+          <Input
+            label="Search"
             type="search"
-            placeholder="Search model or provider"
+            placeholder="Search model or provider..."
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
           />
-        </label>
-        <Toggle
-          id="text-only"
-          checked={textOnly}
-          onChange={(event) => setTextOnly(event.target.checked)}
-          label="Text only"
-          description="Hide audio/realtime entries"
-        />
-        <Toggle
-          id="tiered-only"
-          checked={tieredOnly}
-          onChange={(event) => setTieredOnly(event.target.checked)}
-          label="Tiered pricing"
-          description="Only show tiered entries"
-        />
-        <Toggle
-          id="exact-only"
-          checked={exactOnly}
-          onChange={(event) => setExactOnly(event.target.checked)}
-          label="Exact tokenization"
-          description="Tokenizer-backed counts"
-        />
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "6px" }}>
+          <Toggle label="Text only" checked={textOnly} onChange={setTextOnly} />
+          <Toggle label="Tiered only" checked={tieredOnly} onChange={setTieredOnly} />
+          <Toggle label="Exact only" checked={exactOnly} onChange={setExactOnly} />
+        </div>
       </div>
+
       <TableShell>
-        <table
-          className="app__table"
-          aria-busy={isTokenizing}
-          aria-live="polite"
-        >
-          <thead>
-            <tr>
-              <th aria-sort={getAriaSort("model")}>
-                <button
-                  type="button"
-                  className="app__table-sort"
-                  onClick={() => handleSort("model")}
-                >
-                  Model
-                  <span aria-hidden="true" className="app__table-sort-icon">
-                    {sortKey === "model"
-                      ? sortDirection === "asc"
-                        ? "↑"
-                        : "↓"
-                      : "↕"}
-                  </span>
-                </button>
-              </th>
-              <th aria-sort={getAriaSort("provider")}>
-                <button
-                  type="button"
-                  className="app__table-sort"
-                  onClick={() => handleSort("provider")}
-                >
-                  Provider
-                  <span aria-hidden="true" className="app__table-sort-icon">
-                    {sortKey === "provider"
-                      ? sortDirection === "asc"
-                        ? "↑"
-                        : "↓"
-                      : "↕"}
-                  </span>
-                </button>
-              </th>
-              <th aria-sort={getAriaSort("release_date")}>
-                <button
-                  type="button"
-                  className="app__table-sort"
-                  onClick={() => handleSort("release_date")}
-                >
-                  Release date
-                  <span aria-hidden="true" className="app__table-sort-icon">
-                    {sortKey === "release_date"
-                      ? sortDirection === "asc"
-                        ? "↑"
-                        : "↓"
-                      : "↕"}
-                  </span>
-                </button>
-              </th>
-              <th aria-sort={getAriaSort("input")}>
-                <button
-                  type="button"
-                  className="app__table-sort"
-                  onClick={() => handleSort("input")}
-                >
-                  Input $/1M
-                  <span aria-hidden="true" className="app__table-sort-icon">
-                    {sortKey === "input"
-                      ? sortDirection === "asc"
-                        ? "↑"
-                        : "↓"
-                      : "↕"}
-                  </span>
-                </button>
-              </th>
-              <th aria-sort={getAriaSort("output")}>
-                <button
-                  type="button"
-                  className="app__table-sort"
-                  onClick={() => handleSort("output")}
-                >
-                  Output $/1M
-                  <span aria-hidden="true" className="app__table-sort-icon">
-                    {sortKey === "output"
-                      ? sortDirection === "asc"
-                        ? "↑"
-                        : "↓"
-                      : "↕"}
-                  </span>
-                </button>
-              </th>
+        <TableHeader>
+          <TableRow>
+            <TableHead onClick={() => handleSort("provider")} style={{ cursor: "pointer" }}>
+              Provider <SortIcon active={sortKey === "provider"} direction={sortDirection} />
+            </TableHead>
+            <TableHead onClick={() => handleSort("model")} style={{ cursor: "pointer" }}>
+              Model <SortIcon active={sortKey === "model"} direction={sortDirection} />
+            </TableHead>
+            <TableHead onClick={() => handleSort("release_date")} style={{ cursor: "pointer" }}>
+              Release <SortIcon active={sortKey === "release_date"} direction={sortDirection} />
+            </TableHead>
+            <TableHead align="right" onClick={() => handleSort("input")} style={{ cursor: "pointer" }}>
+              Input $/1M <SortIcon active={sortKey === "input"} direction={sortDirection} />
+            </TableHead>
+            <TableHead align="right" onClick={() => handleSort("output")} style={{ cursor: "pointer" }}>
+              Output $/1M <SortIcon active={sortKey === "output"} direction={sortDirection} />
+            </TableHead>
+            <TableHead align="center">Type</TableHead>
+            <TableHead align="right">Tokens</TableHead>
+            <TableHead align="right">Est. Cost</TableHead>
+          </TableRow>
+        </TableHeader>
 
-              <th className="app__cell--numeric">Tokens</th>
-              <th className="app__cell--numeric">Cost</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isTokenizing && rowsForRender.length === 0 ? (
-              Array.from({ length: 6 }).map((_, index) => (
-                <tr key={`skeleton-${index}`} className="app__skeleton-row">
-                  {Array.from({ length: 8 }).map((_, cellIndex) => (
-                    <td key={`skeleton-${index}-${cellIndex}`}>
-                      <span className="app__skeleton" />
-                    </td>
-                  ))}
-                </tr>
-              ))
-            ) : rowsForRender.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="app__empty">
-                  No models match the current filters. Try clearing search or
-                  toggles.
-                </td>
-              </tr>
-            ) : (
-              rowsForRender.flatMap((row) => {
-                const rows: JSX.Element[] = [];
+        <tbody>
+          {isTokenizing && rowsForRender.length === 0 ? (
+            Array.from({ length: 6 }).map((_, rowIndex) => (
+              <TableRow key={`skeleton-${rowIndex}`} isZebra={rowIndex % 2 === 1}>
+                {Array.from({ length: 8 }).map((_, cellIndex) => (
+                  <TableCell key={`skeleton-${rowIndex}-${cellIndex}`}>
+                    <div
+                      style={{
+                        height: "10px",
+                        borderRadius: "999px",
+                        backgroundColor: "var(--color-bg-subtle)",
+                      }}
+                    />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))
+          ) : rowsForRender.length === 0 ? (
+            <TableRow>
+              <TableCell
+                align="center"
+                colSpan={8}
+                style={{ padding: "32px", color: "var(--color-text-secondary)" }}
+              >
+                No models match the current filters.
+              </TableCell>
+            </TableRow>
+          ) : (
+            rowsForRender.map((row, index) => {
+              const isExact = row.exactness === "exact";
+              const tooltipText = isExact
+                ? "Exact means tokenizer-based token count is used."
+                : "Estimated means token count is approximated using characters/4.";
 
-                rows.push(
-                  <tr key={`${row.provider}-${row.model}-${row.pricing_tier ?? "base"}`}>
-                    <td>
-                      <div className="app__model-cell">
-                        <span className="app__model-name">{row.model}</span>
-                        {row.pricing_tier ? (
-                          <Badge tone="neutral">{row.pricing_tier}</Badge>
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="app__cell--muted">
-                      {row.provider}
-                    </td>
-                    <td>{row.release_date ?? "—"}</td>
-                    <td className="app__cell--numeric">
-                      ${row.price_input_per_mtok.toFixed(2)}
-                    </td>
-                    <td className="app__cell--numeric">
-                      {row.price_output_per_mtok === undefined
-                        ? "—"
-                        : `$${row.price_output_per_mtok.toFixed(2)}`}
-                    </td>
+              return (
+                <TableRow key={`${row.provider}-${row.model}-${row.pricing_tier ?? "base"}`} isZebra={index % 2 === 1}>
+                  <TableCell>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                      <span style={{ fontWeight: 500 }}>{row.provider}</span>
+                      {row.pricing_tier ? (
+                        <Badge variant="neutral">{row.pricing_tier}</Badge>
+                      ) : null}
+                    </div>
+                  </TableCell>
 
-                    <td className="app__cell--numeric">
-                      {Number.isFinite(row.tokens)
-                        ? row.tokens.toLocaleString()
-                        : "—"}
-                    </td>
-                    <td className="app__cell--numeric">
-                      <div className="app__cost">
-                        <span>{formatUSD(row.total_cost_usd)}</span>
-                        <span className="app__muted">
-                          In {formatUSD(row.input_cost_usd)} / Out{" "}
-                          {row.output_cost_usd === undefined
-                            ? "—"
-                            : formatUSD(row.output_cost_usd)}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>,
-                );
+                  <TableCell>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontWeight: 500 }}>{row.model}</span>
+                      {row.is_tiered ? <Badge variant="neutral">Tiered</Badge> : null}
+                    </div>
+                  </TableCell>
 
-                return rows;
-              })
-            )}
-          </tbody>
-        </table>
+                  <TableCell style={{ color: "var(--color-text-secondary)" }}>
+                    {row.release_date ?? "—"}
+                  </TableCell>
+
+                  <TableCell align="right" mono>
+                    ${row.price_input_per_mtok.toFixed(2)}
+                  </TableCell>
+
+                  <TableCell align="right" mono>
+                    {row.price_output_per_mtok === undefined
+                      ? "—"
+                      : `$${row.price_output_per_mtok.toFixed(2)}`}
+                  </TableCell>
+
+                  <TableCell align="center">
+                    <Tooltip content={tooltipText}>
+                      <Badge variant={isExact ? "exact" : "estimated"}>
+                        {isExact ? "Exact" : "Est."}
+                      </Badge>
+                    </Tooltip>
+                  </TableCell>
+
+                  <TableCell align="right" mono>
+                    {Number.isFinite(row.tokens) ? row.tokens.toLocaleString() : "—"}
+                  </TableCell>
+
+                  <TableCell align="right" mono>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+                      <span style={{ fontWeight: 600 }}>{formatUSD(row.total_cost_usd)}</span>
+                      <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>
+                        In {formatUSD(row.input_cost_usd)} / Out{" "}
+                        {row.output_cost_usd === undefined ? "—" : formatUSD(row.output_cost_usd)}
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })
+          )}
+        </tbody>
       </TableShell>
-      <p className="app__note">
+
+      <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: 0 }}>
         {computeMode === "primary-model"
           ? "Primary model mode is enabled: only the top visible row is computed."
-          : "Visible rows mode computes rows after filters/search; exact uses tokenizers, estimated uses a character heuristic."}
+          : "Visible rows mode computes rows after filters and search; exact uses tokenizers, estimated uses a character heuristic."}
       </p>
     </div>
   );

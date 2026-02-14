@@ -1,22 +1,27 @@
 import { useId, useRef, useState } from "react";
 import type { ClipboardEvent } from "react";
 import { normalizeText } from "../../core/normalization/normalizeText";
-import { PricingRow } from "../../core/types/pricing";
-import Button from "./ui/Button";
-import Popover from "./ui/Popover";
+import type { PricingRow } from "../../core/types/pricing";
 import TokenHighlighter from "./TokenHighlighter";
-import Toggle from "./ui/Toggle";
+import { Button, Card, Select, Toggle } from "./base";
+
+type PresetOption = {
+  id: string;
+  label: string;
+  approxLabel?: string;
+  length?: number;
+};
 
 type TextareaPanelProps = {
   value: string;
   onChange: (value: string) => void;
   normalizeOnPaste: boolean;
   removeInvisible: boolean;
-  presets: Array<{ id: string; label: string; approxLabel: string; length: number }>;
+  presets: PresetOption[];
   onPresetSelect: (presetId: string) => void;
   onNormalizeOnPasteChange: (value: boolean) => void;
   onRemoveInvisibleChange: (value: boolean) => void;
-  selectedModel: PricingRow | undefined;
+  selectedModel?: PricingRow;
 };
 
 const TextareaPanel = ({
@@ -31,11 +36,10 @@ const TextareaPanel = ({
   selectedModel,
 }: TextareaPanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const [isPresetOpen, setIsPresetOpen] = useState(false);
   const [highlightEnabled, setHighlightEnabled] = useState(true);
   const settingsId = useId();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
-  const highlighterRef = useRef<HTMLDivElement>(null);
+  const highlighterRef = useRef<HTMLDivElement | null>(null);
 
   const applyInsert = (insertValue: string, target: HTMLTextAreaElement | null) => {
     if (!target) {
@@ -59,11 +63,15 @@ const TextareaPanel = ({
     if (!normalizeOnPaste) {
       return rawText;
     }
+
     return normalizeText(rawText, { removeInvisible });
   };
 
   const handlePaste = (event: ClipboardEvent<HTMLTextAreaElement>) => {
-    if (!normalizeOnPaste) return;
+    if (!normalizeOnPaste) {
+      return;
+    }
+
     event.preventDefault();
     const clipboardText = event.clipboardData.getData("text");
     applyInsert(getNormalizedText(clipboardText), event.currentTarget);
@@ -76,20 +84,63 @@ const TextareaPanel = ({
         textareaRef.current?.focus();
         return;
       }
+
       applyInsert(getNormalizedText(clipboardText), textareaRef.current);
     } catch {
       textareaRef.current?.focus();
     }
   };
 
-  const canPaste = typeof navigator !== "undefined" && Boolean(navigator.clipboard?.readText);
+  const canPaste =
+    typeof navigator !== "undefined" && Boolean(navigator.clipboard?.readText);
 
   return (
-    <div className="app__editor-card">
-      <div className="app__textarea-toolbar">
-        <div className="app__toolbar-group">
+    <Card className="flex flex-col gap-4" noPadding>
+      <div
+        style={{
+          padding: "16px 20px",
+          borderBottom: "1px solid var(--color-border-subtle)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "12px",
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+          <h2 style={{ fontSize: "16px", fontWeight: 600, margin: 0 }}>Input</h2>
+
+          <Select
+            aria-label="Load preset"
+            value=""
+            onChange={(event) => {
+              const selectedPreset = event.target.value;
+              if (selectedPreset) {
+                onPresetSelect(selectedPreset);
+              }
+            }}
+            style={{ width: "220px", fontSize: "12px", padding: "6px 8px" }}
+          >
+            <option value="">Load Preset...</option>
+            {presets.map((preset) => (
+              <option key={preset.id} value={preset.id}>
+                {preset.approxLabel
+                  ? `${preset.label} (${preset.approxLabel})`
+                  : preset.label}
+              </option>
+            ))}
+          </Select>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <Toggle
+            label="Highlight"
+            checked={highlightEnabled}
+            onChange={setHighlightEnabled}
+          />
+
           <Button
-            variant="primary"
+            variant="secondary"
             size="sm"
             onClick={handlePasteButton}
             disabled={!canPaste}
@@ -97,142 +148,179 @@ const TextareaPanel = ({
             Paste
           </Button>
 
-          <Popover
-            isOpen={isPresetOpen}
-            onClose={() => setIsPresetOpen(false)}
-            panelLabel="Preset picker"
-            panelRole="menu"
-            align="start"
-            trigger={
-              <Button
-                variant="subtle"
-                size="sm"
-                aria-haspopup="menu"
-                aria-expanded={isPresetOpen}
-                onClick={() => setIsPresetOpen((prev) => !prev)}
-              >
-                Presets ▾
-              </Button>
-            }
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onChange("")}
+            disabled={!value}
           >
-            <div className="app__preset-menu" role="menu">
-              {presets.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  className="app__preset-item"
-                  role="menuitem"
-                  onClick={() => {
-                    onPresetSelect(preset.id);
-                    setIsPresetOpen(false);
-                  }}
-                >
-                  <span>
-                    <strong>{preset.label}</strong>
-                    <span className="app__muted"> {preset.approxLabel}</span>
-                  </span>
-                  <span className="app__preset-length">
-                    {preset.length.toLocaleString()} chars
-                  </span>
-                </button>
-              ))}
-            </div>
-          </Popover>
-        </div>
-
-        <div className="app__toolbar-spacer" style={{ flex: 1 }} />
-
-        <div className="app__toolbar-group">
-          <Toggle
-            id="highlight-toggle"
-            checked={highlightEnabled}
-            onChange={(e) => setHighlightEnabled(e.target.checked)}
-            label="Highlight"
-          />
-
-          <div className="app__toolbar-divider" />
-
-          <Button variant="ghost" size="sm" onClick={() => onChange("")} disabled={!value}>
             Clear
           </Button>
 
-          <Popover
-            isOpen={isSettingsOpen}
-            onClose={() => setIsSettingsOpen(false)}
-            panelLabel="Settings"
-            panelId={settingsId}
-            align="end"
-            trigger={
-              <Button
-                variant="ghost"
-                size="sm"
-                iconOnly
-                aria-haspopup="dialog"
-                aria-expanded={isSettingsOpen}
-                aria-controls={settingsId}
-                onClick={() => setIsSettingsOpen((prev) => !prev)}
+          <div style={{ position: "relative" }}>
+            <Button
+              variant={isSettingsOpen ? "secondary" : "ghost"}
+              size="sm"
+              aria-expanded={isSettingsOpen}
+              aria-controls={settingsId}
+              onClick={() => setIsSettingsOpen((open) => !open)}
+            >
+              Settings
+            </Button>
+
+            {isSettingsOpen && (
+              <div
+                id={settingsId}
+                style={{
+                  position: "absolute",
+                  top: "calc(100% + 8px)",
+                  right: 0,
+                  width: "260px",
+                  backgroundColor: "var(--color-bg-surface)",
+                  border: "1px solid var(--color-border-subtle)",
+                  borderRadius: "var(--radius-lg)",
+                  boxShadow: "var(--shadow-lg)",
+                  padding: "16px",
+                  zIndex: 20,
+                }}
               >
-                ⚙️
-              </Button>
-            }
-          >
-            <div className="app__settings-popover">
-              <Toggle
-                id="normalize-paste"
-                label="Normalize on paste"
-                checked={normalizeOnPaste}
-                onChange={(e) => onNormalizeOnPasteChange(e.target.checked)}
-              />
-              <Toggle
-                id="remove-invisible"
-                label="Remove invisible chars"
-                checked={removeInvisible}
-                disabled={!normalizeOnPaste}
-                onChange={(e) => onRemoveInvisibleChange(e.target.checked)}
-              />
-              <p className="app__hint">Only affects paste actions.</p>
-            </div>
-          </Popover>
+                <h3
+                  style={{
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "var(--color-text-secondary)",
+                    margin: "0 0 12px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.05em",
+                  }}
+                >
+                  Paste Options
+                </h3>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: "13px" }}>Normalize</span>
+                    <Toggle checked={normalizeOnPaste} onChange={onNormalizeOnPasteChange} />
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      opacity: normalizeOnPaste ? 1 : 0.5,
+                    }}
+                  >
+                    <span style={{ fontSize: "13px" }}>Remove Invisible</span>
+                    <Toggle
+                      checked={removeInvisible}
+                      onChange={onRemoveInvisibleChange}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="app__editor-wrapper">
-        <div
-          ref={highlighterRef}
-          className="app__highlighter-container"
-        >
-          <TokenHighlighter
-            text={value}
-            model={selectedModel}
-            isEnabled={highlightEnabled}
-          />
-        </div>
+      <div style={{ position: "relative", minHeight: "240px" }}>
+        {highlightEnabled ? (
+          <div
+            ref={highlighterRef}
+            style={{
+              position: "absolute",
+              inset: 0,
+              overflow: "hidden",
+              borderBottom: "1px solid var(--color-border-subtle)",
+              pointerEvents: "none",
+            }}
+          >
+            <TokenHighlighter
+              text={value}
+              model={selectedModel}
+              isEnabled={highlightEnabled}
+            />
+          </div>
+        ) : null}
+
         <textarea
-          className={`app__textarea ${highlightEnabled ? 'app__textarea--overlay' : ''}`}
-          placeholder="Paste or type text to estimate tokens and cost."
-          aria-label="Text to analyze"
+          ref={textareaRef}
           value={value}
           onChange={(event) => onChange(event.target.value)}
           onPaste={handlePaste}
-          ref={textareaRef}
-          onScroll={(e) => {
+          onScroll={(event) => {
             if (highlighterRef.current) {
-              highlighterRef.current.scrollTop = e.currentTarget.scrollTop;
+              highlighterRef.current.scrollTop = event.currentTarget.scrollTop;
+              highlighterRef.current.scrollLeft = event.currentTarget.scrollLeft;
             }
           }}
-          rows={12}
+          placeholder="Type or paste content here..."
+          spellCheck={false}
+          style={{
+            position: "relative",
+            zIndex: 1,
+            width: "100%",
+            minHeight: "240px",
+            padding: "16px 20px",
+            border: "none",
+            borderBottom: "1px solid var(--color-border-subtle)",
+            resize: "vertical",
+            backgroundColor: "transparent",
+            color: highlightEnabled ? "transparent" : "var(--color-text-primary)",
+            WebkitTextFillColor: highlightEnabled ? "transparent" : "var(--color-text-primary)",
+            caretColor: "var(--color-text-primary)",
+            fontFamily: "var(--font-family-mono)",
+            fontSize: "14px",
+            lineHeight: "1.6",
+            outline: "none",
+            whiteSpace: "pre-wrap",
+          }}
         />
+
         {value.length === 0 && (
-          <div className="app__editor-empty">
-            <div className="app__empty-icon">📝</div>
-            <p>Enter text to see token counts and costs</p>
-            <div className="app__empty-actions">
-              <Button size="sm" variant="subtle" onClick={handlePasteButton}>Paste from clipboard</Button>
-            </div>
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              pointerEvents: "none",
+              textAlign: "center",
+              color: "var(--color-text-tertiary)",
+            }}
+          >
+            <p style={{ margin: 0, fontSize: "14px" }}>Start typing or paste text</p>
+            <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.7 }}>
+              Use presets to test quickly
+            </p>
           </div>
         )}
       </div>
-    </div>
+
+      <div
+        style={{
+          padding: "8px 20px",
+          backgroundColor: "var(--color-bg-subtle)",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <span
+          style={{
+            fontSize: "12px",
+            color: "var(--color-text-secondary)",
+            fontFamily: "var(--font-family-mono)",
+          }}
+        >
+          {value.length.toLocaleString()} characters
+        </span>
+
+        <span style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>
+          {selectedModel ? `Tokenizer: ${selectedModel.provider} ${selectedModel.model}` : "Tokenizer: auto"}
+        </span>
+      </div>
+    </Card>
   );
 };
 
