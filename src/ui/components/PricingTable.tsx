@@ -254,15 +254,50 @@ const PricingTable = ({
   };
 
   const SortIcon = ({ active, direction }: { active: boolean; direction: SortDirection }) => (
-    <span style={{ marginLeft: "4px", fontSize: "10px", opacity: active ? 1 : 0.35 }}>
-      {active ? (direction === "asc" ? "▲" : "▼") : "↕"}
+    <span style={{ marginLeft: "3px", display: "inline-flex", verticalAlign: "middle", opacity: active ? 1 : 0.3 }}>
+      {active ? (
+        direction === "asc" ? (
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 5l7 14H5l7-14z" />
+          </svg>
+        ) : (
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 19l-7-14h14l-7 14z" />
+          </svg>
+        )
+      ) : (
+        <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 5l5 9H7l5-9z" opacity="0.5" />
+          <path d="M12 19l-5-9h10l-5 9z" opacity="0.5" />
+        </svg>
+      )}
     </span>
   );
 
+  const activeFiltersCount = [
+    textOnly,
+    tieredOnly,
+    exactOnly,
+    selectedProvider !== "all",
+    searchTerm.trim().length > 0,
+  ].filter(Boolean).length;
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", alignItems: "flex-end" }}>
-        <div style={{ width: "200px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+      {/* Filter bar */}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "10px",
+          alignItems: "flex-end",
+          padding: "12px",
+          backgroundColor: "var(--color-bg-subtle)",
+          borderRadius: "var(--radius-md)",
+          border: "1px solid var(--color-border-subtle)",
+        }}
+      >
+        <div style={{ flex: "0 0 170px" }}>
           <Select
             label="Provider"
             value={selectedProvider}
@@ -277,23 +312,40 @@ const PricingTable = ({
           </Select>
         </div>
 
-        <div style={{ flex: 1, minWidth: "220px" }}>
+        <div style={{ flex: "1 1 160px", minWidth: "140px" }}>
           <Input
             label="Search"
             type="search"
-            placeholder="Search model or provider..."
+            placeholder="Model or provider…"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
           />
         </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginBottom: "6px" }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", paddingBottom: "6px", alignItems: "center" }}>
           <Toggle label="Text only" checked={textOnly} onChange={setTextOnly} />
           <Toggle label="Tiered only" checked={tieredOnly} onChange={setTieredOnly} />
           <Toggle label="Exact only" checked={exactOnly} onChange={setExactOnly} />
         </div>
+
+        {activeFiltersCount > 0 && (
+          <div style={{ display: "flex", alignItems: "flex-end", paddingBottom: "6px" }}>
+            <span style={{
+              fontSize: "11px",
+              backgroundColor: "var(--color-primary-base)",
+              color: "#fff",
+              borderRadius: "var(--radius-full)",
+              padding: "2px 8px",
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+            }}>
+              {activeFiltersCount} active
+            </span>
+          </div>
+        )}
       </div>
 
+      {/* Table */}
       <TableShell>
         <TableHeader>
           <TableRow>
@@ -304,13 +356,13 @@ const PricingTable = ({
               Model <SortIcon active={sortKey === "model"} direction={sortDirection} />
             </TableHead>
             <TableHead onClick={() => handleSort("release_date")} style={{ cursor: "pointer" }}>
-              Release <SortIcon active={sortKey === "release_date"} direction={sortDirection} />
+              Released <SortIcon active={sortKey === "release_date"} direction={sortDirection} />
             </TableHead>
             <TableHead align="right" onClick={() => handleSort("input")} style={{ cursor: "pointer" }}>
-              Input $/1M <SortIcon active={sortKey === "input"} direction={sortDirection} />
+              $/1M in <SortIcon active={sortKey === "input"} direction={sortDirection} />
             </TableHead>
             <TableHead align="right" onClick={() => handleSort("output")} style={{ cursor: "pointer" }}>
-              Output $/1M <SortIcon active={sortKey === "output"} direction={sortDirection} />
+              $/1M out <SortIcon active={sortKey === "output"} direction={sortDirection} />
             </TableHead>
             <TableHead align="center">Type</TableHead>
             <TableHead align="right">Tokens</TableHead>
@@ -325,10 +377,11 @@ const PricingTable = ({
                 {Array.from({ length: 8 }).map((_, cellIndex) => (
                   <TableCell key={`skeleton-${rowIndex}-${cellIndex}`}>
                     <div
+                      className="shimmer-loading"
                       style={{
                         height: "10px",
                         borderRadius: "999px",
-                        backgroundColor: "var(--color-bg-subtle)",
+                        width: cellIndex === 1 ? "80%" : cellIndex === 0 ? "55%" : "45%",
                       }}
                     />
                   </TableCell>
@@ -340,22 +393,29 @@ const PricingTable = ({
               <TableCell
                 align="center"
                 colSpan={8}
-                style={{ padding: "32px", color: "var(--color-text-secondary)" }}
+                style={{ padding: "36px 16px", color: "var(--color-text-secondary)" }}
               >
-                No models match the current filters.
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" style={{ opacity: 0.35 }}>
+                    <circle cx="11" cy="11" r="8" />
+                    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    <line x1="8" y1="11" x2="14" y2="11" />
+                  </svg>
+                  <span style={{ fontSize: "13px" }}>No models match the current filters</span>
+                </div>
               </TableCell>
             </TableRow>
           ) : (
             rowsForRender.map((row, index) => {
               const isExact = row.exactness === "exact";
               const tooltipText = isExact
-                ? "Exact means tokenizer-based token count is used."
-                : "Estimated means token count is approximated using characters/4.";
+                ? "Exact: tiktoken-based token count."
+                : "Estimated: approximated using characters/4 heuristic.";
 
               return (
                 <TableRow key={`${row.provider}-${row.model}-${row.pricing_tier ?? "base"}`} isZebra={index % 2 === 1}>
                   <TableCell>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "3px" }}>
                       <span style={{ fontWeight: 500 }}>{row.provider}</span>
                       {row.pricing_tier ? (
                         <Badge variant="neutral">{row.pricing_tier}</Badge>
@@ -364,13 +424,13 @@ const PricingTable = ({
                   </TableCell>
 
                   <TableCell>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", flexWrap: "wrap" }}>
                       <span style={{ fontWeight: 500 }}>{row.model}</span>
                       {row.is_tiered ? <Badge variant="neutral">Tiered</Badge> : null}
                     </div>
                   </TableCell>
 
-                  <TableCell style={{ color: "var(--color-text-secondary)" }}>
+                  <TableCell style={{ color: "var(--color-text-tertiary)", fontSize: "12px" }}>
                     {row.release_date ?? "—"}
                   </TableCell>
 
@@ -397,11 +457,10 @@ const PricingTable = ({
                   </TableCell>
 
                   <TableCell align="right" mono>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                      <span style={{ fontWeight: 600 }}>{formatUSD(row.total_cost_usd)}</span>
-                      <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>
-                        In {formatUSD(row.input_cost_usd)} / Out{" "}
-                        {row.output_cost_usd === undefined ? "—" : formatUSD(row.output_cost_usd)}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}>
+                      <span style={{ fontWeight: 700 }}>{formatUSD(row.total_cost_usd)}</span>
+                      <span style={{ fontSize: "10px", color: "var(--color-text-tertiary)" }}>
+                        {formatUSD(row.input_cost_usd)} / {row.output_cost_usd === undefined ? "—" : formatUSD(row.output_cost_usd)}
                       </span>
                     </div>
                   </TableCell>
@@ -412,11 +471,22 @@ const PricingTable = ({
         </tbody>
       </TableShell>
 
-      <p style={{ fontSize: "12px", color: "var(--color-text-secondary)", margin: 0 }}>
-        {computeMode === "primary-model"
-          ? "Primary model mode is enabled: only the top visible row is computed."
-          : "Visible rows mode computes rows after filters and search; exact uses tokenizers, estimated uses a character heuristic."}
-      </p>
+      {/* Footer note */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+        <p style={{ fontSize: "11px", color: "var(--color-text-tertiary)", margin: 0 }}>
+          {computeMode === "primary-model"
+            ? "Primary model mode: only the top row is computed."
+            : `${rowsForRender.length} model${rowsForRender.length !== 1 ? "s" : ""} · exact uses tiktoken, estimated uses chars/4`}
+        </p>
+        {isTokenizing && (
+          <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)", display: "flex", alignItems: "center", gap: "4px" }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} style={{ animation: "spin 0.8s linear infinite" }}>
+              <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+            </svg>
+            computing…
+          </span>
+        )}
+      </div>
     </div>
   );
 };

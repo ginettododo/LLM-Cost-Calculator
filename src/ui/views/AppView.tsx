@@ -28,6 +28,61 @@ type ToastState = {
 
 const LARGE_INPUT_THRESHOLD = 50_000;
 
+/* ---- Icons ---- */
+const SunIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
+const ExportIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
+
+const JsonIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="16 18 22 12 16 6" />
+    <polyline points="8 6 2 12 8 18" />
+  </svg>
+);
+
+const CsvIcon = () => (
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+    <polyline points="14 2 14 8 20 8" />
+    <line x1="8" y1="13" x2="16" y2="13" />
+    <line x1="8" y1="17" x2="16" y2="17" />
+    <polyline points="10 9 9 9 8 9" />
+  </svg>
+);
+
+const CalculatorIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="4" y="2" width="16" height="20" rx="2" />
+    <line x1="8" y1="6" x2="16" y2="6" />
+    <line x1="8" y1="10" x2="8.01" y2="10" strokeWidth={3} strokeLinecap="round" />
+    <line x1="12" y1="10" x2="12.01" y2="10" strokeWidth={3} strokeLinecap="round" />
+    <line x1="16" y1="10" x2="16.01" y2="10" strokeWidth={3} strokeLinecap="round" />
+    <line x1="8" y1="14" x2="8.01" y2="14" strokeWidth={3} strokeLinecap="round" />
+    <line x1="12" y1="14" x2="12.01" y2="14" strokeWidth={3} strokeLinecap="round" />
+    <line x1="16" y1="14" x2="16.01" y2="14" strokeWidth={3} strokeLinecap="round" />
+    <line x1="8" y1="18" x2="8.01" y2="18" strokeWidth={3} strokeLinecap="round" />
+    <line x1="12" y1="18" x2="12.01" y2="18" strokeWidth={3} strokeLinecap="round" />
+    <line x1="16" y1="18" x2="16.01" y2="18" strokeWidth={3} strokeLinecap="round" />
+  </svg>
+);
+
 const AppView = () => {
   const [text, setText] = useState("");
   const [normalizeOnPaste, setNormalizeOnPaste] = useState(true);
@@ -271,224 +326,277 @@ const AppView = () => {
   };
 
   return (
-    <div
-      className="container"
-      style={{ paddingBottom: "48px", paddingTop: "32px", minHeight: "100vh" }}
-    >
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--color-bg-base)" }}>
+      {/* Header */}
       <header
         style={{
-          marginBottom: "32px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          gap: "16px",
-          flexWrap: "wrap",
+          borderBottom: "1px solid var(--color-border-subtle)",
+          backgroundColor: "var(--color-bg-surface)",
+          position: "sticky",
+          top: 0,
+          zIndex: 40,
+          boxShadow: "var(--shadow-sm)",
         }}
       >
-        <div>
-          <h1
-            style={{
-              fontSize: "24px",
-              fontWeight: 700,
-              margin: "0 0 8px 0",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            LLM Cost Calculator
-          </h1>
-          <p style={{ margin: 0, color: "var(--color-text-secondary)", fontSize: "14px" }}>
-            Local, secure estimation of token costs for popular models.
-          </p>
-        </div>
-
-        <div style={{ display: "flex", gap: "12px" }}>
-          <div style={{ position: "relative" }}>
-            <Button onClick={() => setIsExportOpen((open) => !open)}>Export</Button>
-            {isExportOpen && (
-              <Card
-                style={{
-                  position: "absolute",
-                  top: "calc(100% + 8px)",
-                  right: 0,
-                  width: "200px",
-                  zIndex: 50,
-                  display: "flex",
-                  flexDirection: "column",
-                  padding: "8px",
-                  gap: "4px",
-                }}
-                noPadding
-              >
-                <button
-                  type="button"
-                  onClick={handleExportJson}
-                  style={{
-                    textAlign: "left",
-                    width: "100%",
-                    border: "none",
-                    background: "transparent",
-                    color: "var(--color-text-primary)",
-                    padding: "8px 12px",
-                    borderRadius: "var(--radius-md)",
-                    cursor: "pointer",
-                  }}
-                >
-                  JSON export
-                </button>
-                <button
-                  type="button"
-                  onClick={handleExportCsv}
-                  style={{
-                    textAlign: "left",
-                    width: "100%",
-                    border: "none",
-                    background: "transparent",
-                    color: "var(--color-text-primary)",
-                    padding: "8px 12px",
-                    borderRadius: "var(--radius-md)",
-                    cursor: "pointer",
-                  }}
-                >
-                  CSV export
-                </button>
-              </Card>
-            )}
+        <div
+          className="container"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            height: "56px",
+            gap: "16px",
+          }}
+        >
+          {/* Brand */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div
+              style={{
+                width: "32px",
+                height: "32px",
+                borderRadius: "var(--radius-md)",
+                backgroundColor: "var(--color-primary-base)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                flexShrink: 0,
+              }}
+            >
+              <CalculatorIcon />
+            </div>
+            <div>
+              <div style={{ fontSize: "15px", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                LLM Cost Calculator
+              </div>
+              <div style={{ fontSize: "11px", color: "var(--color-text-tertiary)", lineHeight: 1.2 }}>
+                {models.length} models · updated {prices.retrieved_at}
+              </div>
+            </div>
           </div>
 
-          <Button onClick={() => setTheme(theme === "light" ? "dark" : "light")}>
-            {theme === "light" ? "Dark mode" : "Light mode"}
-          </Button>
+          {/* Actions */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {/* Export */}
+            <div style={{ position: "relative" }}>
+              <Button
+                variant="secondary"
+                size="sm"
+                leftIcon={<ExportIcon />}
+                onClick={() => setIsExportOpen((open) => !open)}
+                aria-label="Export data"
+                aria-expanded={isExportOpen}
+              >
+                Export
+              </Button>
+
+              {isExportOpen && (
+                <>
+                  {/* Backdrop */}
+                  <div
+                    style={{
+                      position: "fixed",
+                      inset: 0,
+                      zIndex: 49,
+                    }}
+                    onClick={() => setIsExportOpen(false)}
+                  />
+                  <Card
+                    className="animate-scale-in"
+                    style={{
+                      position: "absolute",
+                      top: "calc(100% + 6px)",
+                      right: 0,
+                      width: "180px",
+                      zIndex: 50,
+                      padding: "6px",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "2px",
+                    }}
+                    noPadding
+                  >
+                    <button
+                      type="button"
+                      className="dropdown-item"
+                      onClick={handleExportJson}
+                    >
+                      <JsonIcon />
+                      JSON export
+                    </button>
+                    <button
+                      type="button"
+                      className="dropdown-item"
+                      onClick={handleExportCsv}
+                    >
+                      <CsvIcon />
+                      CSV export
+                    </button>
+                  </Card>
+                </>
+              )}
+            </div>
+
+            {/* Theme toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+              style={{ width: "34px", padding: 0 }}
+            >
+              {theme === "light" ? <MoonIcon /> : <SunIcon />}
+            </Button>
+          </div>
         </div>
       </header>
 
-      {pricingError ? (
-        <Card
-          style={{
-            marginBottom: "24px",
-            borderColor: "var(--color-danger-text)",
-            backgroundColor: "var(--color-danger-bg)",
-          }}
-        >
-          <h2 style={{ margin: "0 0 8px", fontSize: "16px" }}>Pricing data error</h2>
-          <p style={{ margin: 0, color: "var(--color-danger-text)", fontSize: "14px" }}>
-            {pricingError}
-          </p>
-        </Card>
-      ) : null}
+      {/* Main content */}
+      <main className="container" style={{ paddingTop: "28px", paddingBottom: "60px" }}>
+        {pricingError ? (
+          <Card
+            style={{
+              marginBottom: "24px",
+              borderColor: "var(--color-danger-text)",
+              backgroundColor: "var(--color-danger-bg)",
+            }}
+          >
+            <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" style={{ color: "var(--color-danger-text)", flexShrink: 0, marginTop: 1 }}>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <div>
+                <h2 style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 600, color: "var(--color-danger-text)" }}>Pricing data error</h2>
+                <p style={{ margin: 0, color: "var(--color-danger-text)", fontSize: "13px", opacity: 0.9 }}>
+                  {pricingError}
+                </p>
+              </div>
+            </div>
+          </Card>
+        ) : null}
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "24px" }}>
-        <section>
-          <TextareaPanel
-            value={text}
-            onChange={setText}
-            normalizeOnPaste={normalizeOnPaste}
-            removeInvisible={removeInvisible}
-            onNormalizeOnPasteChange={setNormalizeOnPaste}
-            onRemoveInvisibleChange={setRemoveInvisible}
-            presets={PRESETS}
-            onPresetSelect={handlePresetSelect}
-            selectedModel={selectedModel}
-          />
-        </section>
-
-        <div
-          style={{ display: "grid", gridTemplateColumns: "minmax(300px, 1fr) 2fr", gap: "24px" }}
-          className="app__responsive-grid"
-        >
-          <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-            <PrimaryModelInspector
-              model={visibleRows[0] || null}
-              onCopySummary={handleCopySummary}
+        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+          {/* Input section */}
+          <section>
+            <TextareaPanel
+              value={text}
+              onChange={setText}
+              normalizeOnPaste={normalizeOnPaste}
+              removeInvisible={removeInvisible}
+              onNormalizeOnPasteChange={setNormalizeOnPaste}
+              onRemoveInvisibleChange={setRemoveInvisible}
+              presets={PRESETS}
+              onPresetSelect={handlePresetSelect}
+              selectedModel={selectedModel}
             />
-            <CountersPanel counters={counters} />
+          </section>
 
-            {isLargeInput && (
-              <Card
-                style={{
-                  backgroundColor: "var(--color-warning-bg)",
-                  borderColor: "var(--color-warning-text)",
-                  color: "var(--color-warning-text)",
-                }}
-              >
-                <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "4px" }}>
-                  Large input detected
-                </div>
-                <div style={{ fontSize: "13px", opacity: 0.9 }}>
-                  Performance may be impacted. Switch to primary model mode for faster updates.
-                </div>
-                {computeMode !== "primary-model" && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    style={{ marginTop: "12px", borderColor: "currentColor" }}
-                    onClick={() => setComputeMode("primary-model")}
-                  >
-                    Enable high-performance mode
-                  </Button>
-                )}
-              </Card>
-            )}
-          </div>
-
-          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
-              <Toggle
-                label="Primary model only"
-                checked={computeMode === "primary-model"}
-                onChange={(checked) =>
-                  setComputeMode(checked ? "primary-model" : "visible-rows")
-                }
+          {/* Stats + Table */}
+          <div
+            style={{ display: "grid", gridTemplateColumns: "minmax(280px, 320px) 1fr", gap: "20px", alignItems: "start" }}
+            className="app__responsive-grid"
+          >
+            {/* Left column: stats */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <PrimaryModelInspector
+                model={visibleRows[0] || null}
+                onCopySummary={handleCopySummary}
               />
+              <CountersPanel counters={counters} />
+
+              {isLargeInput && (
+                <Card
+                  style={{
+                    backgroundColor: "var(--color-warning-bg)",
+                    borderColor: "var(--color-warning-text)",
+                    borderWidth: "1px",
+                  }}
+                >
+                  <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" style={{ color: "var(--color-warning-text)", flexShrink: 0, marginTop: 1 }}>
+                      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: "13px", color: "var(--color-warning-text)", marginBottom: "2px" }}>
+                        Large input
+                      </div>
+                      <div style={{ fontSize: "12px", color: "var(--color-warning-text)", opacity: 0.85 }}>
+                        Performance may be impacted. Switch to primary model mode for faster updates.
+                      </div>
+                      {computeMode !== "primary-model" && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          style={{ marginTop: "10px", borderColor: "var(--color-warning-text)", border: "1px solid", color: "var(--color-warning-text)" }}
+                          onClick={() => setComputeMode("primary-model")}
+                        >
+                          Enable high-performance mode
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              )}
             </div>
 
-            <Card style={{ overflow: "hidden" }} noPadding>
-              <div
-                style={{
-                  padding: "16px",
-                  borderBottom: "1px solid var(--color-border-subtle)",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                }}
-              >
-                <h2 style={{ fontSize: "16px", fontWeight: 600, margin: 0 }}>
-                  Model pricing
+            {/* Right column: pricing table */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", minWidth: 0 }}>
+              {/* Table header bar */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h2 style={{ fontSize: "15px", fontWeight: 600, margin: 0, color: "var(--color-text-primary)" }}>
+                  Model Pricing
                 </h2>
-                <div style={{ fontSize: "12px", color: "var(--color-text-secondary)" }}>
-                  Updated: {prices.retrieved_at}
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <Toggle
+                    label="Primary model only"
+                    checked={computeMode === "primary-model"}
+                    onChange={(checked) =>
+                      setComputeMode(checked ? "primary-model" : "visible-rows")
+                    }
+                  />
                 </div>
               </div>
 
-              <div style={{ padding: "16px" }}>
-                <PricingTable
-                  models={models}
-                  text={debouncedText}
-                  computeMode={computeMode}
-                  onVisibleRowsChange={setVisibleRows}
-                />
-              </div>
-            </Card>
+              <Card style={{ overflow: "hidden" }} noPadding>
+                <div style={{ padding: "14px 16px" }}>
+                  <PricingTable
+                    models={models}
+                    text={debouncedText}
+                    computeMode={computeMode}
+                    onVisibleRowsChange={setVisibleRows}
+                  />
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
-      </div>
+      </main>
 
+      {/* Toast notification */}
       {toast && (
         <div
+          className="animate-slide-up"
           style={{
             position: "fixed",
-            bottom: "32px",
+            bottom: "28px",
             left: "50%",
             transform: "translateX(-50%)",
             backgroundColor: "var(--color-text-primary)",
             color: "var(--color-bg-base)",
-            padding: "8px 16px",
-            borderRadius: "999px",
+            padding: "10px 18px",
+            borderRadius: "var(--radius-full)",
             boxShadow: "var(--shadow-xl)",
-            fontSize: "14px",
+            fontSize: "13px",
+            fontWeight: 500,
             display: "flex",
             alignItems: "center",
             gap: "12px",
             zIndex: 100,
+            whiteSpace: "nowrap",
           }}
         >
           {toast.message}
@@ -502,10 +610,11 @@ const AppView = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: "var(--color-primary-active)",
-                fontWeight: 600,
+                color: "var(--color-primary-hover)",
+                fontWeight: 700,
                 cursor: "pointer",
                 padding: 0,
+                fontSize: "13px",
               }}
             >
               {toast.actionLabel}
@@ -515,7 +624,7 @@ const AppView = () => {
       )}
 
       <style>{`
-        @media (max-width: 900px) {
+        @media (max-width: 920px) {
           .app__responsive-grid {
             grid-template-columns: 1fr !important;
           }

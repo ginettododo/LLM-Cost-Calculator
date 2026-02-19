@@ -23,6 +23,8 @@
   --color-primary-hover: #1d4ed8; /* Blue 700 */
   --color-primary-active: #1e40af; /* Blue 800 */
   --color-primary-fg: #ffffff;
+  --color-primary-subtle: #eff6ff; /* Blue 50 */
+  --color-primary-muted: #bfdbfe; /* Blue 200 */
 
   --color-success-bg: #ecfdf5;
   --color-success-text: #15803d;
@@ -30,6 +32,8 @@
   --color-warning-text: #b45309;
   --color-danger-bg: #fef2f2;
   --color-danger-text: #b91c1c;
+  --color-info-bg: #eff6ff;
+  --color-info-text: #1d4ed8;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -49,12 +53,20 @@
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
+  --space-5: 20px;
   --space-6: 24px;
   --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
 
   /* Font */
   --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-family-mono: "JetBrains Mono", "Fira Code", monospace;
+
+  /* Transitions */
+  --transition-fast: 0.1s ease;
+  --transition-base: 0.15s ease;
+  --transition-slow: 0.25s ease;
 }
 
 [data-theme="dark"] {
@@ -79,6 +91,8 @@
   --color-primary-hover: #60a5fa; /* Blue 400 */
   --color-primary-active: #93c5fd; /* Blue 300 */
   --color-primary-fg: #ffffff;
+  --color-primary-subtle: #172554; /* Blue 950 */
+  --color-primary-muted: #1e3a8a; /* Blue 900 */
 
   --color-success-bg: #064e3b;
   --color-success-text: #a7f3d0;
@@ -86,6 +100,8 @@
   --color-warning-text: #fde68a;
   --color-danger-bg: #450a0a;
   --color-danger-text: #fca5a5;
+  --color-info-bg: #172554;
+  --color-info-text: #93c5fd;
 
   /* Shadows need to be stronger/different in dark mode */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
