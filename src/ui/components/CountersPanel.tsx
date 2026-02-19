@@ -13,63 +13,75 @@ type CountersPanelProps = {
 
 const CountersPanel = ({ counters }: CountersPanelProps) => {
   return (
-    <Card style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-        <h3
-          style={{
-            margin: 0,
-            fontSize: "14px",
-            textTransform: "uppercase",
-            letterSpacing: "0.05em",
-            color: "var(--color-text-secondary)",
-          }}
-        >
-          Live Counters
-        </h3>
-        <span style={{ fontSize: "12px", color: "var(--color-text-tertiary)" }}>
-          Updated with each pause in typing.
+    <Card noPadding style={{ overflow: "hidden" }}>
+      {/* Panel header */}
+      <div
+        style={{
+          padding: "10px 14px",
+          borderBottom: "1px solid var(--color-border-subtle)",
+          backgroundColor: "var(--color-bg-subtle)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--color-text-secondary)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Text Counters
+        </span>
+        <span style={{ fontSize: "11px", color: "var(--color-text-tertiary)" }}>
+          live
         </span>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "12px" }}>
-        <CounterCard label="Characters" value={counters.characters} />
-        <CounterCard label="Words" value={counters.words} />
-        <CounterCard label="Lines" value={counters.lines} />
-        <CounterCard label="Bytes" value={counters.bytes} />
+      {/* Counter grid */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+        <CounterCell label="Characters" value={counters.characters} borderRight borderBottom />
+        <CounterCell label="Words" value={counters.words} borderBottom />
+        <CounterCell label="Lines" value={counters.lines} borderRight />
+        <CounterCell label="UTF-8 Bytes" value={counters.bytes} />
       </div>
     </Card>
   );
 };
 
-const CounterCard = ({ label, value }: { label: string; value: number }) => (
+const CounterCell = ({
+  label,
+  value,
+  borderRight,
+  borderBottom,
+}: {
+  label: string;
+  value: number;
+  borderRight?: boolean;
+  borderBottom?: boolean;
+}) => (
   <div
     style={{
-      padding: "12px",
-      border: "1px solid var(--color-border-subtle)",
-      borderRadius: "var(--radius-md)",
-      backgroundColor: "var(--color-bg-subtle)",
-      display: "flex",
-      flexDirection: "column",
-      gap: "4px",
+      padding: "14px 16px",
+      borderRight: borderRight ? "1px solid var(--color-border-subtle)" : undefined,
+      borderBottom: borderBottom ? "1px solid var(--color-border-subtle)" : undefined,
     }}
   >
     <div
       style={{
         fontSize: "11px",
-        color: "var(--color-text-secondary)",
+        color: "var(--color-text-tertiary)",
         textTransform: "uppercase",
         letterSpacing: "0.05em",
         fontWeight: 600,
+        marginBottom: "4px",
       }}
     >
       {label}
     </div>
     <div
       style={{
-        fontSize: "20px",
+        fontSize: "22px",
         fontWeight: 700,
         color: "var(--color-text-primary)",
         fontVariantNumeric: "tabular-nums",
+        letterSpacing: "-0.02em",
+        lineHeight: 1,
       }}
     >
       {value.toLocaleString()}
