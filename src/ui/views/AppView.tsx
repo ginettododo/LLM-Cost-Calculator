@@ -9,9 +9,11 @@ import {
 import type { PricingRow } from "../../core/types/pricing";
 import prices from "../../data/prices.json";
 import CountersPanel from "../components/CountersPanel";
+import ModelComparison from "../components/ModelComparison";
 import PricingTable from "../components/PricingTable";
 import PrimaryModelInspector from "../components/PrimaryModelInspector";
 import type { ComputeMode, VisiblePricingRow } from "../components/PricingTable";
+import { rowKey } from "../components/PricingTable";
 import TextareaPanel from "../components/TextareaPanel";
 import { PRESETS } from "../data/presets";
 import useDebouncedValue from "../state/useDebouncedValue";
@@ -83,6 +85,15 @@ const CalculatorIcon = () => (
   </svg>
 );
 
+const CompareIcon = () => (
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <polyline points="16 3 21 3 21 8" />
+    <line x1="4" y1="20" x2="21" y2="3" />
+    <polyline points="21 16 21 21 16 21" />
+    <line x1="15" y1="15" x2="21" y2="21" />
+  </svg>
+);
+
 const AppView = () => {
   const [text, setText] = useState("");
   const [normalizeOnPaste, setNormalizeOnPaste] = useState(true);
@@ -93,6 +104,8 @@ const AppView = () => {
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [computeMode, setComputeMode] = useState<ComputeMode>("visible-rows");
   const [scrollResetKey, setScrollResetKey] = useState(0);
+  const [selectedModelKeys, setSelectedModelKeys] = useState<Set<string>>(new Set());
+  const [comparisonOpen, setComparisonOpen] = useState(false);
 
   const debouncedText = useDebouncedValue(text, 160);
 
@@ -131,6 +144,12 @@ const AppView = () => {
     );
   }, [models, visibleRows]);
 
+  // Models selected for comparison (resolved from visibleRows)
+  const comparisonModels = useMemo<VisiblePricingRow[]>(() => {
+    if (selectedModelKeys.size === 0) return [];
+    return visibleRows.filter((row) => selectedModelKeys.has(rowKey(row)));
+  }, [visibleRows, selectedModelKeys]);
+
   const isLargeInput = debouncedText.length > LARGE_INPUT_THRESHOLD;
 
   useEffect(() => {
@@ -148,6 +167,13 @@ const AppView = () => {
 
     return () => window.clearTimeout(timeoutId);
   }, [toast]);
+
+  // Auto-open comparison when 2+ models are selected
+  useEffect(() => {
+    if (selectedModelKeys.size >= 2) {
+      setComparisonOpen(true);
+    }
+  }, [selectedModelKeys.size]);
 
   const showToast = (
     message: string,
@@ -170,8 +196,8 @@ const AppView = () => {
     const previousText = text;
     setText(preset.value);
     setScrollResetKey((k) => k + 1);
-    showToast(`Preset "${preset.label}" applied`, {
-      actionLabel: "Undo",
+    showToast(`Preset "${preset.label}" applicato`, {
+      actionLabel: "Annulla",
       onAction: () => {
         setText(previousText);
         setScrollResetKey((k) => k + 1);
@@ -185,30 +211,30 @@ const AppView = () => {
     const lines: string[] = [];
 
     lines.push(
-      `Characters: ${counters.characters} | Words: ${counters.words} | Lines: ${counters.lines} | Bytes: ${counters.bytes}`,
+      `Caratteri: ${counters.characters} | Parole: ${counters.words} | Righe: ${counters.lines} | Byte: ${counters.bytes}`,
     );
 
     const primaryRow = visibleRows[0];
     if (primaryRow) {
       lines.push(
-        `Primary model: ${primaryRow.provider} ${primaryRow.model} | Tokens: ${primaryRow.tokens} | Cost: ${toMoney(primaryRow.total_cost_usd)} | ${primaryRow.exactness}`,
+        `Modello primario: ${primaryRow.provider} ${primaryRow.model} | Token: ${primaryRow.tokens} | Costo: ${toMoney(primaryRow.total_cost_usd)} | ${primaryRow.exactness}`,
       );
     } else {
-      lines.push("Primary model: none");
+      lines.push("Modello primario: nessuno");
     }
 
-    lines.push("Top 3 cheapest (input cost):");
+    lines.push("Top 3 più economici (costo input):");
 
     const topThree = [...visibleRows]
       .sort((a, b) => a.input_cost_usd - b.input_cost_usd)
       .slice(0, 3);
 
     if (topThree.length === 0) {
-      lines.push("- none");
+      lines.push("- nessuno");
     } else {
       topThree.forEach((row, index) => {
         lines.push(
-          `${index + 1}. ${row.provider} ${row.model} | ${toMoney(row.input_cost_usd)} input | Tokens: ${row.tokens}`,
+          `${index + 1}. ${row.provider} ${row.model} | ${toMoney(row.input_cost_usd)} input | Token: ${row.tokens}`,
         );
       });
     }
@@ -219,9 +245,9 @@ const AppView = () => {
   const handleCopySummary = async () => {
     try {
       await navigator.clipboard.writeText(buildSummaryText());
-      showToast("Copied summary");
+      showToast("Riepilogo copiato");
     } catch {
-      showToast("Clipboard unavailable");
+      showToast("Clipboard non disponibile");
     }
   };
 
@@ -305,7 +331,7 @@ const AppView = () => {
       "text/csv;charset=utf-8",
     );
     setIsExportOpen(false);
-    showToast("CSV exported");
+    showToast("CSV esportato");
   };
 
   const handleExportJson = () => {
@@ -327,7 +353,23 @@ const AppView = () => {
       "application/json;charset=utf-8",
     );
     setIsExportOpen(false);
-    showToast("JSON exported");
+    showToast("JSON esportato");
+  };
+
+  const handleCloseComparison = () => {
+    setComparisonOpen(false);
+    setSelectedModelKeys(new Set());
+  };
+
+  const handleRemoveFromComparison = (key: string) => {
+    setSelectedModelKeys((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      if (next.size < 2) {
+        setComparisonOpen(false);
+      }
+      return next;
+    });
   };
 
   return (
@@ -349,39 +391,66 @@ const AppView = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            height: "56px",
+            height: "60px",
             gap: "16px",
           }}
         >
           {/* Brand */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div
               style={{
-                width: "32px",
-                height: "32px",
+                width: "36px",
+                height: "36px",
                 borderRadius: "var(--radius-md)",
-                backgroundColor: "var(--color-primary-base)",
+                background: "linear-gradient(135deg, var(--color-primary-base), var(--color-primary-hover))",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 color: "#fff",
                 flexShrink: 0,
+                boxShadow: "0 2px 8px rgba(37,99,235,0.35)",
               }}
             >
               <CalculatorIcon />
             </div>
             <div>
-              <div style={{ fontSize: "15px", fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+              <div
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 700,
+                  letterSpacing: "-0.02em",
+                  lineHeight: 1.2,
+                  color: "var(--color-text-primary)",
+                }}
+              >
                 LLM Cost Calculator
               </div>
-              <div style={{ fontSize: "11px", color: "var(--color-text-tertiary)", lineHeight: 1.2 }}>
-                {models.length} models · updated {prices.retrieved_at}
+              <div
+                style={{
+                  fontSize: "11px",
+                  color: "var(--color-text-tertiary)",
+                  lineHeight: 1.2,
+                }}
+              >
+                {models.length} modelli · aggiornato {prices.retrieved_at}
               </div>
             </div>
           </div>
 
           {/* Actions */}
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {/* Compare button — shown when selection is active */}
+            {selectedModelKeys.size >= 2 && (
+              <Button
+                variant="primary"
+                size="sm"
+                leftIcon={<CompareIcon />}
+                onClick={() => setComparisonOpen(true)}
+              >
+                Confronta ({selectedModelKeys.size})
+              </Button>
+            )}
+
             {/* Export */}
             <div style={{ position: "relative" }}>
               <Button
@@ -389,21 +458,16 @@ const AppView = () => {
                 size="sm"
                 leftIcon={<ExportIcon />}
                 onClick={() => setIsExportOpen((open) => !open)}
-                aria-label="Export data"
+                aria-label="Esporta dati"
                 aria-expanded={isExportOpen}
               >
-                Export
+                Esporta
               </Button>
 
               {isExportOpen && (
                 <>
-                  {/* Backdrop */}
                   <div
-                    style={{
-                      position: "fixed",
-                      inset: 0,
-                      zIndex: 49,
-                    }}
+                    style={{ position: "fixed", inset: 0, zIndex: 49 }}
                     onClick={() => setIsExportOpen(false)}
                   />
                   <Card
@@ -421,21 +485,13 @@ const AppView = () => {
                     }}
                     noPadding
                   >
-                    <button
-                      type="button"
-                      className="dropdown-item"
-                      onClick={handleExportJson}
-                    >
+                    <button type="button" className="dropdown-item" onClick={handleExportJson}>
                       <JsonIcon />
-                      JSON export
+                      Esporta JSON
                     </button>
-                    <button
-                      type="button"
-                      className="dropdown-item"
-                      onClick={handleExportCsv}
-                    >
+                    <button type="button" className="dropdown-item" onClick={handleExportCsv}>
                       <CsvIcon />
-                      CSV export
+                      Esporta CSV
                     </button>
                   </Card>
                 </>
@@ -447,7 +503,7 @@ const AppView = () => {
               variant="ghost"
               size="sm"
               onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-              aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+              aria-label={theme === "light" ? "Passa a tema scuro" : "Passa a tema chiaro"}
               style={{ width: "34px", padding: 0 }}
             >
               {theme === "light" ? <MoonIcon /> : <SunIcon />}
@@ -457,7 +513,8 @@ const AppView = () => {
       </header>
 
       {/* Main content */}
-      <main className="container" style={{ paddingTop: "28px", paddingBottom: "60px" }}>
+      <main className="container" style={{ paddingTop: "32px", paddingBottom: "72px" }}>
+        {/* Pricing data error */}
         {pricingError ? (
           <Card
             style={{
@@ -467,14 +524,39 @@ const AppView = () => {
             }}
           >
             <div style={{ display: "flex", gap: "12px", alignItems: "flex-start" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" style={{ color: "var(--color-danger-text)", flexShrink: 0, marginTop: 1 }}>
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+                style={{ color: "var(--color-danger-text)", flexShrink: 0, marginTop: 1 }}
+              >
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="8" x2="12" y2="12" />
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
               <div>
-                <h2 style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 600, color: "var(--color-danger-text)" }}>Pricing data error</h2>
-                <p style={{ margin: 0, color: "var(--color-danger-text)", fontSize: "13px", opacity: 0.9 }}>
+                <h2
+                  style={{
+                    margin: "0 0 4px",
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "var(--color-danger-text)",
+                  }}
+                >
+                  Errore dati prezzi
+                </h2>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "var(--color-danger-text)",
+                    fontSize: "13px",
+                    opacity: 0.9,
+                  }}
+                >
                   {pricingError}
                 </p>
               </div>
@@ -482,8 +564,8 @@ const AppView = () => {
           </Card>
         ) : null}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-          {/* Input section */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* ── Input section ── */}
           <section>
             <TextareaPanel
               value={text}
@@ -499,9 +581,25 @@ const AppView = () => {
             />
           </section>
 
-          {/* Stats + Table */}
+          {/* ── Comparison panel (shown when 2+ models selected and open) ── */}
+          {comparisonOpen && comparisonModels.length >= 1 && (
+            <section>
+              <ModelComparison
+                models={comparisonModels}
+                onClose={handleCloseComparison}
+                onRemoveModel={handleRemoveFromComparison}
+              />
+            </section>
+          )}
+
+          {/* ── Stats + Table ── */}
           <div
-            style={{ display: "grid", gridTemplateColumns: "minmax(280px, 320px) 1fr", gap: "20px", alignItems: "start" }}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "minmax(280px, 310px) 1fr",
+              gap: "20px",
+              alignItems: "start",
+            }}
             className="app__responsive-grid"
           >
             {/* Left column: stats */}
@@ -521,26 +619,53 @@ const AppView = () => {
                   }}
                 >
                   <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" style={{ color: "var(--color-warning-text)", flexShrink: 0, marginTop: 1 }}>
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      style={{ color: "var(--color-warning-text)", flexShrink: 0, marginTop: 1 }}
+                    >
                       <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
                       <line x1="12" y1="9" x2="12" y2="13" />
                       <line x1="12" y1="17" x2="12.01" y2="17" />
                     </svg>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: "13px", color: "var(--color-warning-text)", marginBottom: "2px" }}>
-                        Large input
+                      <div
+                        style={{
+                          fontWeight: 600,
+                          fontSize: "13px",
+                          color: "var(--color-warning-text)",
+                          marginBottom: "2px",
+                        }}
+                      >
+                        Input grande
                       </div>
-                      <div style={{ fontSize: "12px", color: "var(--color-warning-text)", opacity: 0.85 }}>
-                        Performance may be impacted. Switch to primary model mode for faster updates.
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "var(--color-warning-text)",
+                          opacity: 0.85,
+                        }}
+                      >
+                        Le prestazioni potrebbero risentirne. Passa alla modalità modello primario.
                       </div>
                       {computeMode !== "primary-model" && (
                         <Button
                           size="sm"
                           variant="ghost"
-                          style={{ marginTop: "10px", borderColor: "var(--color-warning-text)", border: "1px solid", color: "var(--color-warning-text)" }}
+                          style={{
+                            marginTop: "10px",
+                            borderColor: "var(--color-warning-text)",
+                            border: "1px solid",
+                            color: "var(--color-warning-text)",
+                          }}
                           onClick={() => setComputeMode("primary-model")}
                         >
-                          Enable high-performance mode
+                          Abilita alta performance
                         </Button>
                       )}
                     </div>
@@ -552,13 +677,55 @@ const AppView = () => {
             {/* Right column: pricing table */}
             <div style={{ display: "flex", flexDirection: "column", gap: "12px", minWidth: 0 }}>
               {/* Table header bar */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h2 style={{ fontSize: "15px", fontWeight: 600, margin: 0, color: "var(--color-text-primary)" }}>
-                  Model Pricing
-                </h2>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <h2
+                    style={{
+                      fontSize: "15px",
+                      fontWeight: 700,
+                      margin: 0,
+                      color: "var(--color-text-primary)",
+                      letterSpacing: "-0.01em",
+                    }}
+                  >
+                    Prezzi modelli
+                  </h2>
+                  {selectedModelKeys.size > 0 && (
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        backgroundColor: "var(--color-primary-base)",
+                        color: "#fff",
+                        borderRadius: "var(--radius-full)",
+                        padding: "2px 8px",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {selectedModelKeys.size} selezionati
+                    </span>
+                  )}
+                </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  {selectedModelKeys.size >= 2 && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<CompareIcon />}
+                      onClick={() => setComparisonOpen(true)}
+                    >
+                      Confronta ({selectedModelKeys.size})
+                    </Button>
+                  )}
                   <Toggle
-                    label="Primary model only"
+                    label="Solo modello primario"
                     checked={computeMode === "primary-model"}
                     onChange={(checked) =>
                       setComputeMode(checked ? "primary-model" : "visible-rows")
@@ -574,6 +741,8 @@ const AppView = () => {
                     text={debouncedText}
                     computeMode={computeMode}
                     onVisibleRowsChange={setVisibleRows}
+                    selectedModelKeys={selectedModelKeys}
+                    onSelectionChange={setSelectedModelKeys}
                   />
                 </div>
               </Card>
@@ -633,6 +802,11 @@ const AppView = () => {
         @media (max-width: 920px) {
           .app__responsive-grid {
             grid-template-columns: 1fr !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .comparison-grid {
+            grid-template-columns: 1fr 1fr !important;
           }
         }
       `}</style>
