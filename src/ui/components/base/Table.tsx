@@ -19,14 +19,20 @@ export const TableHeader = ({ children }: { children: React.ReactNode }) => {
     );
 };
 
-export const TableRow = ({ children, isZebra }: { children: React.ReactNode; isZebra?: boolean }) => {
+export const TableRow = ({ children, isZebra, isSelected }: { children: React.ReactNode; isZebra?: boolean; isSelected?: boolean }) => {
     return (
         <tr
             className="table-row-hover"
             style={{
                 borderBottom: "1px solid var(--color-border-subtle)",
-                backgroundColor: isZebra ? "var(--color-bg-canvas)" : "transparent",
+                backgroundColor: isSelected
+                    ? "var(--color-primary-subtle)"
+                    : isZebra
+                    ? "var(--color-bg-canvas)"
+                    : "transparent",
                 cursor: "default",
+                outline: isSelected ? "2px solid var(--color-primary-muted)" : undefined,
+                outlineOffset: isSelected ? "-2px" : undefined,
             }}
         >
             {children}

@@ -26,7 +26,7 @@ select {
 
 /* Layout Utilities */
 .container {
-  max-width: 1280px;
+  max-width: 1360px;
   margin: 0 auto;
   padding: 0 var(--space-6);
 }
@@ -52,10 +52,12 @@ select {
 /* Button Interaction States */
 .btn-primary:hover:not(:disabled) {
   background-color: var(--color-primary-hover) !important;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3) !important;
 }
 
 .btn-secondary:hover:not(:disabled) {
   background-color: var(--color-bg-surface-hover) !important;
+  border-color: var(--color-border-hover) !important;
 }
 
 .btn-ghost:hover:not(:disabled) {
@@ -130,6 +132,16 @@ select {
   display: inline-block;
 }
 
+/* Section divider */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-tertiary);
+  margin-bottom: var(--space-3);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {
@@ -148,6 +160,17 @@ select {
   to {
     opacity: 1;
     transform: translateY(0) translateX(-50%);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -188,6 +211,10 @@ select {
   animation: slideUp var(--transition-slow) ease;
 }
 
+.animate-slide-down {
+  animation: slideDown var(--transition-slow) ease;
+}
+
 .animate-scale-in {
   animation: scaleIn var(--transition-slow) ease;
 }
@@ -206,8 +233,8 @@ select {
 
 /* Scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -236,4 +263,15 @@ textarea:focus {
 [data-theme="dark"] select:focus,
 [data-theme="dark"] textarea:focus {
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+/* Comparison grid responsive */
+.comparison-grid {
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 var(--space-4);
+  }
 }
