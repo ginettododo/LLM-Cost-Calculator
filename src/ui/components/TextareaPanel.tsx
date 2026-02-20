@@ -1,8 +1,9 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { ClipboardEvent } from "react";
 import { normalizeText } from "../../core/normalization/normalizeText";
 import type { PricingRow } from "../../core/types/pricing";
 import TokenHighlighter from "./TokenHighlighter";
+import { useTokenDetails } from "../state/useTokenDetails";
 import { Button, Card, Select, Toggle } from "./base";
 
 type PresetOption = {
@@ -22,6 +23,7 @@ type TextareaPanelProps = {
   onNormalizeOnPasteChange: (value: boolean) => void;
   onRemoveInvisibleChange: (value: boolean) => void;
   selectedModel?: PricingRow;
+  scrollResetKey?: number;
 };
 
 const GearIcon = () => (
@@ -57,12 +59,28 @@ const TextareaPanel = ({
   onNormalizeOnPasteChange,
   onRemoveInvisibleChange,
   selectedModel,
+  scrollResetKey,
 }: TextareaPanelProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [highlightEnabled] = useState(true);
   const settingsId = useId();
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const highlighterRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (scrollResetKey === undefined) return;
+    if (textareaRef.current) {
+      textareaRef.current.scrollTop = 0;
+      textareaRef.current.scrollLeft = 0;
+    }
+    if (highlighterRef.current) {
+      highlighterRef.current.scrollTop = 0;
+      highlighterRef.current.scrollLeft = 0;
+    }
+  }, [scrollResetKey]);
+
+  const tokenDetails = useTokenDetails(value, selectedModel, highlightEnabled);
+  const hasHighlights = tokenDetails.length > 0;
 
   const applyInsert = (insertValue: string, target: HTMLTextAreaElement | null) => {
     if (!target) {
@@ -282,8 +300,7 @@ const TextareaPanel = ({
             }}
           >
             <TokenHighlighter
-              text={value}
-              model={selectedModel}
+              tokenDetails={tokenDetails}
               isEnabled={highlightEnabled}
             />
           </div>
@@ -311,8 +328,8 @@ const TextareaPanel = ({
             border: "none",
             resize: "vertical",
             backgroundColor: "transparent",
-            color: highlightEnabled ? "transparent" : "var(--color-text-primary)",
-            WebkitTextFillColor: highlightEnabled ? "transparent" : "var(--color-text-primary)",
+            color: hasHighlights ? "transparent" : "var(--color-text-primary)",
+            WebkitTextFillColor: hasHighlights ? "transparent" : "var(--color-text-primary)",
             caretColor: "var(--color-text-primary)",
             fontFamily: "var(--font-family-mono)",
             fontSize: "13.5px",
