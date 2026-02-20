@@ -1,9 +1,7 @@
-import { useTokenDetails } from "../state/useTokenDetails";
-import { PricingRow } from "../../core/types/pricing";
+import type { OpenAITokenDetail } from "../../core/tokenization/openaiTokenizer";
 
 type TokenHighlighterProps = {
-    text: string;
-    model: PricingRow | undefined;
+    tokenDetails: OpenAITokenDetail[];
     isEnabled: boolean;
 };
 
@@ -15,9 +13,7 @@ const COLORS = [
     "rgba(170, 77, 255, 0.15)", // Subtle Purple
 ];
 
-const TokenHighlighter = ({ text, model, isEnabled }: TokenHighlighterProps) => {
-    const tokenDetails = useTokenDetails(text, model, isEnabled);
-
+const TokenHighlighter = ({ tokenDetails, isEnabled }: TokenHighlighterProps) => {
     const MAX_TOKENS = 5000;
     const isTruncated = tokenDetails.length > MAX_TOKENS;
     const displayTokens = isTruncated ? tokenDetails.slice(0, MAX_TOKENS) : tokenDetails;

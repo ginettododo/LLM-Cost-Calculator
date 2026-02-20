@@ -92,6 +92,7 @@ const AppView = () => {
   const [toast, setToast] = useState<ToastState | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [computeMode, setComputeMode] = useState<ComputeMode>("visible-rows");
+  const [scrollResetKey, setScrollResetKey] = useState(0);
 
   const debouncedText = useDebouncedValue(text, 160);
 
@@ -168,9 +169,13 @@ const AppView = () => {
 
     const previousText = text;
     setText(preset.value);
+    setScrollResetKey((k) => k + 1);
     showToast(`Preset "${preset.label}" applied`, {
       actionLabel: "Undo",
-      onAction: () => setText(previousText),
+      onAction: () => {
+        setText(previousText);
+        setScrollResetKey((k) => k + 1);
+      },
     });
   };
 
@@ -490,6 +495,7 @@ const AppView = () => {
               presets={PRESETS}
               onPresetSelect={handlePresetSelect}
               selectedModel={selectedModel}
+              scrollResetKey={scrollResetKey}
             />
           </section>
 
