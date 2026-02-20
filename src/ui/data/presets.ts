@@ -20,7 +20,7 @@ const fitToLength = (base: string, targetLength: number, filler: string): string
 
 const SHORT_PRESET =
   "Quick check: estimate this draft locally, compare visible rows first, then switch to primary model mode if the input becomes huge. Keep the decision focused on accuracy labels, latency, and expected USD cost before we share a recommendation.";
-// Length: 246 chars.
+// Length: 241 chars.
 
 const LONG_ARTICLE_PRESET_BASE = `# Product Reliability Brief
 
@@ -310,39 +310,39 @@ export const PRESETS: PresetDefinition[] = [
     label: "Short note (quick sanity check)",
     value: SHORT_PRESET,
     length: SHORT_PRESET.length,
-    approxLabel: "~250 chars",
+    approxLabel: "~240 chars",
   },
   {
     id: "long-article",
-    label: "Long article ~5,000 chars",
+    label: "Long article",
     value: LONG_ARTICLE_PRESET,
     length: LONG_ARTICLE_PRESET.length,
     approxLabel: "~5,000 chars",
   },
   {
     id: "very-long-article",
-    label: "Very long article ~10,000 chars",
+    label: "Very long article",
     value: VERY_LONG_ARTICLE_PRESET,
     length: VERY_LONG_ARTICLE_PRESET.length,
     approxLabel: "~10,000 chars",
   },
   {
     id: "code-sample",
-    label: "Code sample (JSON + TS) ~3,000–6,000 chars",
+    label: "Code sample (JSON + TS)",
     value: CODE_SAMPLE_PRESET,
     length: CODE_SAMPLE_PRESET.length,
     approxLabel: "~4,300 chars",
   },
   {
     id: "mixed-unicode",
-    label: "Mixed unicode stress test ~2,000–4,000 chars",
+    label: "Mixed unicode stress test",
     value: MIXED_UNICODE_PRESET,
     length: MIXED_UNICODE_PRESET.length,
     approxLabel: "~2,700 chars",
   },
   {
     id: "prompt-block",
-    label: "Prompt-like instruction block ~4,000–7,000 chars",
+    label: "Prompt-like instruction block",
     value: PROMPT_BLOCK_PRESET,
     length: PROMPT_BLOCK_PRESET.length,
     approxLabel: "~4,600 chars",
