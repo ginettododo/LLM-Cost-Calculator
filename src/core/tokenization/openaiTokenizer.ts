@@ -149,12 +149,67 @@ export const getOpenAITokenDetails = (
   });
 };
 
+// cl100k_base / o200k_base pre-tokenization regex (sourced from the encoder's patStr).
+// Splitting on this first breaks text at natural word boundaries before BPE, preventing
+// the O(n²) worst-case that js-tiktoken exhibits on long runs of identical characters.
+// Small segments are batched together up to BATCH_CHARS to reduce WASM call overhead.
+// Any single segment longer than HARD_CHUNK is further split to cap BPE complexity.
+const CL100K_PRETOKENIZE_RE =
+  /('s|'S|'t|'T|'re|'rE|'Re|'RE|'ve|'vE|'Ve|'VE|'m|'M|'ll|'lL|'Ll|'LL|'d|'D)|[^\r\n\p{L}\p{N}]?\p{L}+|\p{N}{1,3}| ?[^\s\p{L}\p{N}]+[\r\n]*|\s*[\r\n]+|\s+(?!\S)|\s+/giu;
+
+const HARD_CHUNK = 10;   // max chars per BPE call for long/repetitive segments
+const BATCH_CHARS = 2_000; // batch small segments up to this many chars per encode call
+
+const countWithChunking = (text: string, encoder: ReturnType<typeof getEncoding>): number => {
+  const segs = text.match(CL100K_PRETOKENIZE_RE) ?? [];
+
+  // If regex matched nothing (unusual input), fall back to hard-chunk the whole string
+  if (segs.length === 0) {
+    let total = 0;
+    for (let i = 0; i < text.length; i += HARD_CHUNK) {
+      total += encoder.encode(text.slice(i, i + HARD_CHUNK)).length;
+    }
+    return total;
+  }
+
+  let total = 0;
+  let batch = "";
+  for (const seg of segs) {
+    if (seg.length > HARD_CHUNK) {
+      // Flush accumulated batch first
+      if (batch.length > 0) {
+        total += encoder.encode(batch).length;
+        batch = "";
+      }
+      // Hard-chunk this oversized segment
+      for (let i = 0; i < seg.length; i += HARD_CHUNK) {
+        total += encoder.encode(seg.slice(i, i + HARD_CHUNK)).length;
+      }
+    } else if (batch.length + seg.length > BATCH_CHARS) {
+      total += encoder.encode(batch).length;
+      batch = seg;
+    } else {
+      batch += seg;
+    }
+  }
+  if (batch.length > 0) {
+    total += encoder.encode(batch).length;
+  }
+  return total;
+};
+
 export const countOpenAITokensExact = (text: string, model: string): number => {
   if (text.length === 0) {
     return 0;
   }
 
-  return getEncoderForModel(model).encode(text).length;
+  const encoder = getEncoderForModel(model);
+
+  if (text.length <= BATCH_CHARS) {
+    return encoder.encode(text).length;
+  }
+
+  return countWithChunking(text, encoder);
 };
 
 export const clearOpenAITokenizerCache = (): void => {
