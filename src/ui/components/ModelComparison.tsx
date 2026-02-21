@@ -52,36 +52,22 @@ const ModelComparison = ({ models, onClose, onRemoveModel }: ModelComparisonProp
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          padding: "12px 16px",
+          padding: "8px 12px",
           backgroundColor: "var(--color-primary-subtle)",
           borderBottom: "1px solid var(--color-primary-muted)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <span
-            style={{
-              fontSize: "12px",
-              fontWeight: 700,
-              color: "var(--color-info-text)",
-              textTransform: "uppercase",
-              letterSpacing: "0.07em",
-            }}
-          >
-            Confronto modelli
-          </span>
-          <span
-            style={{
-              fontSize: "11px",
-              backgroundColor: "var(--color-primary-base)",
-              color: "#fff",
-              borderRadius: "var(--radius-full)",
-              padding: "1px 8px",
-              fontWeight: 600,
-            }}
-          >
-            {models.length} selezionati
-          </span>
-        </div>
+        <span
+          style={{
+            fontSize: "11px",
+            fontWeight: 700,
+            color: "var(--color-info-text)",
+            textTransform: "uppercase",
+            letterSpacing: "0.07em",
+          }}
+        >
+          Confronto ({models.length})
+        </span>
         <Button
           variant="ghost"
           size="sm"
@@ -332,35 +318,6 @@ const ModelComparison = ({ models, onClose, onRemoveModel }: ModelComparisonProp
         })}
       </div>
 
-      {/* Footer hint */}
-      <div
-        style={{
-          padding: "8px 16px",
-          borderTop: "1px solid var(--color-border-subtle)",
-          backgroundColor: "var(--color-bg-subtle)",
-          fontSize: "11px",
-          color: "var(--color-text-tertiary)",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <span>Seleziona fino a 4 modelli dalla tabella per confrontarli</span>
-        <button
-          type="button"
-          onClick={onClose}
-          style={{
-            background: "none",
-            border: "none",
-            color: "var(--color-text-tertiary)",
-            cursor: "pointer",
-            fontSize: "11px",
-            padding: 0,
-          }}
-        >
-          Cancella selezione
-        </button>
-      </div>
     </div>
   );
 };

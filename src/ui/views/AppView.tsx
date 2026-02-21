@@ -391,7 +391,7 @@ const AppView = () => {
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            height: "60px",
+            height: "48px",
             gap: "16px",
           }}
         >
@@ -399,8 +399,8 @@ const AppView = () => {
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div
               style={{
-                width: "36px",
-                height: "36px",
+                width: "30px",
+                height: "30px",
                 borderRadius: "var(--radius-md)",
                 background: "linear-gradient(135deg, var(--color-primary-base), var(--color-primary-hover))",
                 display: "flex",
@@ -513,7 +513,7 @@ const AppView = () => {
       </header>
 
       {/* Main content */}
-      <main className="container" style={{ paddingTop: "32px", paddingBottom: "72px" }}>
+      <main className="container" style={{ paddingTop: "20px", paddingBottom: "48px" }}>
         {/* Pricing data error */}
         {pricingError ? (
           <Card
@@ -564,7 +564,7 @@ const AppView = () => {
           </Card>
         ) : null}
 
-        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           {/* ── Input section ── */}
           <section>
             <TextareaPanel
@@ -597,13 +597,13 @@ const AppView = () => {
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(280px, 310px) 1fr",
-              gap: "20px",
+              gap: "16px",
               alignItems: "start",
             }}
             className="app__responsive-grid"
           >
             {/* Left column: stats */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <PrimaryModelInspector
                 model={visibleRows[0] || null}
                 onCopySummary={handleCopySummary}
@@ -675,67 +675,38 @@ const AppView = () => {
             </div>
 
             {/* Right column: pricing table */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", minWidth: 0 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: 0 }}>
               {/* Table header bar */}
               <div
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
                   alignItems: "center",
-                  gap: "12px",
-                  flexWrap: "wrap",
+                  gap: "8px",
                 }}
               >
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <h2
-                    style={{
-                      fontSize: "15px",
-                      fontWeight: 700,
-                      margin: 0,
-                      color: "var(--color-text-primary)",
-                      letterSpacing: "-0.01em",
-                    }}
-                  >
-                    Prezzi modelli
-                  </h2>
-                  {selectedModelKeys.size > 0 && (
-                    <span
-                      style={{
-                        fontSize: "11px",
-                        backgroundColor: "var(--color-primary-base)",
-                        color: "#fff",
-                        borderRadius: "var(--radius-full)",
-                        padding: "2px 8px",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {selectedModelKeys.size} selezionati
-                    </span>
-                  )}
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  {selectedModelKeys.size >= 2 && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      leftIcon={<CompareIcon />}
-                      onClick={() => setComparisonOpen(true)}
-                    >
-                      Confronta ({selectedModelKeys.size})
-                    </Button>
-                  )}
-                  <Toggle
-                    label="Solo modello primario"
-                    checked={computeMode === "primary-model"}
-                    onChange={(checked) =>
-                      setComputeMode(checked ? "primary-model" : "visible-rows")
-                    }
-                  />
-                </div>
+                <h2
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 700,
+                    margin: 0,
+                    color: "var(--color-text-primary)",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  Prezzi modelli
+                </h2>
+                <Toggle
+                  label="Solo primario"
+                  checked={computeMode === "primary-model"}
+                  onChange={(checked) =>
+                    setComputeMode(checked ? "primary-model" : "visible-rows")
+                  }
+                />
               </div>
 
               <Card style={{ overflow: "hidden" }} noPadding>
-                <div style={{ padding: "14px 16px" }}>
+                <div style={{ padding: "10px 12px" }}>
                   <PricingTable
                     models={models}
                     text={debouncedText}

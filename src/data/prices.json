@@ -1,6 +1,6 @@
 {
   "currency": "USD",
-  "retrieved_at": "2026-02-11T00:00:00Z",
+  "retrieved_at": "2026-02-21T00:00:00Z",
   "source_url": "https://example.com/llm-pricing-february-2026",
   "featuredModels": [
     "openai:gpt-5-2",
@@ -11,7 +11,7 @@
     "google:gemini-3-flash",
     "google:gemini-2-5-flash-lite",
     "anthropic:claude-opus-4-6",
-    "anthropic:claude-sonnet-4-5",
+    "anthropic:claude-sonnet-4-6",
     "anthropic:claude-haiku-4-5"
   ],
   "models": [
@@ -20,1680 +20,1204 @@
       "model_id": "openai:gpt-5-2-pro",
       "display_name": "GPT-5.2 Pro",
       "category": "flagship",
+      "release_date": "2025-12-11",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 21.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 168.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 21.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 168.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 400K; original category 'Frontier - Premium'."
+      "notes": "Context window 400K; category Frontier - Premium."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-5-2",
       "display_name": "GPT-5.2",
       "category": "flagship",
+      "release_date": "2025-12-11",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.75,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 14.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.75, "currency": "USD" },
+        { "kind": "output", "price_per_million": 14.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 400K; original category 'Frontier'."
+      "notes": "Context window 400K; category Frontier."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-5-2-codex",
       "display_name": "GPT-5.2 Codex",
       "category": "flagship",
+      "release_date": "2025-12-11",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.75,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 14.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.75, "currency": "USD" },
+        { "kind": "output", "price_per_million": 14.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 400K; original category 'Frontier - Code'."
+      "notes": "Context window 400K; category Frontier - Code."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-5-1",
       "display_name": "GPT-5.1",
       "category": "flagship",
+      "release_date": "2025-10-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.25,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 10.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.25, "currency": "USD" },
+        { "kind": "output", "price_per_million": 10.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 400K; original category 'Frontier'."
+      "notes": "Context window 400K; category Frontier."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-5-1-codex",
       "display_name": "GPT-5.1 Codex",
       "category": "flagship",
+      "release_date": "2025-10-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.25,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 10.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.25, "currency": "USD" },
+        { "kind": "output", "price_per_million": 10.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 400K; original category 'Frontier - Code'."
+      "notes": "Context window 400K; category Frontier - Code."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-5-pro",
       "display_name": "GPT-5 Pro",
       "category": "flagship",
+      "release_date": "2025-07-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 15.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 120.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 15.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 120.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 400K; original category 'Frontier - Premium'."
+      "notes": "Context window 400K; category Frontier - Premium."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-5",
       "display_name": "GPT-5",
       "category": "flagship",
+      "release_date": "2025-07-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.25,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 10.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.25, "currency": "USD" },
+        { "kind": "output", "price_per_million": 10.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 400K; original category 'Frontier'."
+      "notes": "Context window 400K; category Frontier."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-5-mini",
       "display_name": "GPT-5 Mini",
       "category": "budget",
+      "release_date": "2025-07-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.25,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 2.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.25, "currency": "USD" },
+        { "kind": "output", "price_per_million": 2.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 400K; original category 'Efficient'."
+      "notes": "Context window 400K; category Efficient."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-5-nano",
       "display_name": "GPT-5 Nano",
       "category": "budget",
+      "release_date": "2025-07-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.05,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.4,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.05, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.4, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 400K; original category 'Budget'."
+      "notes": "Context window 400K; category Budget."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-4-1",
       "display_name": "GPT-4.1",
       "category": "mainstream",
+      "release_date": "2025-04-14",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 2.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 8.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 2.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 8.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Advanced'."
+      "notes": "Context window 1M; category Advanced."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-4-1-mini",
       "display_name": "GPT-4.1 Mini",
       "category": "budget",
+      "release_date": "2025-04-14",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.4,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.6,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.4, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.6, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Efficient'."
+      "notes": "Context window 1M; category Efficient."
+    },
+    {
+      "provider": "OpenAI",
+      "model_id": "openai:gpt-4-1-nano",
+      "display_name": "GPT-4.1 Nano",
+      "category": "budget",
+      "release_date": "2025-04-14",
+      "pricing": [
+        { "kind": "input", "price_per_million": 0.1, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.4, "currency": "USD" }
+      ],
+      "pricing_confidence": "high",
+      "source_url": "https://example.com/llm-pricing-february-2026",
+      "notes": "Context window 1M; category Budget."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-4o",
       "display_name": "GPT-4o",
       "category": "mainstream",
+      "release_date": "2024-05-13",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 2.5,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 10.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 2.5, "currency": "USD" },
+        { "kind": "output", "price_per_million": 10.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-4o-mini",
       "display_name": "GPT-4o Mini",
       "category": "budget",
+      "release_date": "2024-07-18",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.15,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.6,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.15, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.6, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Budget'."
+      "notes": "Context window 128K; category Budget."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-4-turbo",
       "display_name": "GPT-4 Turbo",
-      "category": "flagship",
+      "category": "legacy",
+      "release_date": "2024-04-09",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 10.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 30.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 10.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 30.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Frontier'."
+      "notes": "Context window 128K; category Legacy."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:gpt-3-5-turbo",
       "display_name": "GPT-3.5 Turbo",
       "category": "legacy",
+      "release_date": "2023-03-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.5,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.5,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.5, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.5, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 16K; original category 'Legacy'."
+      "notes": "Context window 16K; category Legacy."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:o3-pro",
       "display_name": "o3 Pro",
       "category": "flagship",
+      "release_date": "2025-06-10",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 20.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 80.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 20.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 80.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Reasoning - Premium'."
+      "notes": "Context window 200K; category Reasoning - Premium."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:o3",
       "display_name": "o3",
       "category": "mainstream",
+      "release_date": "2025-04-16",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 2.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 8.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 2.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 8.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Reasoning'."
+      "notes": "Context window 200K; category Reasoning."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:o4-mini-deep-research",
       "display_name": "o4-mini Deep Research",
       "category": "mainstream",
+      "release_date": "2025-04-16",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 2.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 8.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 2.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 8.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Reasoning'."
+      "notes": "Context window 200K; category Reasoning."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:o4-mini",
       "display_name": "o4-mini",
       "category": "budget",
+      "release_date": "2025-04-16",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.1,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 4.4,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.1, "currency": "USD" },
+        { "kind": "output", "price_per_million": 4.4, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Reasoning - Efficient'."
+      "notes": "Context window 200K; category Reasoning - Efficient."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:o1-pro",
       "display_name": "o1 Pro",
       "category": "flagship",
+      "release_date": "2025-03-19",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 150.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 600.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 150.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 600.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Reasoning - Premium'."
+      "notes": "Context window 200K; category Reasoning - Premium."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:o1",
       "display_name": "o1",
       "category": "mainstream",
+      "release_date": "2024-12-17",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 15.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 60.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 15.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 60.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Reasoning'."
+      "notes": "Context window 200K; category Reasoning."
     },
     {
       "provider": "OpenAI",
       "model_id": "openai:o1-mini",
       "display_name": "o1-mini",
       "category": "mainstream",
+      "release_date": "2024-09-12",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.1,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 4.4,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.1, "currency": "USD" },
+        { "kind": "output", "price_per_million": 4.4, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Reasoning'."
+      "notes": "Context window 128K; category Reasoning."
     },
     {
       "provider": "Anthropic",
       "model_id": "anthropic:claude-opus-4-6",
       "display_name": "Claude Opus 4.6",
       "category": "flagship",
+      "release_date": "2026-02-05",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 5.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 25.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 5.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 25.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K-1M; original category 'Frontier'."
+      "notes": "Context window 200K (1M beta); category Frontier."
+    },
+    {
+      "provider": "Anthropic",
+      "model_id": "anthropic:claude-sonnet-4-6",
+      "display_name": "Claude Sonnet 4.6",
+      "category": "mainstream",
+      "release_date": "2026-01-16",
+      "pricing": [
+        { "kind": "input", "price_per_million": 3.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 15.0, "currency": "USD" }
+      ],
+      "pricing_confidence": "high",
+      "source_url": "https://example.com/llm-pricing-february-2026",
+      "notes": "Context window 200K (1M beta); category Advanced."
     },
     {
       "provider": "Anthropic",
       "model_id": "anthropic:claude-opus-4-5",
       "display_name": "Claude Opus 4.5",
       "category": "flagship",
+      "release_date": "2025-11-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 15.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 75.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 5.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 25.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Frontier - Premium'."
+      "notes": "Context window 200K; category Frontier."
     },
     {
       "provider": "Anthropic",
       "model_id": "anthropic:claude-sonnet-4-5",
       "display_name": "Claude Sonnet 4.5",
       "category": "mainstream",
+      "release_date": "2025-09-29",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 3.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 15.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 3.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 15.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Advanced'."
+      "notes": "Context window 200K; category Advanced."
+    },
+    {
+      "provider": "Anthropic",
+      "model_id": "anthropic:claude-opus-4-1",
+      "display_name": "Claude Opus 4.1",
+      "category": "flagship",
+      "release_date": "2025-08-05",
+      "pricing": [
+        { "kind": "input", "price_per_million": 15.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 75.0, "currency": "USD" }
+      ],
+      "pricing_confidence": "high",
+      "source_url": "https://example.com/llm-pricing-february-2026",
+      "notes": "Context window 200K; category Frontier - Premium."
     },
     {
       "provider": "Anthropic",
       "model_id": "anthropic:claude-haiku-4-5",
       "display_name": "Claude Haiku 4.5",
       "category": "budget",
+      "release_date": "2025-10-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 5.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 5.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Efficient'."
+      "notes": "Context window 200K; category Efficient."
+    },
+    {
+      "provider": "Anthropic",
+      "model_id": "anthropic:claude-opus-4",
+      "display_name": "Claude Opus 4",
+      "category": "flagship",
+      "release_date": "2025-05-14",
+      "pricing": [
+        { "kind": "input", "price_per_million": 15.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 75.0, "currency": "USD" }
+      ],
+      "pricing_confidence": "high",
+      "source_url": "https://example.com/llm-pricing-february-2026",
+      "notes": "Context window 200K; category Frontier - Premium."
+    },
+    {
+      "provider": "Anthropic",
+      "model_id": "anthropic:claude-sonnet-4",
+      "display_name": "Claude Sonnet 4",
+      "category": "mainstream",
+      "release_date": "2025-05-14",
+      "pricing": [
+        { "kind": "input", "price_per_million": 3.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 15.0, "currency": "USD" }
+      ],
+      "pricing_confidence": "high",
+      "source_url": "https://example.com/llm-pricing-february-2026",
+      "notes": "Context window 200K; category Advanced."
     },
     {
       "provider": "Anthropic",
       "model_id": "anthropic:claude-3-5-sonnet",
       "display_name": "Claude 3.5 Sonnet",
       "category": "mainstream",
+      "release_date": "2024-06-20",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 6.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 30.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 3.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 15.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Advanced'."
+      "notes": "Context window 200K; category Advanced."
+    },
+    {
+      "provider": "Anthropic",
+      "model_id": "anthropic:claude-3-5-haiku",
+      "display_name": "Claude 3.5 Haiku",
+      "category": "budget",
+      "release_date": "2024-11-04",
+      "pricing": [
+        { "kind": "input", "price_per_million": 0.8, "currency": "USD" },
+        { "kind": "output", "price_per_million": 4.0, "currency": "USD" }
+      ],
+      "pricing_confidence": "high",
+      "source_url": "https://example.com/llm-pricing-february-2026",
+      "notes": "Context window 200K; category Efficient."
     },
     {
       "provider": "Anthropic",
       "model_id": "anthropic:claude-3-haiku",
       "display_name": "Claude 3 Haiku",
       "category": "budget",
+      "release_date": "2024-03-13",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.25,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.25,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.25, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.25, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Budget'."
+      "notes": "Context window 200K; category Budget."
     },
     {
       "provider": "Google",
       "model_id": "google:gemini-3-pro",
       "display_name": "Gemini 3 Pro",
       "category": "flagship",
+      "release_date": "2025-11-18",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 2.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 12.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 2.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 12.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 2M; original category 'Frontier'."
+      "notes": "Context window 1M; category Frontier. Preview."
     },
     {
       "provider": "Google",
       "model_id": "google:gemini-3-flash",
       "display_name": "Gemini 3 Flash",
       "category": "mainstream",
+      "release_date": "2025-12-17",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.5,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 3.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.5, "currency": "USD" },
+        { "kind": "output", "price_per_million": 3.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Advanced'."
+      "notes": "Context window 1M; category Advanced. Preview."
     },
     {
       "provider": "Google",
       "model_id": "google:gemini-2-5-pro",
       "display_name": "Gemini 2.5 Pro",
       "category": "mainstream",
+      "release_date": "2025-06-17",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.25,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 10.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.25, "currency": "USD" },
+        { "kind": "output", "price_per_million": 10.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Advanced'."
+      "notes": "Context window 1M; category Advanced."
     },
     {
       "provider": "Google",
       "model_id": "google:gemini-2-5-flash",
       "display_name": "Gemini 2.5 Flash",
       "category": "budget",
+      "release_date": "2025-06-17",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.3,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 2.5,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.3, "currency": "USD" },
+        { "kind": "output", "price_per_million": 2.5, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Efficient'."
+      "notes": "Context window 1M; category Efficient."
     },
     {
       "provider": "Google",
       "model_id": "google:gemini-2-5-flash-lite",
       "display_name": "Gemini 2.5 Flash-Lite",
       "category": "budget",
+      "release_date": "2025-06-17",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.1,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.4,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.1, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.4, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Budget'."
+      "notes": "Context window 1M; category Budget."
     },
     {
       "provider": "Google",
       "model_id": "google:gemini-2-0-flash",
       "display_name": "Gemini 2.0 Flash",
       "category": "budget",
+      "release_date": "2025-02-05",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.1,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.4,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.1, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.4, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Budget'."
+      "notes": "Context window 1M; category Budget."
     },
     {
       "provider": "xAI",
       "model_id": "xai:grok-4-1-fast",
       "display_name": "Grok 4.1 Fast",
       "category": "mainstream",
+      "release_date": "2025-11-19",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.2,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.5,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.2, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.5, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 2M; original category 'Advanced'."
+      "notes": "Context window 2M; category Advanced."
     },
     {
       "provider": "xAI",
       "model_id": "xai:grok-4",
       "display_name": "Grok 4",
       "category": "mainstream",
+      "release_date": "2025-08-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 3.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 15.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 3.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 15.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 256K; original category 'Advanced'."
+      "notes": "Context window 256K; category Advanced."
     },
     {
       "provider": "xAI",
       "model_id": "xai:grok-3",
       "display_name": "Grok 3",
       "category": "mainstream",
+      "release_date": "2025-02-17",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 3.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 15.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 3.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 15.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 131K; original category 'Advanced'."
+      "notes": "Context window 131K; category Advanced."
     },
     {
       "provider": "xAI",
       "model_id": "xai:grok-3-mini",
       "display_name": "Grok 3 Mini",
       "category": "budget",
+      "release_date": "2025-02-17",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.3,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.5,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.3, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.5, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 131K; original category 'Budget'."
+      "notes": "Context window 131K; category Budget."
     },
     {
       "provider": "DeepSeek",
       "model_id": "deepseek:deepseek-v3-2",
       "display_name": "DeepSeek V3.2",
       "category": "mainstream",
+      "release_date": "2025-09-29",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.28,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.42,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.28, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.42, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "DeepSeek",
       "model_id": "deepseek:deepseek-v3-2-speciale",
       "display_name": "DeepSeek V3.2 Speciale",
       "category": "mainstream",
+      "release_date": "2025-09-29",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.27,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.41,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.27, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.41, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 164K; original category 'Advanced'."
+      "notes": "Context window 164K; category Advanced."
     },
     {
       "provider": "DeepSeek",
       "model_id": "deepseek:deepseek-r1",
       "display_name": "DeepSeek R1",
       "category": "mainstream",
+      "release_date": "2025-01-20",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.7,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 2.5,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.55, "currency": "USD" },
+        { "kind": "output", "price_per_million": 2.19, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 64K; original category 'Reasoning'."
+      "notes": "Context window 128K; category Reasoning."
     },
     {
       "provider": "DeepSeek",
-      "model_id": "deepseek:deepseek-chat",
-      "display_name": "DeepSeek Chat",
+      "model_id": "deepseek:deepseek-v3",
+      "display_name": "DeepSeek V3",
       "category": "mainstream",
+      "release_date": "2024-12-25",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.3,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.2,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.14, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.28, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 164K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "Meta",
       "model_id": "meta:llama-4-maverick",
       "display_name": "Llama 4 Maverick",
       "category": "mainstream",
+      "release_date": "2025-04-05",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.2,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.6,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.2, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.6, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Advanced'."
+      "notes": "Context window 1M; category Advanced. Multimodal."
     },
     {
       "provider": "Meta",
       "model_id": "meta:llama-4-scout",
       "display_name": "Llama 4 Scout",
       "category": "budget",
+      "release_date": "2025-04-05",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.11,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.34,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.11, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.34, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 10M; original category 'Efficient'."
+      "notes": "Context window 10M; category Efficient."
     },
     {
       "provider": "Meta",
       "model_id": "meta:llama-3-3-70b-instruct",
       "display_name": "Llama 3.3 70B Instruct",
       "category": "mainstream",
+      "release_date": "2024-12-06",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.23,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.4,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.23, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.4, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "Meta",
       "model_id": "meta:llama-3-3-70b-versatile",
       "display_name": "Llama 3.3 70B Versatile",
       "category": "mainstream",
+      "release_date": "2024-12-06",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.59,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.79,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.59, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.79, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "Meta",
       "model_id": "meta:llama-3-1-405b",
       "display_name": "Llama 3.1 405B",
       "category": "flagship",
+      "release_date": "2024-07-23",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.79,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.79,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.79, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.79, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Frontier'."
+      "notes": "Context window 128K; category Frontier."
     },
     {
       "provider": "Meta",
       "model_id": "meta:llama-3-1-70b",
       "display_name": "Llama 3.1 70B",
       "category": "mainstream",
+      "release_date": "2024-07-23",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.35,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.4,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.35, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.4, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "Meta",
       "model_id": "meta:llama-3-1-8b",
       "display_name": "Llama 3.1 8B",
       "category": "budget",
+      "release_date": "2024-07-23",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.09,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.09,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.09, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.09, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Budget'."
+      "notes": "Context window 128K; category Budget."
     },
     {
       "provider": "Mistral",
       "model_id": "mistral:mistral-large-3",
       "display_name": "Mistral Large 3",
       "category": "mainstream",
+      "release_date": "2025-03-05",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.5,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.5,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.5, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.5, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 256K; original category 'Advanced'."
+      "notes": "Context window 256K; category Advanced."
     },
     {
       "provider": "Mistral",
       "model_id": "mistral:mistral-medium-3",
       "display_name": "Mistral Medium 3",
       "category": "mainstream",
+      "release_date": "2025-05-15",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.4,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 2.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.4, "currency": "USD" },
+        { "kind": "output", "price_per_million": 2.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "Mistral",
       "model_id": "mistral:ministral-8b",
       "display_name": "Ministral 8B",
       "category": "budget",
+      "release_date": "2024-10-16",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.15,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.15,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.15, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.15, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 256K; original category 'Budget'."
+      "notes": "Context window 256K; category Budget."
     },
     {
       "provider": "Mistral",
       "model_id": "mistral:ministral-3b",
       "display_name": "Ministral 3B",
       "category": "budget",
+      "release_date": "2024-10-16",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.1,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.1,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.1, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.1, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 256K; original category 'Budget'."
+      "notes": "Context window 256K; category Budget."
     },
     {
       "provider": "Mistral",
       "model_id": "mistral:pixtral-large",
       "display_name": "Pixtral Large",
       "category": "mainstream",
+      "release_date": "2024-11-18",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 2.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 6.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 2.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 6.0, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Vision'."
+      "notes": "Context window 128K; category Vision."
     },
     {
       "provider": "Mistral",
       "model_id": "mistral:mistral-7b",
       "display_name": "Mistral 7B",
       "category": "budget",
+      "release_date": "2023-09-27",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.25,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.25,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.25, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.25, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 32K; original category 'Budget'."
+      "notes": "Context window 32K; category Budget."
     },
     {
       "provider": "Mistral",
       "model_id": "mistral:codestral",
       "display_name": "Codestral",
       "category": "mainstream",
+      "release_date": "2025-08-07",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.3,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.9,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.3, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.9, "currency": "USD" }
       ],
-      "pricing_confidence": "medium",
+      "pricing_confidence": "high",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 32K; original category 'Code'."
+      "notes": "Context window 256K; category Code."
     },
     {
       "provider": "Alibaba Qwen",
       "model_id": "alibaba-qwen:qwen-max",
       "display_name": "Qwen Max",
       "category": "mainstream",
+      "release_date": "2025-01-15",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.2,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 6.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.2, "currency": "USD" },
+        { "kind": "output", "price_per_million": 6.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 262K; original category 'Advanced'."
+      "notes": "Context window 262K; category Advanced."
     },
     {
       "provider": "Alibaba Qwen",
       "model_id": "alibaba-qwen:qwen-plus",
       "display_name": "Qwen Plus",
       "category": "mainstream",
+      "release_date": "2025-01-15",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.4,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.2,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.4, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.2, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Advanced'."
+      "notes": "Context window 1M; category Advanced."
     },
     {
       "provider": "Alibaba Qwen",
       "model_id": "alibaba-qwen:qwen-flash",
       "display_name": "Qwen Flash",
       "category": "budget",
+      "release_date": "2025-01-15",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.05,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.4,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.05, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.4, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Budget'."
+      "notes": "Context window 1M; category Budget."
     },
     {
       "provider": "Alibaba Qwen",
       "model_id": "alibaba-qwen:qwen-coder",
       "display_name": "Qwen Coder",
       "category": "mainstream",
+      "release_date": "2025-01-15",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.3,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.5,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.3, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.5, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Code'."
+      "notes": "Context window 1M; category Code."
     },
     {
       "provider": "ZhipuAI",
       "model_id": "zhipuai:glm-4-7",
       "display_name": "GLM 4.7",
       "category": "mainstream",
+      "release_date": "2025-06-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.6,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 2.2,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.6, "currency": "USD" },
+        { "kind": "output", "price_per_million": 2.2, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "ZhipuAI",
       "model_id": "zhipuai:glm-4-6",
       "display_name": "GLM 4.6",
       "category": "mainstream",
+      "release_date": "2025-03-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.6,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 2.2,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.6, "currency": "USD" },
+        { "kind": "output", "price_per_million": 2.2, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "ZhipuAI",
       "model_id": "zhipuai:glm-4-5",
       "display_name": "GLM 4.5",
       "category": "budget",
+      "release_date": "2024-12-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.2,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.1,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.2, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.1, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Efficient'."
+      "notes": "Context window 128K; category Efficient."
     },
     {
       "provider": "ZhipuAI",
       "model_id": "zhipuai:glm-4-5-flash",
       "display_name": "GLM 4.5 Flash",
       "category": "budget",
+      "release_date": "2024-12-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Free'."
+      "notes": "Context window 128K; category Free."
     },
     {
       "provider": "Moonshot",
       "model_id": "moonshot:kimi-k2-5",
       "display_name": "Kimi K2.5",
       "category": "mainstream",
+      "release_date": "2025-07-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.6,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 3.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.6, "currency": "USD" },
+        { "kind": "output", "price_per_million": 3.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 262K; original category 'Advanced'."
+      "notes": "Context window 262K; category Advanced."
     },
     {
       "provider": "Moonshot",
       "model_id": "moonshot:kimi-k2-thinking",
       "display_name": "Kimi K2 Thinking",
       "category": "mainstream",
+      "release_date": "2025-06-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.6,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 2.5,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.6, "currency": "USD" },
+        { "kind": "output", "price_per_million": 2.5, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 262K; original category 'Reasoning'."
+      "notes": "Context window 262K; category Reasoning."
     },
     {
       "provider": "Moonshot",
       "model_id": "moonshot:kimi-k2-thinking-turbo",
       "display_name": "Kimi K2 Thinking Turbo",
       "category": "mainstream",
+      "release_date": "2025-06-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.15,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 8.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.15, "currency": "USD" },
+        { "kind": "output", "price_per_million": 8.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 262K; original category 'Reasoning'."
+      "notes": "Context window 262K; category Reasoning."
     },
     {
       "provider": "Cohere",
       "model_id": "cohere:command-a",
       "display_name": "Command A",
       "category": "mainstream",
+      "release_date": "2025-03-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 2.5,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 10.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 2.5, "currency": "USD" },
+        { "kind": "output", "price_per_million": 10.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 256K; original category 'Advanced'."
+      "notes": "Context window 256K; category Advanced."
     },
     {
       "provider": "Cohere",
       "model_id": "cohere:command-r-plus",
       "display_name": "Command R+",
       "category": "mainstream",
+      "release_date": "2024-04-04",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 2.5,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 10.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 2.5, "currency": "USD" },
+        { "kind": "output", "price_per_million": 10.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Advanced'."
+      "notes": "Context window 128K; category Advanced."
     },
     {
       "provider": "Cohere",
       "model_id": "cohere:command-r",
       "display_name": "Command R",
       "category": "budget",
+      "release_date": "2024-03-11",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.15,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.6,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.15, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.6, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Budget'."
+      "notes": "Context window 128K; category Budget."
     },
     {
       "provider": "Cohere",
       "model_id": "cohere:command-r7b",
       "display_name": "Command R7B",
       "category": "budget",
+      "release_date": "2024-10-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.0375,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.15,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.0375, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.15, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Budget'."
+      "notes": "Context window 128K; category Budget."
     },
     {
       "provider": "Amazon",
       "model_id": "amazon:nova-premier",
       "display_name": "Nova Premier",
       "category": "mainstream",
+      "release_date": "2025-05-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 2.5,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 12.5,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 2.5, "currency": "USD" },
+        { "kind": "output", "price_per_million": 12.5, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 1M; original category 'Advanced'."
+      "notes": "Context window 1M; category Advanced."
     },
     {
       "provider": "Amazon",
       "model_id": "amazon:nova-pro",
       "display_name": "Nova Pro",
       "category": "mainstream",
+      "release_date": "2024-12-03",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.8,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 3.2,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.8, "currency": "USD" },
+        { "kind": "output", "price_per_million": 3.2, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 300K; original category 'Advanced'."
+      "notes": "Context window 300K; category Advanced."
     },
     {
       "provider": "Amazon",
       "model_id": "amazon:nova-lite",
       "display_name": "Nova Lite",
       "category": "budget",
+      "release_date": "2024-12-03",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.06,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.24,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.06, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.24, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 300K; original category 'Budget'."
+      "notes": "Context window 300K; category Budget."
     },
     {
       "provider": "Amazon",
       "model_id": "amazon:nova-micro",
       "display_name": "Nova Micro",
       "category": "budget",
+      "release_date": "2024-12-03",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.035,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.14,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.035, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.14, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 128K; original category 'Budget'."
+      "notes": "Context window 128K; category Budget."
     },
     {
       "provider": "Minimax",
       "model_id": "minimax:minimax-m2-1",
       "display_name": "Minimax M2.1",
       "category": "mainstream",
+      "release_date": "2025-05-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.27,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.95,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.27, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.95, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 197K; original category 'Advanced'."
+      "notes": "Context window 197K; category Advanced."
     },
     {
       "provider": "Minimax",
       "model_id": "minimax:minimax-m2",
       "display_name": "Minimax M2",
       "category": "mainstream",
+      "release_date": "2025-03-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.3,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.2,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.3, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.2, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 204K; original category 'Advanced'."
+      "notes": "Context window 204K; category Advanced."
     },
     {
       "provider": "Baidu",
       "model_id": "baidu:ernie-4-5",
       "display_name": "Ernie 4.5",
       "category": "mainstream",
+      "release_date": "2025-06-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 0.07,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 0.28,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 0.07, "currency": "USD" },
+        { "kind": "output", "price_per_million": 0.28, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 131K; original category 'Advanced'."
+      "notes": "Context window 131K; category Advanced."
     },
     {
       "provider": "Perplexity",
       "model_id": "perplexity:sonar-pro",
       "display_name": "Sonar Pro",
       "category": "mainstream",
+      "release_date": "2025-02-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 3.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 15.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 3.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 15.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 200K; original category 'Advanced'."
+      "notes": "Context window 200K; category Advanced."
     },
     {
       "provider": "Perplexity",
       "model_id": "perplexity:sonar",
       "display_name": "Sonar",
       "category": "mainstream",
+      "release_date": "2025-02-01",
       "pricing": [
-        {
-          "kind": "input",
-          "price_per_million": 1.0,
-          "currency": "USD"
-        },
-        {
-          "kind": "output",
-          "price_per_million": 1.0,
-          "currency": "USD"
-        }
+        { "kind": "input", "price_per_million": 1.0, "currency": "USD" },
+        { "kind": "output", "price_per_million": 1.0, "currency": "USD" }
       ],
       "pricing_confidence": "medium",
       "source_url": "https://example.com/llm-pricing-february-2026",
-      "notes": "Imported from user-provided sheet 'LLM Pricing February 2026' (All LLMs Pricing); context window 127K; original category 'Advanced'."
+      "notes": "Context window 127K; category Advanced."
     }
   ]
 }
